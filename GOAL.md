@@ -78,7 +78,7 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
         mascots (e.g., Duolingo's Duo — including what to AVOID: nagging,
         streak guilt), and a short motion/a11y note for K-5 attention.
         No product code in this iteration.
-  - [ ] **D (design):** design brief in docs/MASCOT.md — name is DECIDED
+  - [x] **D (design):** design brief in docs/MASCOT.md — name is DECIDED
         by the owner (2026-07-07): **Lola la Lechuza**. SVG art direction
         with pose sketches (idle, correct-hop, curious-miss, celebrate
         with head spin — owl-realistic ~270° tilt-turns for small moments,
