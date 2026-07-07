@@ -81,8 +81,22 @@ remote environment); check for console errors and screenshot each screen.
 - All asset URLs must remain relative (the app is served from
   /dli-skills-builder/, not the domain root).
 
+## Semi-autonomous loops
+
+Agent sessions doing unattended iterations MUST follow `docs/LOOP.md`:
+work is derived only from `GOAL.md` (current milestone's acceptance
+criteria), context comes from the tail of `JOURNAL.md`, and each iteration
+ends as one **draft PR** to `main` with tests, screenshots, and a JOURNAL
+entry — never a merge, never a push to `main`, never a workflow/settings
+change. There is no dev site: validation is evidenced in the PR; production
+deploys only when a human merges.
+
 ## Documentation map
 
+- `GOAL.md` — north star, product invariants, milestone queue (the loop's
+  only source of work; humans edit it to redirect)
+- `JOURNAL.md` — append-only iteration log (read the tail before working)
+- `docs/LOOP.md` — the loop protocol and its hard guardrails
 - `README.md` — user/teacher-facing overview
 - `docs/SPEC.md` — product + technical specification and design decisions
 - `docs/STANDARDS.md` — NBPTS ECYA-WL and NJSLS-WL alignment (cite it when
