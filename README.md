@@ -26,6 +26,8 @@ zero-setup, and usable from any browser without registration or data collection.
 - **Four activities per group × tense:**
   - 📖 **Estudia** — full conjugation tables for the group (tap any form to
     hear it)
+  - 🧱 **Práctica** — rebuild the conjugation table word by word with a
+    matching word bank (pure practice: no stars, can't be failed)
   - ✅ **Elige** — multiple choice with linguistically-informed distractors
     (including "naive regularizations" like \*teno for *tengo*)
   - ✏️ **Escribe** — typed production with on-screen accent keys and

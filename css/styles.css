@@ -261,6 +261,24 @@ a { color: var(--brand); }
 .no-hover .accent-btn:hover { border-color: var(--brand-soft); }
 .no-hover .btn:hover { filter: none; }
 
+/* -------- práctica (M8 — unscored table rebuild; tiles reuse .match-card) */
+.practica-table td { height: 56px; }
+.practica-cell.col-active { background: color-mix(in srgb, var(--brand-soft) 55%, transparent); }
+.practica-table thead th.col-active { outline: 3px solid var(--brand); outline-offset: -3px; }
+.drop-slot {
+  font: inherit; color: var(--ink-soft); background: transparent;
+  border: 2px dashed var(--brand); border-radius: 8px;
+  min-width: 76px; min-height: 44px; padding: 6px 10px; cursor: pointer;
+}
+.drop-slot:hover, .drop-slot:focus-visible { background: var(--brand-soft); }
+.drop-slot.shake { animation: shake 0.35s; border-color: var(--bad); }
+.no-hover .drop-slot:hover { background: transparent; }
+.practica-bank-wrap { margin: 16px auto; text-align: center; }
+.bank-title { color: var(--ink-soft); }
+.practica-bank { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.bank-tile { padding: 12px 16px; min-height: 44px; }
+.mode-free { color: var(--ink-soft); font-size: 0.8rem; }
+
 /* -------- match -------- */
 .match-help { color: var(--ink-soft); }
 .match-board { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -440,7 +458,7 @@ a { color: var(--brand); }
 @media print {
   body { background: #fff; color: #000; font-family: "Segoe UI", system-ui, sans-serif; }
   .crumbs, .sound-toggle, .study-actions, .site-footer, .no-print,
-  .tap-hint, .btn, .print-btn, .lola-wrap { display: none !important; }
+  .tap-hint, .btn, .print-btn, .lola-wrap, .practica-bank-wrap { display: none !important; }
   #app { max-width: none; padding: 0; }
   .table-scroll { overflow: visible; box-shadow: none; }
   .conj-table { min-width: 0; }

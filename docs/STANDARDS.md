@@ -44,6 +44,7 @@ Performance expectations are coded `7.1.<Level>.<Mode>.<n>`:
 | Conjuga feature | Performance expectations |
 |---|---|
 | ✅ Elige (multiple-choice recognition) | 7.1.NL.IPRET.1 — "Identify a few memorized and practiced words…"; 7.1.NM.IPRET.1 — "Identify familiar spoken and written words, phrases, and simple sentences…" |
+| 🧱 Práctica (rebuild the table, unscored) | Interpretive-mode active recall inside the chart's visual scaffold — the NBPTS Std IV bridge between studying and quizzing; pressure-free by design |
 | 🧩 Empareja (form ↔ person matching) | Interpretive mode, Novice: recognition of familiar written chunks with strong visual scaffolding |
 | ✏️ Escribe (typed production) | 7.1.NM.PRSNT.4 — "Copy/write words, phrases, or simple guided texts on familiar topics"; 7.1.NH.PRSNT.2 — "Create and present brief messages using familiar vocabulary orally or in writing" |
 | ⭐/🌙 Preterite & imperfect practice | Scaffolding toward 7.1.NH.PRSNT.4 — "Tell or retell stories… orally or in writing" — and, beyond Novice, 7.1.IH.IPERS.3 ("accuracy in the present tense and often across time frames") |
