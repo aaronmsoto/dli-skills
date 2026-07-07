@@ -14,6 +14,13 @@
   --almost: #a16207;
   --almost-bg: #fef9c3;
   --star: #f59e0b;
+  --lola-face: #fff7ec;
+  --lola-face-line: #eadfc8;
+  --lola-body: #c99a5b;
+  --lola-wing: #b08447;
+  --lola-chest: #f3e4c8;
+  --lola-eye: #2e2a26;
+  --lola-beak: #e0a458;
   --radius: 18px;
   --shadow: 0 2px 8px rgba(39, 48, 63, 0.10);
 }
@@ -304,11 +311,84 @@ a { color: var(--brand); }
 .report-row-total { font-weight: bold; }
 .report-note { color: var(--ink-soft); font-size: 0.85rem; }
 
+
+/* -------- lola la lechuza (mascot; spec in docs/MASCOT.md) -------- */
+.lola-wrap { display: inline-block; line-height: 0; }
+.lola { display: block; overflow: visible; }
+.lola-head { transform-box: fill-box; transform-origin: 50% 85%; }
+.lola-lids { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0.02); }
+.lola-pupils { transform-box: fill-box; }
+.lola-sparks { opacity: 0; }
+
+/* idle: gentle bob + occasional blink */
+.lola.is-idle { animation: lola-bob 3.4s ease-in-out infinite; }
+.lola.is-idle .lola-lids { animation: lola-blink 5.2s infinite; }
+@keyframes lola-bob { 50% { transform: translateY(2px); } }
+@keyframes lola-blink {
+  0%, 93%, 100% { transform: scaleY(0.02); }
+  95.5%, 97.5% { transform: scaleY(1); }
+}
+
+/* watching (Escribe focus): perfectly still, eyes toward the input */
+.lola.is-watching { animation: none; }
+.lola.is-watching .lola-pupils { transform: translate(-1.5px, 2px); }
+
+/* hop: correct answer */
+.lola.is-hop { animation: lola-hop 450ms ease-out; }
+@keyframes lola-hop {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-9px) scale(1.04, 0.96); }
+  70% { transform: translateY(0) scale(0.98, 1.02); }
+  100% { transform: none; }
+}
+
+/* curious: wrong answer — smallest, slowest motion; holds until next state */
+.lola.is-curious .lola-head { transform: rotate(18deg); transition: transform 350ms ease; }
+
+/* turn: streak / matched pair — quick ~270° look-back and return */
+.lola.is-turn .lola-head { animation: lola-turn 550ms ease-in-out; }
+@keyframes lola-turn {
+  0% { transform: rotate(0deg); }
+  45% { transform: rotate(250deg); }
+  70% { transform: rotate(250deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* spin: 3-star celebration ONLY — the signature move (sanctioned 900ms) */
+.lola.is-spin { animation: lola-hop 450ms ease-out 500ms; }
+.lola.is-spin .lola-head { animation: lola-spin 600ms ease-in-out; }
+.lola.is-spin .lola-sparks { opacity: 1; transition: opacity 300ms ease 450ms; }
+@keyframes lola-spin { to { transform: rotate(360deg); } }
+
+/* celebrate: 1-2 star results — double hop + wing flap */
+.lola.is-celebrate { animation: lola-cheer 600ms ease-out; }
+.lola.is-celebrate .lola-sparks { opacity: 0.6; transition: opacity 300ms ease 350ms; }
+@keyframes lola-cheer {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-7px); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(-5px); }
+}
+
+/* placements */
+.home-title { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.lola-greeting { color: var(--ink-soft); font-size: 1rem; margin: 0.2em 0; }
+.results .lola-wrap { margin-bottom: -8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lola, .lola * { animation: none !important; transition: none !important; }
+  /* static pose swaps instead of motion */
+  .lola.is-hop .lola-wing-pose, .lola.is-celebrate { transform: none; }
+  .lola.is-curious .lola-head { transform: rotate(18deg); }
+  .lola.is-turn .lola-head { transform: rotate(24deg); }
+  .lola.is-spin .lola-sparks, .lola.is-celebrate .lola-sparks { opacity: 1; }
+}
+
 /* -------- print -------- */
 @media print {
   body { background: #fff; color: #000; font-family: "Segoe UI", system-ui, sans-serif; }
   .crumbs, .sound-toggle, .study-actions, .site-footer, .no-print,
-  .tap-hint, .btn, .print-btn { display: none !important; }
+  .tap-hint, .btn, .print-btn, .lola-wrap { display: none !important; }
   #app { max-width: none; padding: 0; }
   .table-scroll { overflow: visible; box-shadow: none; }
   .conj-table { min-width: 0; }

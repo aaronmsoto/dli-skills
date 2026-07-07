@@ -12,6 +12,7 @@ import { conjugate, PERSONS, TENSES, TENSE_LABELS, normalizeAnswer, stripAccents
 import { sampleTargets, buildChoices, buildMatchPairs, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
 import * as store from "./storage.js";
 import { speak, ttsAvailable } from "./audio.js";
+import { createLola } from "./mascot.js";
 
 const MODES = ["choice", "type", "match"];
 const MODE_META = {
@@ -170,7 +171,8 @@ function renderHome() {
   mount(
     el("header", { class: "hero" },
       soundToggle(),
-      el("h1", {}, "🦉 Conjuga"),
+      el("h1", { class: "home-title" }, createLola(76).el, "Conjuga"),
+      el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
       el("p", { class: "tagline-en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
       el("p", { class: "total-stars" }, `⭐ ${totalEarned} / ${SETS.length * STARS_PER_SET} estrellas`),
@@ -710,7 +712,10 @@ function showResults(set, tense, mode, score, total, misses) {
   const msg = stars === 3 ? "¡Increíble! Lo dominas." :
     stars === 2 ? "¡Muy bien! Ya casi lo tienes." :
     stars === 1 ? "¡Buen trabajo! Sigue practicando." :
-    "Estudia la tabla y vuelve a intentarlo. ¡Tú puedes!";
+    "Lola sabe que puedes. Estudia la tabla y ¡inténtalo otra vez!";
+
+  const lola = createLola(116);
+  lola.setState(stars === 3 ? "is-spin" : stars >= 1 ? "is-celebrate" : "is-idle");
 
   const isContrast = mode === CONTRAST_KEY.mode;
   const retryHref = isContrast ? `#/play/${set.id}/contrast` : `#/play/${set.id}/${tense}/${mode}`;
@@ -718,6 +723,7 @@ function showResults(set, tense, mode, score, total, misses) {
   app.replaceChildren(
     el("div", { class: "results" },
       el("h1", {}, "Resultados"),
+      lola.el,
       el("div", { class: "big-stars" }, starRow(stars)),
       el("p", { class: "score-line" }, `${score} / ${total} · ${pct}%`),
       el("p", { class: "result-msg" }, msg),
