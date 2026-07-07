@@ -360,7 +360,9 @@ if (await voiced.locator(".prompt .prompt-main").count()) fail("escucha: prompt 
 // slow replay uses a lower rate
 await voiced.locator(".listen-controls .btn", { hasText: "Despacio" }).click();
 const slow = await voiced.evaluate(() => window.__spoken.at(-1));
-if (!(slow.rate < 0.85)) fail(`escucha: 🐢 replay rate should be < 0.85, got ${slow.rate}`);
+if (slow.rate !== 0.5) fail(`escucha: 🐢 replay rate must be 0.5 (audible on all engines), got ${slow.rate}`);
+const normalRate = await voiced.evaluate(() => window.__spoken.find((u) => u.rate !== 0.5)?.rate);
+if (normalRate !== 0.85) fail(`escucha: normal rate should be 0.85, got ${normalRate}`);
 // play all 10 by trusting our ears (the stub tells us what was spoken)
 for (let q = 0; q < 10; q++) {
   await voiced.waitForSelector(".choice:not(:disabled)");
