@@ -84,6 +84,7 @@ await page.click('a[href="#/set/1"]');
 await page.waitForSelector(".tense-card");
 if ((await page.locator(".tense-card").count()) !== 3) fail("set: expected 3 tense cards");
 if ((await page.locator(".mode-card").count()) !== 5) fail("set: expected 5 activity cards");
+if (await page.locator(".listen-card").count()) fail("set: Escucha must be hidden without a Spanish voice");
 await assertNoStrayNull("set");
 await page.screenshot({ path: `${SHOTS}/set.png` });
 ok("set screen renders tenses + activities + reto");
@@ -316,7 +317,7 @@ await voiced.addInitScript(() => {
       getVoices: () => [fakeVoice],
       addEventListener: () => {},
       cancel: () => {},
-      speak: (u) => window.__spoken.push(u.text),
+      speak: (u) => window.__spoken.push({ text: u.text, rate: u.rate }),
     },
   });
   window.SpeechSynthesisUtterance = function (text) { this.text = text; };
@@ -325,7 +326,7 @@ await voiced.goto(`${BASE}/#/study/1/present`);
 await voiced.waitForSelector(".cell-speak");
 await voiced.locator(".cell-speak").first().click();
 const spoken = await voiced.evaluate(() => window.__spoken);
-if (!spoken.length || spoken[0] !== "yo soy") fail(`stub voice: expected "yo soy", got ${JSON.stringify(spoken)}`);
+if (!spoken.length || spoken[0].text !== "yo soy") fail(`stub voice: expected "yo soy", got ${JSON.stringify(spoken)}`);
 // match mode speaks person + form (regression: used to speak bare forms)
 await voiced.goto(`${BASE}/#/play/1/present/match`);
 await voiced.waitForSelector(".match-card");
@@ -343,10 +344,60 @@ await voiced.evaluate(async () => {
 });
 const matchSpoken = await voiced.evaluate(() => window.__spoken);
 const shortPersons = ["yo", "tú", "él", "nosotros", "vosotros", "ellos"];
-if (!matchSpoken.length || !shortPersons.includes(matchSpoken[0].split(" ")[0]) || matchSpoken[0].split(" ").length < 2) {
+if (!matchSpoken.length || !shortPersons.includes(matchSpoken[0].text.split(" ")[0]) || matchSpoken[0].text.split(" ").length < 2) {
   fail(`match speech: expected "person form", got ${JSON.stringify(matchSpoken)}`);
 }
-ok(`tts speaks person + form (study: "${spoken[0]}", match: "${matchSpoken[0]}")`);
+ok(`tts speaks person + form (study: "${spoken[0].text}", match: "${matchSpoken[0].text}")`);
+// ---------- 🎧 Escucha (listen mode): voiced device ----------
+await voiced.goto(`${BASE}/#/set/1`);
+await voiced.waitForSelector(".listen-card");
+if ((await voiced.locator(".mode-card").count()) !== 6) fail("escucha: voiced set screen should show 6 activity cards");
+await voiced.goto(`${BASE}/#/play/1/present/listen`);
+await voiced.waitForSelector(".listen-controls");
+// the form is heard, never shown: no person, no blank in the prompt
+if (await voiced.locator(".prompt .prompt-person").count()) fail("escucha: prompt must not show the person");
+if (await voiced.locator(".prompt .prompt-main").count()) fail("escucha: prompt must not show the form");
+// slow replay uses a lower rate
+await voiced.locator(".listen-controls .btn", { hasText: "Despacio" }).click();
+const slow = await voiced.evaluate(() => window.__spoken.at(-1));
+if (!(slow.rate < 0.85)) fail(`escucha: 🐢 replay rate should be < 0.85, got ${slow.rate}`);
+// play all 10 by trusting our ears (the stub tells us what was spoken)
+for (let q = 0; q < 10; q++) {
+  await voiced.waitForSelector(".choice:not(:disabled)");
+  const heard = await voiced.evaluate(() => {
+    const bare = window.__spoken.filter((u) => !u.text.includes(" "));
+    return bare.at(-1).text;
+  });
+  const opts = voiced.locator(".choice");
+  const n = await opts.count();
+  let clicked = false;
+  for (let b = 0; b < n; b++) {
+    const text = (await opts.nth(b).innerText()).replace(/^\d/, "").trim();
+    if (text === heard) { await opts.nth(b).click(); clicked = true; break; }
+  }
+  if (!clicked) { fail(`escucha: heard "${heard}" but no matching option`); break; }
+  await voiced.waitForTimeout(1050);
+}
+await voiced.waitForSelector(".results");
+if ((await voiced.locator(".big-stars .badge.on").count()) !== 3) fail("escucha: 10/10 should award 3 🎧 badges");
+ok(`escucha: full round by ear → ${(await voiced.locator(".score-line").innerText()).trim()} (3 badges)`);
+await voiced.screenshot({ path: `${SHOTS}/escucha-results.png` });
+// badges surface on set screen and home, outside the star totals
+await voiced.goto(`${BASE}/#/set/1`);
+await voiced.waitForSelector(".listen-card");
+if ((await voiced.locator(".listen-card .badge.on").count()) !== 3) fail("escucha: set card should show 3 badges");
+await voiced.goto(`${BASE}/#/`);
+await voiced.waitForSelector(".set-card");
+const g1 = await voiced.locator('.set-card[href="#/set/1"]').innerText();
+if (!g1.includes("🎧 3/9")) fail(`escucha: home card should show 🎧 3/9, got "${g1.replace(/\n/g, " ")}"`);
+if (!g1.includes("⭐ 0/30")) fail("escucha: badges must NOT count toward stars");
+ok("escucha: badges on set + home cards, star totals untouched");
+
+// voiceless device: direct listen route redirects to the group screen
+await page.goto(`${BASE}/#/play/1/present/listen`);
+await page.waitForSelector(".tense-card");
+ok("escucha: voiceless direct route redirects to group screen");
+
 // mute stops speech
 await voiced.goto(`${BASE}/#/study/1/present`);
 await voiced.waitForSelector(".sound-toggle");

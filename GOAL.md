@@ -49,11 +49,27 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
         groups that have them.
   - [ ] Docs updated (SPEC 4.x, STANDARDS mapping to 7.1.NH.PRSNT.4) and
         remaining groups tracked here as follow-up items.
-- [ ] **M3 — Listening mode (Escucha)**
-  TTS speaks a form; learner picks (Elige-style) or types (Escribe-style)
-  what they heard. Hidden entirely on devices without a Spanish voice.
-  Counts toward stars as a fourth mode only where TTS is available (star
-  math must not penalize voiceless devices).
+- [x] **M3 — Listening mode (🎧 Escucha)** · complete on dev 2026-07-07 (recognition v1; typed variant deferred with SME)
+  Owner decisions (2026-07-07): **recognition-only v1** (typed variant
+  deferred until after SME input) and **badges, not stars** — listening
+  earns a parallel 🎧 track (same 60/80/100% tiers) that is NEVER counted
+  in the star totals, so devices without a Spanish voice are not penalized.
+  Acceptance criteria:
+  - [x] 🎧 Escucha card per group × tense, shown ONLY when a Spanish TTS
+        voice exists; direct routes redirect to the group screen otherwise.
+  - [x] Round of 10: TTS speaks the target form (no text shown beyond the
+        infinitive + gloss); learner picks from 4 written options
+        (existing distractor engine: person endings + tense/stress
+        contrasts). Unlimited 🔊 replay + 🐢 slow replay (non-punitive).
+        Listening prompts bypass the mute setting (entering Escucha is
+        explicit audio intent).
+  - [x] Badges recorded under `<set>.<tense>.listen`, displayed on the
+        group screen, home cards (🎧 n/9), results, review queue, and a
+        report column — excluded from every star total/denominator.
+  - [x] E2e via the stubbed-voice pattern: spoken text equals the target,
+        options never reveal it in the prompt, slow replay uses a lower
+        rate, mode hidden + route guarded without a voice; suites green.
+  - Deferred (not blocking M3): typed Escucha variant — revisit with SME.
 - [ ] **M4 — Near-future & progressive**
   `ir a + infinitive` and present progressive (gerund generation with
   irregular gerunds: leyendo, oyendo, diciendo, pidiendo, viniendo, …),
