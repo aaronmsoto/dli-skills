@@ -395,6 +395,15 @@ function renderStudy(setId, tense) {
     el("div", { class: "study-actions" },
       MODES.map((m) => el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/${m}` },
         `${MODE_META[m].icon} ${MODE_META[m].es}`)),
+      // every current activity is reachable from Estudia (M7 owner add-on)
+      ttsAvailable()
+        ? el("a", { class: "btn primary listen-link", href: `#/play/${setId}/${tense}/${LISTEN}` },
+          `${LISTEN_META.icon} ${LISTEN_META.es}`)
+        : null,
+      tense !== "present"
+        ? el("a", { class: "btn contrast-link", href: `#/play/${setId}/contrast` },
+          "⚔️ ¿Pretérito o imperfecto?")
+        : null,
       el("button", { class: "btn print-btn", onclick: () => window.print() }, "🖨️ Imprimir")),
   );
 }
