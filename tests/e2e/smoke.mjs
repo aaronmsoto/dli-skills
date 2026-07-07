@@ -101,6 +101,51 @@ if (await page.locator(".lola-wrap").count()) fail("study: no mascot allowed (sc
 await page.screenshot({ path: `${SHOTS}/study.png` });
 ok("study tables verified: soy / fui / era");
 
+// helper: compute the correct answer for the current prompt via the app's own modules
+const currentAnswer = (tenseExpr) => page.evaluate(async (tenseCode) => {
+  const { SETS } = await import("./js/verbs.js");
+  const { conjugate, PERSONS } = await import("./js/conjugator.js");
+  const { TENSE_CUES } = await import("./js/game.js");
+  let tense = tenseCode;
+  if (tense === "FROM_CUE") {
+    const cue = document.querySelector(".cue-chip").textContent.replace(/^🕐 /, "");
+    tense = TENSE_CUES.preterite.includes(cue) ? "preterite" : "imperfect";
+  }
+  const person = document.querySelector(".prompt-person").textContent;
+  const inf = document.querySelector(".prompt-verb").textContent.split(" — ")[0];
+  const verb = SETS[0].verbs.find((v) => v.inf === inf);
+  return conjugate(verb, tense)[PERSONS.indexOf(person)];
+}, tenseExpr);
+
+// ---------- sticky-hover regression: no lingering highlight after advancing ----------
+await page.goto(`${BASE}/#/play/1/present/choice`);
+await page.waitForSelector(".choice");
+{
+  const box = await page.locator(".choice").first().boundingBox();
+  const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+  await page.mouse.move(cx, cy); // park the pointer over option 1
+  const correct = await currentAnswer("present");
+  const texts = await page.locator(".choice").allInnerTexts();
+  const idx = texts.findIndex((t) => t.replace(/^\d/, "").trim() === correct);
+  if (idx === -1) fail("hover-regression: correct option not located");
+  await page.keyboard.press(String(idx + 1)); // answer WITHOUT moving the pointer
+  await page.waitForTimeout(1150); // auto-advance to question 2
+  if (!(await page.locator(".choices.no-hover").count())) fail("hover-regression: fresh grid missing no-hover");
+  const border = await page.evaluate(([x, y]) => {
+    const c = document.elementFromPoint(x, y)?.closest(".choice");
+    return c ? getComputedStyle(c).borderTopColor : "none";
+  }, [cx, cy]);
+  if (border !== "none" && border !== "rgba(0, 0, 0, 0)")
+    fail(`hover-regression: option under parked pointer shows border ${border}`);
+  // moving the pointer WITHIN the grid restores normal hover
+  const box2 = await page.locator(".choice").nth(1).boundingBox();
+  await page.mouse.move(box2.x + box2.width / 2, box2.y + box2.height / 2);
+  await page.waitForTimeout(60);
+  if (await page.locator(".choices.no-hover").count()) fail("hover-regression: no-hover must clear on pointer move");
+  ok("sticky-hover regression: fresh grid renders untouched, hover restored on move");
+  await page.reload(); // leave a fresh round for the full-round section (same-hash goto won't reload)
+}
+
 // ---------- Elige: complete a full round ----------
 await page.goto(`${BASE}/#/play/1/present/choice`);
 await page.waitForSelector(".play-lola .lola");
@@ -131,25 +176,10 @@ await page.waitForSelector(".results");
 ok(`choice round completes → ${(await page.locator(".score-line").innerText()).trim()}`);
 await page.screenshot({ path: `${SHOTS}/choice-results.png` });
 
-// helper: compute the correct answer for the current prompt via the app's own modules
-const currentAnswer = (tenseExpr) => page.evaluate(async (tenseCode) => {
-  const { SETS } = await import("./js/verbs.js");
-  const { conjugate, PERSONS } = await import("./js/conjugator.js");
-  const { TENSE_CUES } = await import("./js/game.js");
-  let tense = tenseCode;
-  if (tense === "FROM_CUE") {
-    const cue = document.querySelector(".cue-chip").textContent.replace(/^🕐 /, "");
-    tense = TENSE_CUES.preterite.includes(cue) ? "preterite" : "imperfect";
-  }
-  const person = document.querySelector(".prompt-person").textContent;
-  const inf = document.querySelector(".prompt-verb").textContent.split(" — ")[0];
-  const verb = SETS[0].verbs.find((v) => v.inf === inf);
-  return conjugate(verb, tense)[PERSONS.indexOf(person)];
-}, tenseExpr);
-
 // ---------- Escribe: correct answer + accent tolerance ----------
 await page.goto(`${BASE}/#/play/1/present/type`);
 await page.waitForSelector(".type-input");
+if (!(await page.locator(".type-form.no-hover").count())) fail("type: fresh form missing no-hover");
 await page.waitForSelector(".play-lola .lola.is-watching"); // input autofocus → Lola watches
 const a1 = await currentAnswer("present");
 await page.fill(".type-input", a1);
@@ -172,6 +202,7 @@ if (stripped !== a2) {
 // ---------- Empareja: full solve ----------
 await page.goto(`${BASE}/#/play/1/present/match`);
 await page.waitForSelector(".match-card");
+if (!(await page.locator(".match-board.no-hover").count())) fail("match: fresh board missing no-hover");
 // first pair clicked via UI so we can watch Lola's look-back turn
 {
   const first = await page.evaluate(async () => {
@@ -215,6 +246,8 @@ ok(`match mode full solve → ${matchScore} (Lola spins)`);
 await page.goto(`${BASE}/#/play/1/contrast`);
 await page.waitForSelector(".play-lola .lola");
 for (let q = 0; q < 10; q++) {
+  if (q === 1 && !(await page.locator(".contrast-choices.no-hover").count()))
+    fail("contrast: fresh grid missing no-hover");
   await page.waitForSelector(".contrast-choices .choice:not(:disabled)");
   const correct = await currentAnswer("FROM_CUE");
   const buttons = page.locator(".contrast-choices .choice");
