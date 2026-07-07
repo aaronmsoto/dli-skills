@@ -87,6 +87,44 @@ export function buildChoices(target, allTenses) {
   return shuffle([answer, ...distractors]);
 }
 
+/**
+ * Time-cue expressions for the preterite/imperfect contrast mode. These are
+ * the conventional classroom triggers taught to novices; docs/SPEC.md notes
+ * the simplification (real usage is aspect-driven, not word-driven).
+ */
+export const TENSE_CUES = {
+  preterite: ["ayer", "anoche", "una vez", "de repente", "el año pasado"],
+  imperfect: ["siempre", "todos los días", "muchas veces", "de niño/a", "antes", "cada verano"],
+};
+
+/**
+ * Questions for the "¿Pretérito o imperfecto?" contrast mode: a time cue
+ * signals the tense; the learner picks between the two past forms of the
+ * same verb+person. (The two forms never coincide in Spanish.)
+ */
+export function buildContrastQuestions(verbs, count, includeVosotros) {
+  const persons = activePersons(includeVosotros);
+  const tenses = shuffle(
+    Array.from({ length: count }, (_, i) => (i % 2 === 0 ? "preterite" : "imperfect")),
+  );
+  const targets = sampleTargets(verbs, "preterite", count, includeVosotros);
+  return targets.map((t, i) => {
+    const tense = tenses[i];
+    const cue = TENSE_CUES[tense][Math.floor(Math.random() * TENSE_CUES[tense].length)];
+    const answer = conjugate(t.verb, tense)[t.person];
+    const other = conjugate(t.verb, tense === "preterite" ? "imperfect" : "preterite")[t.person];
+    return {
+      verb: t.verb,
+      person: t.person,
+      personLabel: t.personLabel,
+      tense,
+      cue,
+      answer,
+      options: shuffle([answer, other]),
+    };
+  });
+}
+
 /** Build the pairs for a matching round: personLabel+infinitive ↔ form. */
 export function buildMatchPairs(verbs, tense, includeVosotros) {
   const targets = sampleTargets(verbs, tense, MATCH_PAIRS, includeVosotros)

@@ -70,6 +70,37 @@ See docs/STANDARDS.md for the alignment detail.
   remaining slots cover distinct (verb, person) cells; vosotros excluded when
   toggled off.
 
+### 4.3b Contrast challenge (⚔️ ¿Pretérito o imperfecto?)
+One per group (recorded under `past.contrast`): 10 questions mixing both past
+tenses. A time-cue expression (preterite: *ayer, anoche, una vez, de repente,
+el año pasado*; imperfect: *siempre, todos los días, muchas veces, de niño/a,
+antes, cada verano*) signals the tense; the learner picks between the two past
+forms of the same verb+person (these never coincide in Spanish — verified by
+test across all 100 verbs). **Known simplification:** real tense choice is
+aspect-driven, not word-driven; cue words are the standard novice scaffold and
+the mode is framed as "una vez ⭐ o muchas veces 🌙". Sentence-context items
+(roadmap) will supersede this.
+
+### 4.3c Audio (TTS)
+Browser-native Web Speech API only — no network, nothing recorded or sent.
+Auto-speaks the correct form (person + form, e.g. "yo tengo") after each
+question resolves, on match success, and when a study-table form is tapped.
+🔊/🔇 toggle persists in settings; rate 0.85 for young learners; prefers a
+local es-MX/es-US/es-419 voice. On devices with no Spanish voice, every audio
+control is hidden (graceful fallback, verified in tests).
+
+### 4.3d Spaced repetition (🔁 Repasa hoy)
+Every recorded result stores a timestamp. An activity is due again after
+0 / 1 / 3 / 7 days for 0 / 1 / 2 / 3 stars. The home screen shows the 5 most
+overdue activities as one-tap links. Entries saved before this feature (no
+timestamp) are never marked due — backward compatible, no schema version bump.
+
+### 4.3e Printables (🖨️)
+A print stylesheet (`@media print`) renders study tables cleanly (nav, buttons
+and footer hidden; bordered black-and-white tables). `#/informe` is a
+printable progress report: name/date line, total stars, and a 20-row grid
+(stars per tense ×9, reto ×3, total ×30 per group).
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +
@@ -115,18 +146,29 @@ sessionStorage; mastery in localStorage under versioned key `conjuga.v1`.
 GitHub Actions workflow publishes the repository root to GitHub Pages on push
 to `main` (and manually via workflow_dispatch). No build step.
 
-## 6. Validation performed (v0.1)
+## 6. Validation performed
 
+v0.1:
 - `npm test`: 35/35 passing.
 - Playwright end-to-end drive of every screen: home (20 groups), group screen,
   study tables (soy/fui/era spot checks), full 10-question Elige round,
   Escribe correct-answer + accent-retry flows, full Empareja solve (6/6),
   results + star persistence, about page — zero console errors.
 
-## 7. Out of scope for v0.1 (roadmap)
+v0.2 (contrast mode, TTS, review queue, printables):
+- `npm test`: 40/40 (adds contrast-generator invariants, the
+  preterite≠imperfect check across all 600 past forms, review-interval logic).
+- Playwright: full 10/10 contrast round via cue→tense solving; review queue
+  appears when a stored result is backdated 8 days, links into the game, and
+  is absent for fresh sessions; report renders 20 rows with correct star math;
+  print media hides nav; TTS fallback (no voice → no controls) and stubbed-
+  voice path ("yo soy" spoken; mute stops speech) — zero console errors.
 
-Audio/TTS and listening comprehension; sentence-context items and story-retell
-(the bridge to 7.1.NH.PRSNT.4); spaced-repetition scheduling across sessions;
-teacher dashboards/printables; more tenses (perífrasis ir a + inf., present
-progressive); other program languages (the engine/data split was designed to
-generalize).
+## 7. Out of scope (roadmap)
+
+Sentence-context items and story-retell (the bridge to 7.1.NH.PRSNT.4);
+listening-comprehension mode (hear → pick/type); more tenses (perífrasis
+ir a + inf., present progressive); other program languages (the engine/data
+split was designed to generalize); cross-student teacher dashboards (requires
+accounts — excluded by the privacy design; the printable report is the
+substitute).

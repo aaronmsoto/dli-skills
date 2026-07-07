@@ -24,12 +24,24 @@ zero-setup, and usable from any browser without registration or data collection.
 - **Three tenses** with kid-friendly framing: Presente ☀️ (*ahora*),
   Pretérito ⭐ (*ayer, una vez*), Imperfecto 🌙 (*antes, muchas veces*)
 - **Four activities per group × tense:**
-  - 📖 **Estudia** — full conjugation tables for the group
+  - 📖 **Estudia** — full conjugation tables for the group (tap any form to
+    hear it)
   - ✅ **Elige** — multiple choice with linguistically-informed distractors
     (including "naive regularizations" like \*teno for *tengo*)
   - ✏️ **Escribe** — typed production with on-screen accent keys and
     accent-tolerant retry ("¡Casi! Revisa la tilde")
   - 🧩 **Empareja** — match each person to its verb form
+- **⚔️ ¿Pretérito o imperfecto?** — a per-group challenge mode where a time
+  cue (*ayer, una vez / siempre, todos los días…*) signals which past tense
+  fits — the storytelling contrast, practiced head-to-head
+- **🔊 Audio** — Spanish text-to-speech via the browser's built-in Web Speech
+  API (no network, no data sent anywhere): correct answers and study-table
+  taps are spoken; one-tap mute; hidden automatically on devices without a
+  Spanish voice
+- **🔁 Repasa hoy** — a spaced-repetition queue on the home screen: activities
+  come back for review after 0/1/3/7 days depending on stars earned
+- **🖨️ Printables** — print-friendly conjugation tables and a progress report
+  (star grid per group with a name line) students can hand to a teacher
 - **Mastery tracking** — 0-3 stars per activity, best-score persistence in
   `localStorage`; no accounts, no server, no analytics
 - **Vosotros toggle** — off by default (US convention), one click to include
@@ -58,7 +70,7 @@ No build step — it's a static site with ES modules.
 
 ```bash
 npm start          # python3 -m http.server 8080 → http://localhost:8080
-npm test           # 35 conjugation-accuracy + invariant tests (Node ≥ 18)
+npm test           # 40 accuracy + feature-logic tests (Node ≥ 18)
 ```
 
 ## Project structure
@@ -69,9 +81,10 @@ about.html            Standards & privacy page
 css/styles.css        Kid-friendly theme, dark mode, a11y
 js/conjugator.js      Conjugation engine (regular paradigms + irregularity flags)
 js/verbs.js           The 100-verb dataset with irregularity flags
-js/game.js            Question sampling, distractor generation, match pairs
-js/storage.js         localStorage progress (versioned schema)
-js/app.js             Screens: home / set / study / play / results
+js/game.js            Question sampling, distractors, match pairs, contrast cues
+js/storage.js         localStorage progress + spaced-repetition scheduling
+js/audio.js           Web Speech TTS wrapper (Spanish voice pick + fallback)
+js/app.js             Screens: home / set / study / play / contrast / report
 tests/                Node test suite (hand-verified RAE forms)
 docs/SPEC.md          Product & technical specification
 docs/STANDARDS.md     Full standards-alignment document
@@ -91,9 +104,8 @@ hand-verified against RAE conjugation tables. Found an error? Please
 
 ## Roadmap ideas
 
-- Audio (TTS) for forms and prompts; listening mode (Interpretive-oral)
 - Sentence-context questions ("Ayer yo ___ a la escuela") and story-retell mode
-- Teacher dashboard view / printable progress
+- Listening comprehension mode (hear a form, pick or type what you heard)
 - Additional tenses (ir a + infinitive, present progressive) and languages
 
 ## License

@@ -47,6 +47,10 @@ Performance expectations are coded `7.1.<Level>.<Mode>.<n>`:
 | 🧩 Empareja (form ↔ person matching) | Interpretive mode, Novice: recognition of familiar written chunks with strong visual scaffolding |
 | ✏️ Escribe (typed production) | 7.1.NM.PRSNT.4 — "Copy/write words, phrases, or simple guided texts on familiar topics"; 7.1.NH.PRSNT.2 — "Create and present brief messages using familiar vocabulary orally or in writing" |
 | ⭐/🌙 Preterite & imperfect practice | Scaffolding toward 7.1.NH.PRSNT.4 — "Tell or retell stories… orally or in writing" — and, beyond Novice, 7.1.IH.IPERS.3 ("accuracy in the present tense and often across time frames") |
+| ⚔️ ¿Pretérito o imperfecto? (time-cue contrast) | The storytelling contrast itself — the core grammatical distinction behind 7.1.NH.PRSNT.4 story retelling — practiced with the conventional novice cue-word scaffold (una vez vs. muchas veces) |
+| 🔊 Audio (TTS on forms) | Interpretive-oral support: 7.1.NL.IPRET.1 / 7.1.NM.IPRET.1 include *spoken* words and phrases; audio pairs each written form with its sound, essential for K-2 pre-readers |
+| 🔁 Repasa hoy (spaced review) | Operationalizes "extensive exposure over time" — practiced material resurfaces at expanding intervals rather than being left behind |
+| 🖨️ Progress report (printable) | Student-mediated progress reporting to teachers/families without accounts or data collection |
 | 5-verbs-at-a-time groups, frequency-ordered | NJ design principle of "research-based, spiraling and recursive" curriculum; Novice definitions built on "memorized and practiced" material |
 | Star mastery tracking | Supports benchmarking progress along the named proficiency continuum (NM by end of grade 5) |
 

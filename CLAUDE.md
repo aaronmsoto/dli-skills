@@ -27,7 +27,7 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
 ## Commands
 
 ```bash
-npm test     # node --test tests/*.test.mjs — 35 accuracy/invariant tests
+npm test     # node --test tests/*.test.mjs — 40 accuracy/invariant/feature tests
 npm start    # python3 -m http.server 8080 (any static server works)
 ```
 
@@ -47,11 +47,19 @@ remote environment); check for console errors and screenshot each screen.
   a chunk, not a conjugated paradigm).
 - `js/game.js` — question sampling (every verb in a set appears ≥1× per round),
   multiple-choice distractors (naive regularization > same-person-other-tense >
-  same-tense-other-person), match pairs (unique forms only).
-- `js/storage.js` — localStorage wrapper; stars = 3 (100%), 2 (≥80%), 1 (≥60%).
+  same-tense-other-person), match pairs (unique forms only), and the
+  preterite/imperfect contrast generator (`TENSE_CUES` are the conventional
+  classroom time-cue triggers — a deliberate novice simplification).
+- `js/storage.js` — localStorage wrapper; stars = 3 (100%), 2 (≥80%), 1 (≥60%);
+  each result stores an `at` timestamp driving the spaced-repetition queue
+  (due after 0/1/3/7 days for 0/1/2/3 stars; entries without `at` never due).
+- `js/audio.js` — Web Speech TTS. Prefers a local es-MX/es-US voice; every
+  audio control hides when `ttsAvailable()` is false. `sound` setting mutes.
 - `js/app.js` — hash-routed screens (`#/set/3`, `#/study/3/present`,
-  `#/play/3/present/choice`). DOM built with a small `el()` helper; no innerHTML
-  for user-derived strings.
+  `#/play/3/present/choice`, `#/play/3/contrast`, `#/informe`). DOM built with
+  a small `el()` helper; no innerHTML for user-derived strings. The contrast
+  challenge records under key `<setId>.past.contrast` (STARS_PER_SET = 30).
+  Print styles live in styles.css (`@media print` + `.no-print`).
 - Persons are always indexed 0-5 (yo, tú, él/ella/Ud., nosotros, vosotros,
   ellos/Uds.); vosotros (index 4) is filtered at the UI layer per user setting,
   never removed from data.

@@ -1,14 +1,17 @@
 /**
  * Conjuga — UI shell. Hash-routed screens:
- *   #/                      home (set picker)
+ *   #/                      home (set picker + review queue)
  *   #/set/3                 set detail (tense + mode picker)
  *   #/study/3/present       study tables
  *   #/play/3/present/choice game round (choice | type | match)
+ *   #/play/3/contrast       ¿pretérito o imperfecto? challenge
+ *   #/informe               printable progress report
  */
 import { SETS } from "./verbs.js";
 import { conjugate, PERSONS, TENSES, TENSE_LABELS, normalizeAnswer, stripAccents } from "./conjugator.js";
-import { sampleTargets, buildChoices, buildMatchPairs, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
+import { sampleTargets, buildChoices, buildMatchPairs, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
 import * as store from "./storage.js";
+import { speak, ttsAvailable } from "./audio.js";
 
 const MODES = ["choice", "type", "match"];
 const MODE_META = {
@@ -22,7 +25,40 @@ const TENSE_META = {
   imperfect: { icon: "🌙", hint: "antes, muchas veces — ongoing past", example: "Antes hablaba cada día." },
 };
 const PRAISE = ["¡Muy bien!", "¡Excelente!", "¡Genial!", "¡Fantástico!", "¡Perfecto!", "¡Súper!"];
-const STARS_PER_SET = TENSES.length * MODES.length * 3;
+// 3 tenses × 3 modes + the past-tense contrast challenge, 3 stars each.
+const STARS_PER_SET = (TENSES.length * MODES.length + 1) * 3;
+const CONTRAST_KEY = { tense: "past", mode: "contrast" };
+
+// Short person words for speech (the display labels are too wordy to say).
+const SPEECH_PERSONS = ["yo", "tú", "él", "nosotros", "vosotros", "ellos"];
+
+/** Speak Spanish if audio is on and the device has a Spanish voice. */
+function say(text) {
+  if (ttsAvailable() && store.getSettings().sound) speak(text);
+}
+
+function sayForm(person, form) {
+  say(`${SPEECH_PERSONS[person]} ${form}`);
+}
+
+/** 🔊/🔇 toggle — hidden entirely on devices with no Spanish voice. */
+function soundToggle() {
+  if (!ttsAvailable()) return null;
+  const on = store.getSettings().sound;
+  return el("button", {
+    class: "sound-toggle",
+    "aria-label": on ? "Silenciar audio" : "Activar audio",
+    "aria-pressed": String(on),
+    title: on ? "Audio: encendido" : "Audio: apagado",
+    onclick: (e) => {
+      const next = !store.getSettings().sound;
+      store.setSetting("sound", next);
+      e.currentTarget.textContent = next ? "🔊" : "🔇";
+      e.currentTarget.setAttribute("aria-pressed", String(next));
+      if (next) say("Hola");
+    },
+  }, on ? "🔊" : "🔇");
+}
 
 const app = document.getElementById("app");
 const live = document.getElementById("live");
@@ -64,9 +100,20 @@ function parseRoute() {
   if (parts[0] === "set" && SETS[+parts[1] - 1]) return { screen: "set", setId: +parts[1] };
   if (parts[0] === "study" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]))
     return { screen: "study", setId: +parts[1], tense: parts[2] };
+  if (parts[0] === "play" && SETS[+parts[1] - 1] && parts[2] === "contrast")
+    return { screen: "contrast", setId: +parts[1] };
   if (parts[0] === "play" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]) && MODES.includes(parts[3]))
     return { screen: "play", setId: +parts[1], tense: parts[2], mode: parts[3] };
+  if (parts[0] === "informe") return { screen: "report" };
   return { screen: "home" };
+}
+
+/** Stars earned in a set including the contrast challenge (max STARS_PER_SET). */
+function earnedStars(setId) {
+  return (
+    store.setStars(setId, TENSES, MODES) +
+    (store.getBest(setId, CONTRAST_KEY.tense, CONTRAST_KEY.mode)?.stars ?? 0)
+  );
 }
 
 function go(hash) {
@@ -80,6 +127,8 @@ function render() {
   if (route.screen === "home") renderHome();
   else if (route.screen === "set") renderSet(route.setId);
   else if (route.screen === "study") renderStudy(route.setId, route.tense);
+  else if (route.screen === "contrast") renderContrast(route.setId);
+  else if (route.screen === "report") renderReport();
   else renderPlay(route.setId, route.tense, route.mode);
 }
 
@@ -87,19 +136,44 @@ window.addEventListener("hashchange", render);
 
 // ---------------------------------------------------------------- home
 
+function reviewLabel(item) {
+  if (item.mode === "contrast") return `Grupo ${item.setId} · ⚔️ ¿Pretérito o imperfecto?`;
+  return `Grupo ${item.setId} · ${TENSE_LABELS[item.tense].es} · ${MODE_META[item.mode].icon} ${MODE_META[item.mode].es}`;
+}
+
+function reviewHref(item) {
+  if (item.mode === "contrast") return `#/play/${item.setId}/contrast`;
+  return `#/play/${item.setId}/${item.tense}/${item.mode}`;
+}
+
+function renderReviewQueue() {
+  const due = store.dueForReview();
+  if (!due.length) return null;
+  return el("section", { class: "review-queue", "aria-label": "Repaso de hoy" },
+    el("h2", {}, "🔁 Repasa hoy ", el("span", { class: "h-en" }, "(today's review)")),
+    el("div", { class: "review-list" },
+      due.map((item) =>
+        el("a", { class: "review-item", href: reviewHref(item) },
+          el("span", {}, reviewLabel(item)),
+          starRow(item.stars)))),
+  );
+}
+
 function renderHome() {
-  const totalEarned = SETS.reduce((sum, s) => sum + store.setStars(s.id, TENSES, MODES), 0);
+  const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
 
   app.append(
     el("header", { class: "hero" },
+      soundToggle(),
       el("h1", {}, "🦉 Conjuga"),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
       el("p", { class: "tagline-en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
       el("p", { class: "total-stars" }, `⭐ ${totalEarned} / ${SETS.length * STARS_PER_SET} estrellas`),
     ),
+    renderReviewQueue(),
     el("section", { class: "set-grid", "aria-label": "Grupos de verbos" },
       SETS.map((s) => {
-        const earned = store.setStars(s.id, TENSES, MODES);
+        const earned = earnedStars(s.id);
         return el("a", { class: "set-card", href: `#/set/${s.id}` },
           el("span", { class: "set-num" }, `Grupo ${s.id}`),
           el("span", { class: "set-verbs" }, s.verbs.map((v) => v.inf).join(" · ")),
@@ -131,6 +205,7 @@ function renderFooter() {
           }
         },
       }, "Borrar progreso"),
+      el("a", { class: "linklike", href: "#/informe" }, "📄 Informe de progreso"),
       el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
     ),
     el("p", { class: "footer-note" },
@@ -144,8 +219,10 @@ function renderSet(setId) {
   const set = SETS[setId - 1];
   const tense = sessionStorage.getItem("conjuga.tense") || "present";
 
+  const contrastBest = store.getBest(set.id, CONTRAST_KEY.tense, CONTRAST_KEY.mode);
+
   app.append(
-    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos")),
+    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), soundToggle()),
     el("h1", {}, `Grupo ${set.id}`),
     el("ul", { class: "verb-chips" },
       set.verbs.map((v) => el("li", { class: "chip" },
@@ -182,6 +259,16 @@ function renderSet(setId) {
         );
       }),
     ),
+
+    el("h2", {}, "3 · Reto ", el("span", { class: "h-en" }, "(challenge)")),
+    el("div", { class: "mode-row contrast-row" },
+      el("a", { class: "mode-card contrast-card", href: `#/play/${set.id}/contrast` },
+        el("span", { class: "mode-icon" }, "⚔️"),
+        el("strong", {}, "¿Pretérito o imperfecto?"),
+        el("span", { class: "mode-en" }, "Read the time clue, pick the past tense"),
+        starRow(contrastBest?.stars ?? 0),
+      ),
+    ),
   );
 }
 
@@ -192,11 +279,16 @@ function renderStudy(setId, tense) {
   const { vosotros } = store.getSettings();
   const persons = [0, 1, 2, 3, 4, 5].filter((p) => vosotros || p !== 4);
 
+  const speakable = ttsAvailable();
+
   app.append(
-    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`)),
+    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), soundToggle()),
     el("h1", {}, `📖 Estudia — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "study-hint" }, `${TENSE_META[tense].icon} ${TENSE_META[tense].hint} — ej.: `,
       el("em", {}, TENSE_META[tense].example)),
+    speakable
+      ? el("p", { class: "study-hint tap-hint" }, "👆🔊 Toca una forma para escucharla. Tap a form to hear it.")
+      : null,
     el("div", { class: "table-scroll" },
       el("table", { class: "conj-table" },
         el("thead", {},
@@ -208,11 +300,17 @@ function renderStudy(setId, tense) {
           persons.map((p) =>
             el("tr", {},
               el("th", { scope: "row" }, personDisplay(p)),
-              set.verbs.map((v) => el("td", {}, conjugate(v, tense)[p]))))),
+              set.verbs.map((v) => {
+                const form = conjugate(v, tense)[p];
+                if (!speakable) return el("td", {}, form);
+                return el("td", {},
+                  el("button", { class: "cell-speak", onclick: () => sayForm(p, form) }, form));
+              })))),
       )),
     el("div", { class: "study-actions" },
       MODES.map((m) => el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/${m}` },
-        `${MODE_META[m].icon} ${MODE_META[m].es}`))),
+        `${MODE_META[m].icon} ${MODE_META[m].es}`)),
+      el("button", { class: "btn print-btn", onclick: () => window.print() }, "🖨️ Imprimir")),
   );
 }
 
@@ -232,7 +330,8 @@ function renderPlay(setId, tense, mode) {
   app.append(
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
-      el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia")),
+      el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
+      soundToggle()),
     header, stage,
   );
 
@@ -282,6 +381,7 @@ function renderPlay(setId, tense, mode) {
         feedback.className = "feedback good";
         feedback.textContent = `${msg} ${personDisplay(t.person)} ${t.answer}`;
         announce(msg);
+        sayForm(t.person, t.answer);
         setTimeout(next, 950);
       } else {
         state.streak = 0;
@@ -293,6 +393,7 @@ function renderPlay(setId, tense, mode) {
           el("div", {}, el("button", { class: "btn primary", onclick: next }, "Siguiente →")),
         );
         announce(`La respuesta es ${t.answer}`);
+        sayForm(t.person, t.answer);
       }
     };
 
@@ -379,7 +480,8 @@ function renderMatch(set, tense, vosotros) {
   app.append(
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${set.id}` }, "← Salir"),
-      el("a", { href: `#/study/${set.id}/${tense}` }, "📖 Estudia")),
+      el("a", { href: `#/study/${set.id}/${tense}` }, "📖 Estudia"),
+      soundToggle()),
     el("h1", {}, `🧩 Empareja — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
     board, feedback,
@@ -425,6 +527,7 @@ function renderMatch(set, tense, vosotros) {
       state.matched++;
       feedback.className = "feedback good";
       feedback.textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+      say(card.side === "R" ? card.label : a.card.label);
       if (state.matched === pairs.length) {
         setTimeout(() => showResults(set, tense, "match", state.firstTryHits, pairs.length, []), 700);
       }
@@ -440,6 +543,159 @@ function renderMatch(set, tense, vosotros) {
   }
 }
 
+// ---------------------------------------------------------------- contrast
+
+function renderContrast(setId) {
+  const set = SETS[setId - 1];
+  const { vosotros } = store.getSettings();
+  const questions = buildContrastQuestions(set.verbs, QUESTIONS_PER_ROUND, vosotros);
+  const state = { i: 0, score: 0, streak: 0, misses: [] };
+
+  const header = el("div", { class: "play-header" });
+  const stage = el("div", { class: "stage" });
+  app.append(
+    el("nav", { class: "crumbs" },
+      el("a", { href: `#/set/${setId}` }, "← Salir"),
+      el("a", { href: `#/study/${setId}/preterite` }, "📖 Pretérito"),
+      el("a", { href: `#/study/${setId}/imperfect` }, "📖 Imperfecto"),
+      soundToggle()),
+    el("h1", { class: "contrast-title" }, "⚔️ ¿Pretérito o imperfecto?"),
+    el("p", { class: "match-help" },
+      "La palabra del tiempo es la pista: ", el("strong", {}, "una vez ⭐"), " o ",
+      el("strong", {}, "muchas veces 🌙"), ". The time word is your clue."),
+    header, stage,
+  );
+
+  function renderHeader() {
+    header.replaceChildren(
+      el("div", { class: "progress-wrap" },
+        el("div", { class: "progress-bar" },
+          el("div", { class: "progress-fill", style: `width:${(state.i / questions.length) * 100}%` })),
+        el("span", { class: "progress-text" }, `${Math.min(state.i + 1, questions.length)} / ${questions.length}`)),
+      el("span", { class: "streak", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
+    );
+  }
+
+  function next() {
+    state.i++;
+    if (state.i >= questions.length)
+      return showResults(set, CONTRAST_KEY.tense, CONTRAST_KEY.mode, state.score, questions.length, state.misses);
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    renderHeader();
+    const q = questions[state.i];
+    const feedback = el("div", { class: "feedback", role: "status" });
+    const grid = el("div", { class: "choices contrast-choices" },
+      q.options.map((opt, idx) =>
+        el("button", {
+          class: "choice",
+          onclick: (e) => {
+            for (const b of grid.querySelectorAll("button")) b.disabled = true;
+            const correct = opt === q.answer;
+            e.currentTarget.classList.add(correct ? "correct" : "wrong");
+            if (correct) {
+              state.score++;
+              state.streak++;
+              const msg = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+              feedback.className = "feedback good";
+              feedback.textContent = `${msg} ${q.cue} → ${TENSE_LABELS[q.tense].es} ${TENSE_META[q.tense].icon}`;
+              announce(msg);
+              sayForm(q.person, q.answer);
+              setTimeout(next, 1100);
+            } else {
+              state.streak = 0;
+              state.misses.push({ person: q.person, answer: q.answer, verb: q.verb, tense: q.tense });
+              for (const b of grid.querySelectorAll("button")) {
+                if (b.textContent.endsWith(q.answer)) b.classList.add("correct");
+              }
+              feedback.className = "feedback bad";
+              feedback.replaceChildren(
+                `"${q.cue}" pide el ${TENSE_LABELS[q.tense].es.toLowerCase()} ${TENSE_META[q.tense].icon}: `,
+                el("strong", {}, `${personDisplay(q.person)} ${q.answer}`),
+                el("div", {}, el("button", { class: "btn primary", onclick: next }, "Siguiente →")),
+              );
+              announce(`La respuesta es ${q.answer}`);
+              sayForm(q.person, q.answer);
+            }
+          },
+        }, el("kbd", {}, String(idx + 1)), ` ${opt}`)));
+
+    stage.replaceChildren(
+      el("div", { class: "prompt" },
+        el("span", { class: "prompt-tense cue-chip" }, `🕐 ${q.cue}`),
+        el("div", { class: "prompt-main" },
+          el("span", { class: "prompt-person" }, personDisplay(q.person)),
+          el("span", { class: "prompt-blank" }, "____"),
+        ),
+        el("span", { class: "prompt-verb" }, `${q.verb.inf} — ${q.verb.en}`),
+      ),
+      grid, feedback,
+    );
+
+    const onKey = (e) => {
+      const n = +e.key;
+      if (n >= 1 && n <= q.options.length) {
+        const btn = grid.querySelectorAll("button")[n - 1];
+        if (btn && !btn.disabled) btn.click();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    const obs = new MutationObserver(() => {
+      if (!grid.isConnected) { document.removeEventListener("keydown", onKey); obs.disconnect(); }
+    });
+    obs.observe(stage, { childList: true });
+  }
+
+  renderQuestion();
+}
+
+// ---------------------------------------------------------------- report
+
+function renderReport() {
+  const today = new Date().toLocaleDateString("es", { year: "numeric", month: "long", day: "numeric" });
+  const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
+
+  app.append(
+    el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver")),
+    el("div", { class: "report" },
+      el("h1", {}, "📄 Informe de progreso — Conjuga"),
+      el("p", { class: "report-fields" },
+        "Nombre: ", el("span", { class: "fill-line" }, ""),
+        "  Fecha: ", el("span", { class: "fill-line short" }, today)),
+      el("p", { class: "report-total" },
+        `⭐ Total: ${totalEarned} / ${SETS.length * STARS_PER_SET} estrellas`),
+      el("div", { class: "table-scroll" },
+        el("table", { class: "conj-table report-table" },
+          el("thead", {},
+            el("tr", {},
+              el("th", { scope: "col" }, "Grupo"),
+              TENSES.map((t) => el("th", { scope: "col" }, `${TENSE_META[t].icon} ${TENSE_LABELS[t].es}`)),
+              el("th", { scope: "col" }, "⚔️ Reto"),
+              el("th", { scope: "col" }, "Total"))),
+          el("tbody", {},
+            SETS.map((s) =>
+              el("tr", {},
+                el("th", { scope: "row" },
+                  `Grupo ${s.id}`,
+                  el("span", { class: "report-verbs" }, s.verbs.map((v) => v.inf).join(", "))),
+                TENSES.map((t) => {
+                  const earned = MODES.reduce((sum, m) => sum + (store.getBest(s.id, t, m)?.stars ?? 0), 0);
+                  return el("td", {}, `${earned}/9`);
+                }),
+                el("td", {}, `${store.getBest(s.id, CONTRAST_KEY.tense, CONTRAST_KEY.mode)?.stars ?? 0}/3`),
+                el("td", { class: "report-row-total" }, `${earnedStars(s.id)}/${STARS_PER_SET}`)))))),
+      el("p", { class: "report-note" },
+        "Estrellas por actividad: ★ ≥60% · ★★ ≥80% · ★★★ 100%. ",
+        "El progreso vive solo en este dispositivo (sin cuentas). ",
+        "Stars per activity; progress is stored only on this device."),
+      el("div", { class: "study-actions no-print" },
+        el("button", { class: "btn primary", onclick: () => window.print() }, "🖨️ Imprimir")),
+    ),
+  );
+}
+
 // ---------------------------------------------------------------- results
 
 function showResults(set, tense, mode, score, total, misses) {
@@ -450,7 +706,9 @@ function showResults(set, tense, mode, score, total, misses) {
     stars === 1 ? "¡Buen trabajo! Sigue practicando." :
     "Estudia la tabla y vuelve a intentarlo. ¡Tú puedes!";
 
-  const nextMode = MODES[MODES.indexOf(mode) + 1];
+  const isContrast = mode === CONTRAST_KEY.mode;
+  const retryHref = isContrast ? `#/play/${set.id}/contrast` : `#/play/${set.id}/${tense}/${mode}`;
+  const nextMode = isContrast ? null : MODES[MODES.indexOf(mode) + 1];
   app.replaceChildren(
     el("div", { class: "results" },
       el("h1", {}, "Resultados"),
@@ -464,7 +722,7 @@ function showResults(set, tense, mode, score, total, misses) {
             el("strong", {}, `${personDisplay(m.person)} ${m.answer}`),
             ` — ${m.verb.inf} (${TENSE_LABELS[m.tense].es})`)))) : null,
       el("div", { class: "result-actions" },
-        el("a", { class: "btn primary", href: `#/play/${set.id}/${tense}/${mode}`, onclick: () => setTimeout(render, 0) },
+        el("a", { class: "btn primary", href: retryHref, onclick: () => setTimeout(render, 0) },
           "🔁 Otra vez"),
         nextMode
           ? el("a", { class: "btn", href: `#/play/${set.id}/${tense}/${nextMode}` },
