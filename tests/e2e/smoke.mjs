@@ -99,6 +99,13 @@ for (const [tense, expected] of [["present", "soy"], ["preterite", "fui"], ["imp
 }
 if ((await page.locator(".conj-table tbody tr").count()) !== 5) fail("study: expected 5 person rows (vosotros off)");
 if (await page.locator(".lola-wrap").count()) fail("study: no mascot allowed (scarcity of stimulation)");
+// Estudia links every available activity (M7 owner add-on)
+// (we're on the imperfect page after the loop above)
+if (!(await page.locator(".study-actions .contrast-link").count())) fail("study: past tense must link the contrast challenge");
+if (await page.locator(".study-actions .listen-link").count()) fail("study: no Escucha link without a voice");
+await page.goto(`${BASE}/#/study/1/present`);
+await page.waitForSelector(".conj-table");
+if (await page.locator(".study-actions .contrast-link").count()) fail("study: present tense must not link the past-tense contrast");
 await page.screenshot({ path: `${SHOTS}/study.png` });
 ok("study tables verified: soy / fui / era");
 
@@ -354,6 +361,9 @@ ok(`tts speaks person + form (study: "${spoken[0].text}", match: "${matchSpoken[
 await voiced.goto(`${BASE}/#/set/1`);
 await voiced.waitForSelector(".listen-card");
 if ((await voiced.locator(".mode-card").count()) !== 6) fail("escucha: voiced set screen should show 6 activity cards");
+await voiced.goto(`${BASE}/#/study/1/present`);
+await voiced.waitForSelector(".conj-table");
+if (!(await voiced.locator(".study-actions .listen-link").count())) fail("study: voiced device must link Escucha");
 await voiced.goto(`${BASE}/#/play/1/present/listen`);
 await voiced.waitForSelector(".listen-controls");
 if (await voiced.locator(".hint-btn").count()) fail("escucha: hint button must not exist here");

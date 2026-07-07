@@ -118,7 +118,7 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
         timings still pass); localStorage schema untouched; print styles
         unaffected (mascot hidden in print).
 
-- [ ] **M7 — 🔍 Pistas (hint mode) (CURRENT)** · from direct K-5 user
+- [x] **M7 — 🔍 Pistas (hint mode)** · complete on dev 2026-07-07 · from direct K-5 user
   feedback (owner's kids, 2026-07-07): on quiz pages they want a hint icon
   that reveals the Estudia chart column for the verb being conjugated.
   Acceptance criteria:
@@ -146,7 +146,7 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
         Lola enters/leaves `is-hint`; panel resets on advance; contrast
         shows two columns; footer toggle hides hints; mobile 360px layout
         clean; full regression green.
-  - [ ] **Estudia links to every current activity** (owner add-on,
+  - [x] **Estudia links to every current activity** (owner add-on,
         2026-07-07): the study screen's action buttons must include ALL
         quiz options for that group — the three games, 🎧 Escucha when a
         voice exists, and the ⚔️ Contrast challenge when the tense is a
