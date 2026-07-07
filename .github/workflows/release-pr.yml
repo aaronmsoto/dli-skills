@@ -1,10 +1,11 @@
-# Keeps a rolling "Release: dev → main" pull request open whenever dev is
-# ahead of main. Merging that PR (a human decision) deploys to GitHub Pages
-# via deploy.yml (test-gated).
+# Maintains the rolling "Release: dev → main" pull request. On every push to
+# dev it (re)generates a manifest of what the release actually contains —
+# iteration list, diffstat, journal entries — and writes it into the PR body,
+# creating the PR if none is open. Merging that PR (a human decision, always
+# with a merge commit) deploys to GitHub Pages via deploy.yml (test-gated).
 #
-# Note: PRs created with GITHUB_TOKEN don't trigger other workflows, so the
-# release PR itself may show no checks — dev is already CI-gated on every
-# push, and the deploy on merge re-runs the test suite regardless.
+# Requires the repo setting "Allow GitHub Actions to create and approve pull
+# requests" (Settings → Actions → General → Workflow permissions).
 name: Release PR
 
 on:
@@ -19,21 +20,60 @@ jobs:
   release-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: Open the rolling dev → main release PR if none exists
+      - name: Create or refresh the rolling dev → main release PR
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          existing=$(gh pr list --repo "$GITHUB_REPOSITORY" --base main --head dev --state open --json number --jq '.[0].number' || true)
-          if [ -n "$existing" ]; then
-            echo "Release PR #$existing already open; the push updated it automatically."
-            exit 0
-          fi
-          ahead=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...dev" --jq '.ahead_by')
+          repo="$GITHUB_REPOSITORY"
+
+          cmp=$(gh api "repos/$repo/compare/main...dev")
+          ahead=$(jq -r '.ahead_by' <<<"$cmp")
+          existing=$(gh pr list --repo "$repo" --base main --head dev --state open \
+            --json number --jq '.[0].number' || true)
+
           if [ "$ahead" = "0" ]; then
             echo "dev is not ahead of main; nothing to release."
             exit 0
           fi
-          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head dev \
-            --title "Release: dev → main" \
-            --body "$(printf 'Rolling release PR, auto-maintained on every push to `dev`.\n\nMerging deploys to GitHub Pages (test-gated by deploy.yml). Review the accumulated diff — individual iterations were each CI-gated (unit + e2e) before auto-merging into `dev`; per-iteration context is in `journal/`.\n\nClose this PR to skip a release; it will be reopened on the next push to dev.')"
+
+          commits=$(jq -r '.commits[] | "- " + (.commit.message | split("\n")[0])' <<<"$cmp")
+          files=$(jq -r '.files | length' <<<"$cmp")
+          adds=$(jq -r '[.files[].additions] | add // 0' <<<"$cmp")
+          dels=$(jq -r '[.files[].deletions] | add // 0' <<<"$cmp")
+          head_sha=$(jq -r '.commits[-1].sha[0:7]' <<<"$cmp")
+          journals=$(jq -r '.files[]
+            | select(.filename | startswith("journal/"))
+            | select(.filename != "journal/README.md")
+            | "- [" + .filename + "](https://github.com/'"$GITHUB_REPOSITORY"'/blob/dev/" + .filename + ")"' <<<"$cmp")
+          [ -n "$journals" ] || journals="_(no journal entries in this release)_"
+
+          body=$(cat <<BODY
+          Rolling release PR, auto-maintained on every push to \`dev\`.
+          Merging deploys to GitHub Pages (test-gated by deploy.yml).
+          **Merge with a merge commit — never squash** (docs/LOOP.md).
+
+          ## What's in this release ($ahead commit(s) ahead of main)
+          $commits
+
+          **Diff:** $files file(s) changed, +$adds / −$dels
+
+          ## Iteration journals
+          $journals
+
+          Every iteration was CI-gated (unit + e2e) before auto-merging into
+          \`dev\`. Close this PR to skip a release; it reopens on the next
+          push to dev.
+
+          _Last refreshed $(date -u +"%Y-%m-%d %H:%M UTC") at \`$head_sha\`._
+          BODY
+          )
+
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --repo "$repo" --body "$body"
+            echo "Refreshed manifest on release PR #$existing."
+          else
+            gh pr create --repo "$repo" --base main --head dev \
+              --title "Release: dev → main" --body "$body"
+            echo "Opened a new release PR with manifest."
+          fi
