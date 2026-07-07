@@ -1,0 +1,12 @@
+{
+  "name": "dli-skills-builder",
+  "version": "0.1.0",
+  "description": "Conjuga — Spanish verb conjugation skills builder for K-5 Dual Language Immersion programs",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "start": "python3 -m http.server 8080"
+  },
+  "license": "MIT"
+}
