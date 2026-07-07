@@ -126,6 +126,18 @@ results, review queue, and the report — never counted in star totals, so
 voiceless devices are not penalized. Typed variant deferred (owner
 decision) pending SME input.
 
+### 4.3h Hint mode (🔍 Pistas, M7 — from direct K-5 user feedback)
+A 🔍 Pista button on quiz prompt cards (Elige, Escribe, ⚔️ Contrast) opens
+a mini Estudia panel: the current verb's column (persons → forms),
+engine-generated, vosotros-filtered. Contrast shows BOTH past columns so
+choosing the tense remains the learner's job. The panel resets each
+question; Lola holds a magnifying glass to her eye (is-hint pose) while it
+is open. No scoring penalty (NBPTS Std IV scaffolding — the learner still
+maps person → row); a footer checkbox "🔍 Pistas / Hints" (default CHECKED)
+turns the feature off everywhere. Deliberately absent from Empareja (the
+board is already visible) and 🎧 Escucha (a visible column would undermine
+the listening task).
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +

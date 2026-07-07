@@ -19,7 +19,7 @@ function load() {
   } catch {
     /* corrupted or unavailable storage — start fresh */
   }
-  return { settings: { vosotros: false, sound: true }, best: {} };
+  return { settings: { vosotros: false, sound: true, hints: true }, best: {} };
 }
 
 let state = load();
@@ -33,7 +33,7 @@ function save() {
 }
 
 export function getSettings() {
-  return { vosotros: false, sound: true, ...state.settings };
+  return { vosotros: false, sound: true, hints: true, ...state.settings };
 }
 
 export function setSetting(name, value) {

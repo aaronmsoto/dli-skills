@@ -10,7 +10,7 @@
  * as feedback, informative-never-punitive, silence).
  */
 
-const STATES = ["is-idle", "is-hop", "is-curious", "is-turn", "is-spin", "is-celebrate", "is-watching"];
+const STATES = ["is-idle", "is-hop", "is-curious", "is-turn", "is-spin", "is-celebrate", "is-watching", "is-hint"];
 
 // One-shot states return to idle on their own; the rest hold until changed.
 const ONE_SHOT_MS = { "is-hop": 520, "is-turn": 620 };
@@ -48,6 +48,11 @@ function svgMarkup(size) {
       </g>
     </g>
     <path d="M60 56 L54 66 Q60 71 66 66 Z" fill="var(--lola-beak)"/>
+    <g class="lola-lens">
+      <line x1="85" y1="59" x2="99" y2="77" stroke="var(--lola-eye)" stroke-width="4.5" stroke-linecap="round"/>
+      <circle cx="74" cy="48" r="11.5" fill="#9ad2f2" opacity="0.22"/>
+      <circle cx="74" cy="48" r="11.5" fill="none" stroke="var(--lola-eye)" stroke-width="3"/>
+    </g>
   </g>
   <g class="lola-sparks">
     <path d="M22 20 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5 Z" fill="var(--star)"/>
