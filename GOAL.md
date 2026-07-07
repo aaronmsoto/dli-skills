@@ -30,7 +30,8 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 - [x] **M1 — Audio, contrast, review, printables (v0.2)** · shipped 2026-07-07
   Web Speech TTS + ⚔️ ¿Pretérito o imperfecto? + 🔁 Repasa hoy + 🖨️ informe.
 
-- [ ] **M2 — Sentence-context practice (CURRENT)**
+- [ ] **M2 — Sentence-context practice (ON HOLD — awaiting SME input on the
+  sentence bank; loops must NOT work on this until the hold is lifted here)**
   Replace bare-paradigm prompts with real, kid-appropriate sentences.
   Acceptance criteria:
   - [ ] `js/sentences.js`: hand-written cloze sentences for **groups 1-4**
@@ -62,11 +63,51 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
   Accessibility audit (keyboard-only full playthrough, screen-reader labels,
   contrast check), performance budget check (<100 KB), copy review by a
   bilingual educator, printable study-sheet layout tune-up.
+- [x] **M6 — Mascot epic: Lola la Lechuza (complete on dev 2026-07-07; ships with the next release merge)**
+  Turn the placeholder 🦉 into a real character woven through the
+  experience, applying the JiJi (ST Math) design principles documented in
+  docs/MASCOT.md — character-as-feedback, forward-motion-as-progress,
+  informative-never-punitive failure, silence, neutrality, "helping the
+  character" framing — under our constraints: static/no-deps (inline SVG +
+  CSS only, ≤15 KB), mobile-first (360px-first, never covering controls),
+  a11y (decorative `aria-hidden`, full `prefers-reduced-motion` fallback,
+  dark mode), and zero impact on pedagogy or TTS (the owl is silent; speech
+  stays reserved for Spanish forms).
+  Acceptance criteria, in order:
+  - [x] **R (research):** extend docs/MASCOT.md with 2-3 more comparable
+        mascots (e.g., Duolingo's Duo — including what to AVOID: nagging,
+        streak guilt), and a short motion/a11y note for K-5 attention.
+        No product code in this iteration.
+  - [x] **D (design):** design brief in docs/MASCOT.md — name is DECIDED
+        by the owner (2026-07-07): **Lola la Lechuza**. SVG art direction
+        with pose sketches (idle, correct-hop, curious-miss, celebrate
+        with head spin — owl-realistic ~270° tilt-turns for small moments,
+        one playful full spin reserved for 3-star celebrations — and
+        sleeping), per-screen placement map, animation timing spec
+        (~600ms, subtle), dark-mode palette. Owner has waived the design
+        gate (2026-07-07): the brief auto-merges like any iteration and
+        implementation proceeds immediately after.
+  - [x] **I1 (implementation):** mascot component (inline SVG + CSS states,
+        no JS animation libs) on home + results screens; helping-frame copy
+        ("Ayuda a <name>…"); reduced-motion + dark-mode verified.
+  - [x] **I2 (implementation):** in-game integration — owl travels the
+        round's progress path; reacts to correct (hop forward) and
+        incorrect (curious tilt, never negative); 3-star celebration.
+  - [x] **V (validation):** e2e coverage — mascot states assert on
+        correct/incorrect/completion; reduced-motion emulation shows static
+        poses; mobile (360×640) and dark-mode screenshots; payload check
+        stays < 100 KB total.
+  - [x] **RT (regression):** full unit + e2e suites green with zero
+        weakened assertions; answer-flow timing unchanged (existing e2e
+        timings still pass); localStorage schema untouched; print styles
+        unaffected (mascot hidden in print).
 
 ## Non-goals (do not build)
 
 Accounts, servers, dashboards, analytics, other languages (until M5 is done
-and a human re-scopes), gamification beyond stars/streaks, external services.
+and a human re-scopes), external services, and economy-style gamification
+(coins, shops, loot, competitive leaderboards). The mascot companion (M6) is
+explicitly IN scope; stars/streaks remain the only scorekeeping.
 
 ## Definition of done (any milestone item)
 

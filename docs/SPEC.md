@@ -101,6 +101,17 @@ and footer hidden; bordered black-and-white tables). `#/informe` is a
 printable progress report: name/date line, total stars, and a 20-row grid
 (stars per tense ×9, reto ×3, total ×30 per group).
 
+### 4.3f Mascot — Lola la Lechuza (M6)
+A silent, gender-neutral barn-owl companion implementing the JiJi (ST Math)
+principles (docs/MASCOT.md is the binding spec): character-as-feedback
+(hop on correct, curious head-tilt on miss — never punitive), forward
+motion as progress (she glides along the round's progress bar toward a
+nest; "¡Ayuda a Lola a llegar a su nido!"), signature ~270° head turns and
+a single 360° head-spin reserved for 3-star results, watching pose while
+the learner types. Inline SVG + CSS only, aria-hidden, dark-mode palette
+tokens, full prefers-reduced-motion static fallback, hidden in print,
+budget-tested (tests/payload.test.mjs).
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +
