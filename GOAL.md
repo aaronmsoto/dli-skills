@@ -122,30 +122,35 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
   feedback (owner's kids, 2026-07-07): on quiz pages they want a hint icon
   that reveals the Estudia chart column for the verb being conjugated.
   Acceptance criteria:
-  - [ ] A 🔍 hint button on the prompt card in **Elige, Escribe, and the
+  - [x] A 🔍 hint button on the prompt card in **Elige, Escribe, and the
         ⚔️ Contrast challenge**. Tapping it opens a mini study panel: the
         current verb's column (persons → forms) for the current tense,
         matching the Estudia table exactly (engine-generated, vosotros
         filtered per setting). Contrast shows BOTH past-tense columns so
         the tense decision remains the learner's task. The panel resets
         (closes) when the question advances.
-  - [ ] **Not** in Empareja (whole board already visible) or 🎧 Escucha
+  - [x] **Not** in Empareja (whole board already visible) or 🎧 Escucha
         (a visible column would undermine the listening task) — record
         this scoping in SPEC.
-  - [ ] **No scoring penalty for using hints** (non-punitive ethos;
+  - [x] **No scoring penalty for using hints** (non-punitive ethos;
         NBPTS Std IV scaffolding — the learner still maps the person to
         the row). Teachers/parents who disagree can turn hints off.
-  - [ ] **Lola pose:** new `is-hint` state — Lola holds a magnifying glass
+  - [x] **Lola pose:** new `is-hint` state — Lola holds a magnifying glass
         to her eye while the hint panel is open (SVG lens group added to
         js/mascot.js per docs/MASCOT.md; static under reduced motion;
         budget test still green). Pose ends when the panel closes.
-  - [ ] **Footer checkbox "🔍 Pistas / Hints", default CHECKED**, stored in
+  - [x] **Footer checkbox "🔍 Pistas / Hints", default CHECKED**, stored in
         settings (backward-compatible default). Unchecked → hint buttons
         render nowhere.
-  - [ ] E2e: hint visible by default and shows the engine-correct column;
+  - [x] E2e: hint visible by default and shows the engine-correct column;
         Lola enters/leaves `is-hint`; panel resets on advance; contrast
         shows two columns; footer toggle hides hints; mobile 360px layout
         clean; full regression green.
+  - [ ] **Estudia links to every current activity** (owner add-on,
+        2026-07-07): the study screen's action buttons must include ALL
+        quiz options for that group — the three games, 🎧 Escucha when a
+        voice exists, and the ⚔️ Contrast challenge when the tense is a
+        past tense — with e2e coverage.
 
 ## Non-goals (do not build)
 

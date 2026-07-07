@@ -214,9 +214,11 @@ if (!(await page.locator(".match-board.no-hover").count())) fail("match: fresh b
     const verb = SETS[0].verbs.find((v) => v.inf === inf);
     return { left: l.textContent, right: conjugate(verb, "present")[PERSONS.indexOf(personLabel)] };
   });
-  await page.locator(".match-col.left .match-card", { hasText: first.left }).first().click();
-  await page.locator(".match-col.right .match-card", { hasText: first.right }).first().click();
-  await page.waitForSelector(".match-title .lola.is-turn", { timeout: 800 });
+  // exact-text matching: hasText is substring-based and "es" ⊂ "eres" etc.
+  const exact = (t) => new RegExp(`^${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+  await page.locator(".match-col.left .match-card").filter({ hasText: exact(first.left) }).first().click();
+  await page.locator(".match-col.right .match-card").filter({ hasText: exact(first.right) }).first().click();
+  await page.waitForSelector(".match-title .lola.is-turn", { timeout: 1200 });
   ok("match: Lola turns her head on a matched pair");
 }
 const solved = await page.evaluate(async () => {
@@ -354,6 +356,7 @@ await voiced.waitForSelector(".listen-card");
 if ((await voiced.locator(".mode-card").count()) !== 6) fail("escucha: voiced set screen should show 6 activity cards");
 await voiced.goto(`${BASE}/#/play/1/present/listen`);
 await voiced.waitForSelector(".listen-controls");
+if (await voiced.locator(".hint-btn").count()) fail("escucha: hint button must not exist here");
 // the form is heard, never shown: no person, no blank in the prompt
 if (await voiced.locator(".prompt .prompt-person").count()) fail("escucha: prompt must not show the person");
 if (await voiced.locator(".prompt .prompt-main").count()) fail("escucha: prompt must not show the form");
@@ -451,6 +454,58 @@ const anim = await rmPage.evaluate(() => getComputedStyle(document.querySelector
 if (anim !== "none") fail(`reduced motion: idle animation should be none, got "${anim}"`);
 await rmPage.close();
 ok("reduced motion: Lola idle is static");
+
+// ---------- 🔍 M7 hint mode (Pistas) ----------
+await page.goto(`${BASE}/#/play/1/present/choice`);
+await page.reload();
+await page.waitForSelector(".choice");
+await page.waitForSelector(".hint-btn"); // default ON
+{
+  await page.locator(".hint-btn").click();
+  await page.waitForSelector(".hint-panel:not([hidden])");
+  if (!(await page.locator(".play-lola .lola.is-hint").count())) fail("hint: Lola should raise her magnifying glass");
+  // the column must match the engine exactly for the verb in play
+  const colOk = await page.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const inf = document.querySelector(".prompt-verb").textContent.split(" — ")[0];
+    const verb = SETS[0].verbs.find((v) => v.inf === inf);
+    const want = [0, 1, 2, 3, 5].map((p) => conjugate(verb, "present")[p]);
+    const got = [...document.querySelectorAll(".hint-table tbody td")].map((td) => td.textContent);
+    return JSON.stringify(want) === JSON.stringify(got) || `want ${want} got ${got}`;
+  });
+  if (colOk !== true) fail(`hint: column mismatch — ${colOk}`);
+  // second tap closes it and Lola relaxes
+  await page.locator(".hint-btn").click();
+  if (await page.locator(".hint-panel:not([hidden])").count()) fail("hint: second tap should close the panel");
+  if (await page.locator(".play-lola .lola.is-hint").count()) fail("hint: Lola should lower the lens on close");
+  // open again, answer, and the next question must start hint-closed
+  await page.locator(".hint-btn").click();
+  await page.locator(".choice").first().click();
+  try { await page.locator(".feedback.bad button").click({ timeout: 400 }); } catch {}
+  await page.waitForTimeout(1100);
+  if (await page.locator(".hint-panel:not([hidden])").count()) fail("hint: panel must reset on question advance");
+  ok("hint: 🔍 shows the engine-correct column, Lola investigates, panel resets");
+}
+// contrast: hint shows BOTH past columns
+await page.goto(`${BASE}/#/play/1/contrast`);
+await page.waitForSelector(".hint-btn");
+await page.locator(".hint-btn").click();
+await page.waitForSelector(".hint-panel:not([hidden])");
+if ((await page.locator(".hint-table").count()) !== 2) fail("hint: contrast should show two past-tense columns");
+ok("hint: contrast reveals both past columns (tense choice stays the task)");
+// footer toggle OFF hides hints everywhere; back ON restores
+await page.goto(`${BASE}/#/`);
+await page.waitForSelector(".hints-toggle");
+await page.locator(".hints-toggle").uncheck();
+await page.goto(`${BASE}/#/play/1/present/type`);
+await page.waitForSelector(".type-input");
+if (await page.locator(".hint-btn").count()) fail("hint: toggle OFF must remove hint buttons");
+await page.goto(`${BASE}/#/`);
+await page.locator(".hints-toggle").check();
+await page.goto(`${BASE}/#/play/1/present/type`);
+await page.waitForSelector(".hint-btn");
+ok("hint: footer toggle hides and restores hints (default checked)");
 
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);

@@ -105,6 +105,40 @@ function suppressHover(container) {
   container.addEventListener("pointermove", () => container.classList.remove("no-hover"), { once: true });
 }
 
+/**
+ * M7 🔍 Pista (from direct K-5 user feedback): a hint button that reveals
+ * the Estudia column(s) for the verb in play. No scoring penalty — the
+ * learner still maps the person to the row (NBPTS Std IV scaffolding).
+ * Lola raises her magnifying glass while the panel is open.
+ */
+function makeHint(verb, tenses, lola) {
+  const { vosotros } = store.getSettings();
+  const persons = [0, 1, 2, 3, 4, 5].filter((p) => vosotros || p !== 4);
+  const panel = el("div", { class: "hint-panel", hidden: true },
+    el("div", { class: "hint-tables" },
+      tenses.map((tn) =>
+        el("table", { class: "conj-table hint-table" },
+          el("thead", {}, el("tr", {},
+            el("th", { scope: "col" }, ""),
+            el("th", { scope: "col" }, `${verb.inf} · ${TENSE_LABELS[tn].es}`))),
+          el("tbody", {}, persons.map((pp) => el("tr", {},
+            el("th", { scope: "row" }, personDisplay(pp)),
+            el("td", {}, conjugate(verb, tn)[pp]))))))));
+  const btn = el("button", {
+    class: "hint-btn", type: "button", "aria-expanded": "false",
+    "aria-label": "Pista: ver la tabla del verbo",
+    onclick: () => {
+      const open = panel.hidden;
+      panel.hidden = !open;
+      btn.setAttribute("aria-expanded", String(open));
+      btn.classList.toggle("open", open);
+      const typing = document.activeElement?.classList?.contains("type-input");
+      lola.setState(open ? "is-hint" : typing ? "is-watching" : "is-idle");
+    },
+  }, "🔍 Pista");
+  return { btn, panel };
+}
+
 function starRow(n, max = 3) {
   return el("span", { class: "stars", "aria-label": `${n} de ${max} estrellas` },
     Array.from({ length: max }, (_, i) => el("span", { class: i < n ? "star on" : "star" }, i < n ? "★" : "☆")));
@@ -231,6 +265,13 @@ function renderFooter() {
           onchange: (e) => { store.setSetting("vosotros", e.target.checked); render(); },
         }),
         " Incluir vosotros/as",
+      ),
+      el("label", { class: "toggle" },
+        el("input", {
+          class: "hints-toggle", type: "checkbox", checked: settings.hints,
+          onchange: (e) => { store.setSetting("hints", e.target.checked); render(); },
+        }),
+        " 🔍 Pistas / Hints",
       ),
       el("button", {
         class: "linklike",
@@ -442,7 +483,11 @@ function renderPlay(setId, tense, mode) {
     lola.setState("is-idle");
     const t = targets[state.i];
     const feedback = el("div", { class: "feedback", role: "status" });
-    stage.replaceChildren(mode === LISTEN ? listenPromptCard(t) : promptCard(t), feedback);
+    const card = mode === LISTEN ? listenPromptCard(t) : promptCard(t);
+    // 🔍 Pista: Elige + Escribe only here (Escucha would be undermined)
+    const hint = mode !== LISTEN && store.getSettings().hints ? makeHint(t.verb, [tense], lola) : null;
+    if (hint) card.append(hint.btn);
+    stage.replaceChildren(card, ...(hint ? [hint.panel] : []), feedback);
     if (mode === LISTEN) speak(t.answer);
 
     const lockAndAdvance = (correct, chosenText) => {
@@ -715,17 +760,18 @@ function renderContrast(setId) {
         }, el("kbd", {}, String(idx + 1)), ` ${opt}`)));
     suppressHover(grid);
 
-    stage.replaceChildren(
-      el("div", { class: "prompt" },
-        el("span", { class: "prompt-tense cue-chip" }, `🕐 ${q.cue}`),
-        el("div", { class: "prompt-main" },
-          el("span", { class: "prompt-person" }, personDisplay(q.person)),
-          el("span", { class: "prompt-blank" }, "____"),
-        ),
-        el("span", { class: "prompt-verb" }, `${q.verb.inf} — ${q.verb.en}`),
+    // 🔍 Pista shows BOTH past columns — the tense decision stays the task
+    const hint = store.getSettings().hints ? makeHint(q.verb, ["preterite", "imperfect"], lola) : null;
+    const promptEl = el("div", { class: "prompt" },
+      el("span", { class: "prompt-tense cue-chip" }, `🕐 ${q.cue}`),
+      el("div", { class: "prompt-main" },
+        el("span", { class: "prompt-person" }, personDisplay(q.person)),
+        el("span", { class: "prompt-blank" }, "____"),
       ),
-      grid, feedback,
+      el("span", { class: "prompt-verb" }, `${q.verb.inf} — ${q.verb.en}`),
     );
+    if (hint) promptEl.append(hint.btn);
+    stage.replaceChildren(promptEl, ...(hint ? [hint.panel] : []), grid, feedback);
 
     const onKey = (e) => {
       const n = +e.key;
