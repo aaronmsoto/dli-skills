@@ -152,6 +152,53 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
         voice exists, and the ⚔️ Contrast challenge when the tense is a
         past tense — with e2e coverage.
 
+- [ ] **M8 — 🧩 Per-word tense matching ("Construye la tabla") — DECISION
+  PENDING (owner will select an approach; loops must NOT implement until
+  this hold is lifted here)**
+  Source — direct feedback from a recent K-5 DLI graduate (owner's family,
+  2026-07-07): her favorite classroom activity was per-word matching of
+  tenses. The teacher provided the root word (infinitive) and the various
+  conjugated forms as options, and students matched each form to its person.
+  Conceptually it merges the Empareja matching UI with a single Estudia
+  column: instead of matching person↔form pairs scattered across a board,
+  the learner rebuilds ONE verb's paradigm, form by form, inside the
+  familiar table shape.
+  Intent: honor this as a bridging activity between passive study (Estudia)
+  and recognition quizzing (Elige) — the learner assembles the chart rather
+  than reading it, which is active recall with the table's visual scaffold
+  intact (NBPTS Std IV scaffolding; recognition-before-production ladder
+  preserved).
+  Options on the table (owner will decide):
+  1. **Estudia toggle** — extend the Estudia table with a matching mode:
+     a toggle clears the table and the learner fills it back in word by
+     word (column by column) via a matching UI.
+     - Pro: zero new navigation; the chart-rebuild happens exactly where
+       the chart lives; strongest "same table, now active" connection.
+     - Con: Estudia is currently the app's one pressure-free reference
+       surface (and the printable); mixing an activity into it complicates
+       that role, the print styles, and the hint panel's "matches Estudia
+       exactly" contract. Scoring is awkward — Estudia has no star slot.
+  2. **New quiz type** — a fourth activity ("🧩 Construye" / Build the
+     table), positioned as the FIRST quiz after Estudia in the ladder
+     (Estudia → Construye → Elige → Escribe → Empareja): one verb per
+     round-step, its 5-6 forms shuffled in a bank, the learner places each
+     form onto the correct person row of an empty column.
+     - Pro: clean fit with the existing mode architecture (a `build` mode
+       key alongside choice/type/match), its own star track, hint/Lola/TTS
+       integration for free, Estudia stays pure.
+     - Con: star math changes (STARS_PER_SET grows unless Construye is
+       badge-tracked like 🎧 Escucha); one more card per tense on the
+       group screen.
+  3. **Another shape** — e.g. fold it into Empareja as a "one verb at a
+     time" variant, or make it an unscored warm-up that auto-offers before
+     a group's first Elige round.
+  Current loop recommendation (advisory only): **option 2**, closest to
+  the classroom original, keeps Estudia's reference/printable role intact,
+  and reuses the proven mode plumbing; decide separately whether it earns
+  stars (grows the denominator) or badges (parallel track, like Escucha).
+  Acceptance criteria: to be written AFTER the owner picks a direction —
+  the chosen option becomes the criteria list here and the hold is lifted.
+
 ## Non-goals (do not build)
 
 
