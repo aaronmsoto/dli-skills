@@ -1,8 +1,7 @@
 # MASCOT.md — research & design brief for the Conjuga mascot (epic M6)
 
-Status: **name decided — Lola la Lechuza** (owner, 2026-07-07); design gate
-waived by owner; R phase complete below; D brief follows in the next
-iteration.
+Status: **D brief complete** (2026-07-07). Name: Lola la Lechuza. R and D
+phases below are the binding spec for implementation iterations I1/I2.
 
 ## Why a mascot
 
@@ -122,3 +121,93 @@ lesson is that the character should carry the progress signal.
 4. Remaining for the D brief (next iteration): per-screen placement map,
    full pose/timing spec, light/dark palettes, copy lines, and whether
    Lola's journey persists across rounds (stars-driven) or resets per round.
+
+## D — Design brief (binding spec for I1/I2)
+
+### Character
+
+A **barn owl (lechuza)** with rounded, huggable K-5 proportions: head ≈ 55%
+of total height, pear-shaped body. White heart-shaped facial disc, tawny
+golden body, cream chest, dark charcoal button eyes (eyes do most of the
+acting), small warm-tan beak, stubby wings, tiny feet. No clothes or
+accessories. Gender-neutral styling; "Lola" is a name, not a costume.
+
+SVG structure (one inline component, target ≈2-3 KB):
+
+```
+<svg class="lola" viewBox="0 0 120 140" aria-hidden="true">
+  <g class="lola-body">   body, chest, wings (.lola-wing-l/r), feet
+  <g class="lola-head">   facial disc, eyes (.lola-eyes with eyelid rects), beak
+  <g class="lola-sparks"> 3 star sparkles, hidden except celebrations
+</svg>
+```
+
+`transform-origin` for `.lola-head` at the neck center so head tilts/turns
+/spins read naturally; `transform-box: fill-box` for cross-browser SVG
+transform sanity.
+
+### Palette (CSS custom properties; dark-mode overrides)
+
+| Token | Light | Dark |
+|---|---|---|
+| `--lola-face` | #FFF7EC | #F2EAD9 |
+| `--lola-body` | #C99A5B | #A8834E |
+| `--lola-chest` | #F3E4C8 | #D9C6A0 |
+| `--lola-eye` | #2E2A26 | #1E1B18 |
+| `--lola-beak` | #E0A458 | #C98F45 |
+| sparkles | var(--star) | var(--star) |
+
+### Pose & animation spec
+
+All states are a single class on the `.lola` root; transitions ≤600 ms
+(one sanctioned exception below); under `prefers-reduced-motion` every
+state maps to a static pose (no keyframes run — poses via non-animated
+transforms/opacity only).
+
+| Class | Trigger | Motion | Duration | Reduced-motion pose |
+|---|---|---|---|---|
+| `is-idle` (default) | screen load | blink every ~5 s (eyelid), 2 px bob loop | loop | static |
+| `is-watching` | Escribe input focused | perfectly still, pupils shifted toward input | — | same (static by design) |
+| `is-hop` | correct answer | 8 px hop with squash-stretch, tiny wing lift | 450 ms | proud pose (wings slightly out) |
+| `is-curious` | wrong answer | gentle 18° head tilt, holds while correction shows | 350 ms | tilted static pose |
+| `is-turn` | streak ≥3 · match pair found | quick ~270° look-back head turn and return | 550 ms | side-glance pose |
+| `is-spin` | **3-star results only** | full 360° head spin + sparkles + one bounce | 900 ms, once | sparkle-eyed static pose |
+| `is-celebrate` | 1-2 star results | double hop + wing flap | 600 ms | wings-out pose |
+
+The head spin is the signature move (owner request) and the only sanctioned
+>600 ms moment; it fires at most once per results screen.
+`is-curious` is deliberately the smallest, slowest motion — the corrective
+text must win the child's attention (see K-5 notes above). Lola is never
+sad, angry, or disappointed; there is no negative pose in the system.
+
+### Placement map (mobile-first, 360×640 baseline)
+
+| Screen | Lola | Size | Notes |
+|---|---|---|---|
+| Home hero | idle greeter beside the title; copy "¡Hola! Soy Lola la Lechuza." | 84-96 px | replaces the 🦉 emoji in the h1 |
+| Play (Elige/Escribe/Contrast) | perched on the progress bar at the fill edge, advancing with progress; hop on correct, curious on miss; SVG twig **nest at the bar's end** | 48-56 px | helping copy under the header: "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!" — forward motion = progress, arriving at the nest = round complete |
+| Empareja | beside the title; `is-turn` on each matched pair | 56 px | board stays uncluttered |
+| Results | centered above the stars; 3★ `is-spin`, 1-2★ `is-celebrate`, 0★ `is-idle` + copy "Lola sabe que puedes. ¡Inténtalo otra vez!" | 110-120 px | celebration is the payoff moment |
+| Study / Informe / About / Print | **no Lola** | — | scarcity of stimulation; print CSS hides any mascot regardless |
+
+The mascot never overlaps buttons, inputs, or the feedback area; on play
+screens she lives strictly inside the header band above the prompt card.
+
+### Journey persistence
+
+**Per-round journey** (each round is one flight to the nest). A persistent
+world (e.g., Lola's nest gaining a twig per fully-starred group on the home
+screen) is noted as a future idea, explicitly OUT of M6 scope.
+
+### Tech contract (for I1/I2)
+
+- `js/mascot.js` exports `createLola(size)` → `{ el, setState(state) }`;
+  state change = class swap only, no JS-driven animation, no timers except
+  returning to `is-idle` after one-shot states.
+- All motion in styles.css under a `/* -------- lola -------- */` section
+  guarded by `@media (prefers-reduced-motion: reduce)` overrides.
+- Root carries `aria-hidden="true"`; no semantics, ever.
+- Budget: mascot JS+CSS+SVG ≤ 15 KB; app total stays < 100 KB.
+- Print: `.lola` display:none inside `@media print`.
+- e2e hooks: state classes are the observable contract (asserted in
+  tests/e2e/smoke.mjs).
