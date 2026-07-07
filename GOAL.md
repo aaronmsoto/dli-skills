@@ -70,6 +70,6 @@ and a human re-scopes), gamification beyond stars/streaks, external services.
 
 ## Definition of done (any milestone item)
 
-`npm test` green · changed UI driven in a real browser with screenshots ·
-docs in sync (SPEC/STANDARDS/about.html/README) · JOURNAL.md entry appended ·
-draft PR to `main` opened per docs/LOOP.md.
+`npm test` green · `npm run e2e` green with new UI surface covered by the
+suite · docs in sync (SPEC/STANDARDS/about.html/README) · `journal/` entry
+written · PR into `dev` with auto-merge enabled, per docs/LOOP.md.

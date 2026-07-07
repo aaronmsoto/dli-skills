@@ -1,0 +1,43 @@
+# CI for loop iterations and integration:
+#  - runs on every PR into dev or main, and on every push to dev
+#  - "unit" and "e2e" are the required status checks for dev's branch
+#    protection, which is what native auto-merge waits on
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev]
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests (conjugation accuracy + feature logic)
+        run: npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: End-to-end suite (headless Chromium)
+        run: npm run e2e
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-screenshots
+          path: tests/e2e/shots/
+          if-no-files-found: ignore

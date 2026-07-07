@@ -1,8 +1,9 @@
-# JOURNAL — iteration log
+# JOURNAL — project log & index
 
-Append-only, chronological (newest at the bottom). Every loop iteration adds
-one entry using the template in docs/LOOP.md. Read the last few entries before
-starting work — this file is the project's memory across sessions.
+**Loop iterations write one file each to `journal/` (see docs/LOOP.md) so
+parallel iterations never conflict on this file.** JOURNAL.md itself is a
+human-curated index and the pre-harness history; loops read it plus the
+newest few `journal/` files for context, but only humans edit this file.
 
 ---
 
@@ -50,3 +51,18 @@ starting work — this file is the project's memory across sessions.
 - Added the loop harness: GOAL.md (work source), this JOURNAL, docs/LOOP.md
   (protocol + guardrails). Loop output = one draft PR per iteration; no dev
   site (validation via tests + screenshots in the PR).
+
+## 2026-07-07 · process — parallel loops with a shared dev branch
+
+- Upgraded the harness for autonomous integration: `loop/*` branches per
+  iteration → PR into shared `dev` with **native auto-merge** gated by CI
+  (`unit` + `e2e` required checks) → rolling `Release: dev → main` PR that
+  only a human merges (merge = deploy).
+- Promoted the Playwright smoke suite into the repo (`tests/e2e/smoke.mjs`,
+  `npm run e2e`): self-hosting static server, all four modes fully played,
+  review queue, report, print media, TTS fallback/stub, stray-text asserts.
+- Journal entries moved to per-iteration `journal/*.md` files to keep
+  parallel merges conflict-free; JOURNAL.md is now the human-curated index.
+- Depends on one-time settings (see docs/LOOP.md quick-reference): allow
+  auto-merge, protect `dev` (require unit+e2e) and `main` (require PR +
+  approval), default branch main, Pages environment allows main.

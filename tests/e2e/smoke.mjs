@@ -1,0 +1,292 @@
+/**
+ * End-to-end smoke suite. Drives every screen and all four game modes in
+ * headless Chromium, asserts on rendered text (not just selectors), and
+ * fails on any console/page error.
+ *
+ * Run locally:  npm i --no-save playwright && npx playwright install chromium
+ *               npm run e2e
+ * Chromium override (e.g. remote sandboxes): CHROMIUM_PATH=/path/to/chrome
+ * Screenshots land in tests/e2e/shots/ (gitignored; uploaded as CI artifact).
+ */
+import { createServer } from "node:http";
+import { readFile } from "node:fs/promises";
+import { mkdirSync } from "node:fs";
+import { extname, join, normalize } from "node:path";
+import { chromium } from "playwright";
+
+const ROOT = new URL("../..", import.meta.url).pathname;
+const SHOTS = join(ROOT, "tests/e2e/shots");
+mkdirSync(SHOTS, { recursive: true });
+
+const MIME = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".json": "application/json",
+  ".png": "image/png",
+};
+
+const server = createServer(async (req, res) => {
+  try {
+    let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    if (path.endsWith("/")) path += "index.html";
+    const file = normalize(join(ROOT, path));
+    if (!file.startsWith(normalize(ROOT))) throw new Error("traversal");
+    const body = await readFile(file);
+    res.writeHead(200, { "content-type": MIME[extname(file)] ?? "application/octet-stream" });
+    res.end(body);
+  } catch {
+    res.writeHead(404);
+    res.end("not found");
+  }
+});
+await new Promise((resolve) => server.listen(0, resolve));
+const BASE = `http://localhost:${server.address().port}`;
+
+const failures = [];
+const fail = (msg) => { console.error("FAIL:", msg); failures.push(msg); };
+const ok = (msg) => console.log("ok:", msg);
+
+const browser = await chromium.launch(
+  process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
+);
+const errors = [];
+const trackErrors = (p) => {
+  p.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+  p.on("pageerror", (e) => errors.push(String(e)));
+};
+const page = await browser.newPage({ viewport: { width: 900, height: 900 } });
+trackErrors(page);
+
+async function assertNoStrayNull(name) {
+  const text = await page.locator("#app").innerText();
+  if (/\bnull\b|\bundefined\b/.test(text)) fail(`${name}: stray null/undefined in rendered text`);
+}
+
+// ---------- home ----------
+await page.goto(`${BASE}/`);
+await page.waitForSelector(".set-card");
+const cards = await page.locator(".set-card").count();
+if (cards !== 20) fail(`home: expected 20 set cards, got ${cards}`);
+await assertNoStrayNull("home");
+await page.screenshot({ path: `${SHOTS}/home.png` });
+ok("home renders 20 groups");
+
+// ---------- set screen ----------
+await page.click('a[href="#/set/1"]');
+await page.waitForSelector(".tense-card");
+if ((await page.locator(".tense-card").count()) !== 3) fail("set: expected 3 tense cards");
+if ((await page.locator(".mode-card").count()) !== 5) fail("set: expected 5 activity cards");
+await assertNoStrayNull("set");
+await page.screenshot({ path: `${SHOTS}/set.png` });
+ok("set screen renders tenses + activities + reto");
+
+// ---------- study tables: engine spot checks ----------
+for (const [tense, expected] of [["present", "soy"], ["preterite", "fui"], ["imperfect", "era"]]) {
+  await page.goto(`${BASE}/#/study/1/${tense}`);
+  await page.waitForSelector(".conj-table");
+  const first = await page.locator(".conj-table tbody tr").first().locator("td").first().innerText();
+  if (first !== expected) fail(`study ${tense}: expected "${expected}", got "${first}"`);
+  await assertNoStrayNull(`study ${tense}`);
+}
+if ((await page.locator(".conj-table tbody tr").count()) !== 5) fail("study: expected 5 person rows (vosotros off)");
+await page.screenshot({ path: `${SHOTS}/study.png` });
+ok("study tables verified: soy / fui / era");
+
+// ---------- Elige: complete a full round ----------
+await page.goto(`${BASE}/#/play/1/present/choice`);
+for (let q = 0; q < 10; q++) {
+  await page.waitForSelector(".choice:not(:disabled)");
+  await page.locator(".choice").first().click();
+  try { await page.locator(".feedback.bad button").click({ timeout: 400 }); } catch { /* correct → auto-advance */ }
+  await page.waitForTimeout(1050);
+}
+await page.waitForSelector(".results");
+ok(`choice round completes → ${(await page.locator(".score-line").innerText()).trim()}`);
+await page.screenshot({ path: `${SHOTS}/choice-results.png` });
+
+// helper: compute the correct answer for the current prompt via the app's own modules
+const currentAnswer = (tenseExpr) => page.evaluate(async (tenseCode) => {
+  const { SETS } = await import("./js/verbs.js");
+  const { conjugate, PERSONS } = await import("./js/conjugator.js");
+  const { TENSE_CUES } = await import("./js/game.js");
+  let tense = tenseCode;
+  if (tense === "FROM_CUE") {
+    const cue = document.querySelector(".cue-chip").textContent.replace(/^🕐 /, "");
+    tense = TENSE_CUES.preterite.includes(cue) ? "preterite" : "imperfect";
+  }
+  const person = document.querySelector(".prompt-person").textContent;
+  const inf = document.querySelector(".prompt-verb").textContent.split(" — ")[0];
+  const verb = SETS[0].verbs.find((v) => v.inf === inf);
+  return conjugate(verb, tense)[PERSONS.indexOf(person)];
+}, tenseExpr);
+
+// ---------- Escribe: correct answer + accent tolerance ----------
+await page.goto(`${BASE}/#/play/1/present/type`);
+await page.waitForSelector(".type-input");
+const a1 = await currentAnswer("present");
+await page.fill(".type-input", a1);
+await page.click(".type-form .btn.primary");
+await page.waitForSelector(".feedback.good");
+ok(`type mode accepts correct answer: ${a1}`);
+await page.waitForTimeout(1100);
+const a2 = await currentAnswer("present");
+const stripped = a2.normalize("NFD").replace(/[̀-ͯ]/g, "");
+if (stripped !== a2) {
+  await page.fill(".type-input", stripped);
+  await page.click(".type-form .btn.primary");
+  await page.waitForSelector(".feedback.almost");
+  ok(`type mode accent-retry works: ${a2}`);
+} else {
+  ok("type mode q2 accent-free; retry path not applicable this run");
+}
+
+// ---------- Empareja: full solve ----------
+await page.goto(`${BASE}/#/play/1/present/match`);
+await page.waitForSelector(".match-card");
+const solved = await page.evaluate(async () => {
+  const { SETS } = await import("./js/verbs.js");
+  const { conjugate, PERSONS } = await import("./js/conjugator.js");
+  const left = [...document.querySelectorAll(".match-col.left .match-card")];
+  const right = [...document.querySelectorAll(".match-col.right .match-card")];
+  for (const l of left) {
+    const [personLabel, inf] = l.textContent.split(" · ");
+    const verb = SETS[0].verbs.find((v) => v.inf === inf);
+    const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+    const r = right.find((x) => x.textContent === form && !x.disabled);
+    if (!r) return `no right card for ${personLabel} ${inf} → ${form}`;
+    l.click(); r.click();
+    await new Promise((res) => setTimeout(res, 40));
+  }
+  return "ok";
+});
+if (solved !== "ok") fail(`match: ${solved}`);
+await page.waitForSelector(".results");
+const matchScore = (await page.locator(".score-line").innerText()).trim();
+if (!matchScore.startsWith("6 / 6")) fail(`match: expected 6/6, got ${matchScore}`);
+ok(`match mode full solve → ${matchScore}`);
+
+// ---------- Contrast: full solve via cue → tense ----------
+await page.goto(`${BASE}/#/play/1/contrast`);
+for (let q = 0; q < 10; q++) {
+  await page.waitForSelector(".contrast-choices .choice:not(:disabled)");
+  const correct = await currentAnswer("FROM_CUE");
+  const buttons = page.locator(".contrast-choices .choice");
+  if ((await buttons.count()) !== 2) fail("contrast: expected exactly 2 options");
+  for (let b = 0; b < 2; b++) {
+    const text = (await buttons.nth(b).innerText()).replace(/^\d/, "").trim();
+    if (text === correct) { await buttons.nth(b).click(); break; }
+  }
+  await page.waitForTimeout(1250);
+}
+await page.waitForSelector(".results");
+const contrastScore = (await page.locator(".score-line").innerText()).trim();
+if (!contrastScore.startsWith("10 / 10")) fail(`contrast: expected 10/10, got ${contrastScore}`);
+ok(`contrast mode full solve → ${contrastScore}`);
+await page.screenshot({ path: `${SHOTS}/contrast-results.png` });
+
+// ---------- review queue: due items appear and link into a game ----------
+await page.evaluate(() => {
+  const s = JSON.parse(localStorage.getItem("conjuga.v1"));
+  for (const k of Object.keys(s.best)) s.best[k].at = Date.now() - 8 * 24 * 3600 * 1000;
+  localStorage.setItem("conjuga.v1", JSON.stringify(s));
+});
+await page.goto(`${BASE}/#/`);
+await page.reload();
+await page.waitForSelector(".review-queue");
+await page.click(".review-item");
+await page.waitForSelector(".choice, .type-input, .match-card");
+ok("review queue appears when due and links into a game");
+await page.screenshot({ path: `${SHOTS}/review-queue.png` });
+
+// fresh context → no queue, no stray text
+const fresh = await browser.newPage();
+trackErrors(fresh);
+await fresh.goto(`${BASE}/#/`);
+await fresh.waitForSelector(".set-card");
+if (await fresh.locator(".review-queue").count()) fail("review queue shown with no progress");
+const freshText = await fresh.locator("#app").innerText();
+if (/\bnull\b/.test(freshText)) fail("fresh home: stray null text");
+await fresh.close();
+ok("fresh session: no review queue, clean text");
+
+// ---------- report ----------
+await page.goto(`${BASE}/#/informe`);
+await page.waitForSelector(".report-table");
+if ((await page.locator(".report-table tbody tr").count()) !== 20) fail("report: expected 20 rows");
+await page.emulateMedia({ media: "print" });
+if (await page.locator(".crumbs").isVisible().catch(() => false)) fail("report print: nav visible");
+await page.emulateMedia({ media: "screen" });
+await page.screenshot({ path: `${SHOTS}/report.png` });
+ok("report renders 20 rows; print media hides nav");
+
+// ---------- TTS: hidden without a voice; speaks person + form with one ----------
+const toggles = await page.locator(".sound-toggle").count();
+const available = await page.evaluate(async () => (await import("./js/audio.js")).ttsAvailable());
+if (!available && toggles > 0) fail("sound toggle rendered though TTS unavailable");
+ok(`tts availability honest (available=${available}, toggles=${toggles})`);
+
+const voiced = await browser.newPage();
+trackErrors(voiced);
+await voiced.addInitScript(() => {
+  const fakeVoice = { lang: "es-MX", localService: true, name: "Fake ES" };
+  window.__spoken = [];
+  Object.defineProperty(window, "speechSynthesis", {
+    configurable: true,
+    value: {
+      getVoices: () => [fakeVoice],
+      addEventListener: () => {},
+      cancel: () => {},
+      speak: (u) => window.__spoken.push(u.text),
+    },
+  });
+  window.SpeechSynthesisUtterance = function (text) { this.text = text; };
+});
+await voiced.goto(`${BASE}/#/study/1/present`);
+await voiced.waitForSelector(".cell-speak");
+await voiced.locator(".cell-speak").first().click();
+const spoken = await voiced.evaluate(() => window.__spoken);
+if (!spoken.length || spoken[0] !== "yo soy") fail(`stub voice: expected "yo soy", got ${JSON.stringify(spoken)}`);
+// match mode speaks person + form (regression: used to speak bare forms)
+await voiced.goto(`${BASE}/#/play/1/present/match`);
+await voiced.waitForSelector(".match-card");
+await voiced.evaluate(async () => {
+  window.__spoken.length = 0;
+  const { SETS } = await import("./js/verbs.js");
+  const { conjugate, PERSONS } = await import("./js/conjugator.js");
+  const left = [...document.querySelectorAll(".match-col.left .match-card")];
+  const right = [...document.querySelectorAll(".match-col.right .match-card")];
+  const [personLabel, inf] = left[0].textContent.split(" · ");
+  const verb = SETS[0].verbs.find((v) => v.inf === inf);
+  const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+  left[0].click();
+  right.find((x) => x.textContent === form).click();
+});
+const matchSpoken = await voiced.evaluate(() => window.__spoken);
+const shortPersons = ["yo", "tú", "él", "nosotros", "vosotros", "ellos"];
+if (!matchSpoken.length || !shortPersons.includes(matchSpoken[0].split(" ")[0]) || matchSpoken[0].split(" ").length < 2) {
+  fail(`match speech: expected "person form", got ${JSON.stringify(matchSpoken)}`);
+}
+ok(`tts speaks person + form (study: "${spoken[0]}", match: "${matchSpoken[0]}")`);
+// mute stops speech
+await voiced.goto(`${BASE}/#/study/1/present`);
+await voiced.waitForSelector(".sound-toggle");
+await voiced.locator(".sound-toggle").click();
+await voiced.evaluate(() => { window.__spoken.length = 0; });
+await voiced.locator(".cell-speak").first().click();
+if ((await voiced.evaluate(() => window.__spoken.length)) !== 0) fail("mute: spoke while muted");
+ok("mute toggle silences speech");
+await voiced.close();
+
+// ---------- wrap up ----------
+if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
+await browser.close();
+server.close();
+
+if (failures.length) {
+  console.error(`\nE2E FAILED — ${failures.length} failure(s)`);
+  process.exit(1);
+}
+console.log("\nE2E PASSED");

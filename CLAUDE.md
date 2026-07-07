@@ -28,12 +28,16 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
 
 ```bash
 npm test     # node --test tests/*.test.mjs — 40 accuracy/invariant/feature tests
+npm run e2e  # headless-Chromium end-to-end suite (tests/e2e/smoke.mjs)
 npm start    # python3 -m http.server 8080 (any static server works)
 ```
 
-To verify UI changes end-to-end, serve the app and drive it with Playwright
-(chromium lives at /opt/pw-browsers/chromium-*/chrome-linux/chrome in the
-remote environment); check for console errors and screenshot each screen.
+For `npm run e2e`, install Playwright first (`npm i --no-save playwright`
+plus `npx playwright install chromium`, or in the remote environment set
+CHROMIUM_PATH=/opt/pw-browsers/chromium-*/chrome-linux/chrome). Any new UI
+surface MUST be covered by the e2e suite — it is the gate that lets loop
+iterations auto-merge into dev. Playwright is CI/dev tooling only; it must
+never become an app dependency.
 
 ## Architecture
 
@@ -83,13 +87,15 @@ remote environment); check for console errors and screenshot each screen.
 
 ## Semi-autonomous loops
 
-Agent sessions doing unattended iterations MUST follow `docs/LOOP.md`:
-work is derived only from `GOAL.md` (current milestone's acceptance
-criteria), context comes from the tail of `JOURNAL.md`, and each iteration
-ends as one **draft PR** to `main` with tests, screenshots, and a JOURNAL
-entry — never a merge, never a push to `main`, never a workflow/settings
-change. There is no dev site: validation is evidenced in the PR; production
-deploys only when a human merges.
+Agent sessions doing unattended iterations MUST follow `docs/LOOP.md`.
+Branch model: `loop/<date>-<slug>` (one per iteration, from `origin/dev`)
+→ PR into `dev` with **native auto-merge** enabled, gated by the required
+CI checks (`unit` + `e2e`) → a rolling `Release: dev → main` PR that only
+a human merges (that merge is the production deploy). Work derives only
+from `GOAL.md`'s current milestone; context comes from the newest
+`journal/*.md` files; each iteration writes its own `journal/` entry.
+Loops never push `dev`/`main` directly, never merge manually, never touch
+workflows or settings, and never weaken tests to get green.
 
 ## Documentation map
 
