@@ -89,6 +89,18 @@ function el(tag, attrs = {}, ...children) {
   return node;
 }
 
+/**
+ * Sticky-hover fix: browsers re-apply :hover to whatever lands under the
+ * last pointer position, so a freshly rendered answer grid can show a
+ * "still selected" outline in the previous answer's slot (especially on
+ * touch, where the virtual pointer stays at the last tap). Suppress hover
+ * styling until the pointer genuinely moves again.
+ */
+function suppressHover(container) {
+  container.classList.add("no-hover");
+  container.addEventListener("pointermove", () => container.classList.remove("no-hover"), { once: true });
+}
+
 function starRow(n, max = 3) {
   return el("span", { class: "stars", "aria-label": `${n} de ${max} estrellas` },
     Array.from({ length: max }, (_, i) => el("span", { class: i < n ? "star on" : "star" }, i < n ? "★" : "☆")));
@@ -431,6 +443,7 @@ function renderPlay(setId, tense, mode) {
               lockAndAdvance(correct, opt);
             },
           }, el("kbd", {}, String(idx + 1)), ` ${opt}`)));
+      suppressHover(grid);
       stage.insertBefore(grid, feedback);
 
       const onKey = (e) => {
@@ -479,6 +492,7 @@ function renderPlay(setId, tense, mode) {
         class: "type-form",
         onsubmit: (e) => { e.preventDefault(); check(); },
       }, input, accents, el("button", { class: "btn primary", type: "submit" }, "Comprobar ✔"));
+      suppressHover(form);
       stage.insertBefore(form, feedback);
       input.focus();
     }
@@ -517,6 +531,7 @@ function renderMatch(set, tense, vosotros) {
       return b;
     }));
   board.append(col(leftCards, "left"), col(rightCards, "right"));
+  suppressHover(board);
 
   function pick(card, btn) {
     if (btn.classList.contains("done")) return;
@@ -539,6 +554,7 @@ function renderMatch(set, tense, vosotros) {
     const a = state.selected;
     state.selected = null;
     a.btn.classList.remove("picked");
+    suppressHover(board);
     if (a.card.id === card.id) {
       if (!state.attemptedIds.has(card.id)) state.firstTryHits++;
       state.attemptedIds.add(card.id);
@@ -651,6 +667,7 @@ function renderContrast(setId) {
             }
           },
         }, el("kbd", {}, String(idx + 1)), ` ${opt}`)));
+    suppressHover(grid);
 
     stage.replaceChildren(
       el("div", { class: "prompt" },
