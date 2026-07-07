@@ -74,17 +74,19 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
   dark mode), and zero impact on pedagogy or TTS (the owl is silent; speech
   stays reserved for Spanish forms).
   Acceptance criteria, in order:
-  - [ ] **R (research):** extend docs/MASCOT.md with 2-3 more comparable
+  - [x] **R (research):** extend docs/MASCOT.md with 2-3 more comparable
         mascots (e.g., Duolingo's Duo — including what to AVOID: nagging,
         streak guilt), and a short motion/a11y note for K-5 attention.
         No product code in this iteration.
-  - [ ] **D (design):** design brief in docs/MASCOT.md — final name
-        (bilingual; working name "Ollie", candidates listed), SVG art
-        direction with pose sketches (idle, correct-hop, curious-miss,
-        celebrate, sleeping), per-screen placement map, animation timing
-        spec (~600ms, subtle), dark-mode palette. **HUMAN GATE: the owner
-        must approve the brief in the PR before any implementation
-        iteration starts — park the design PR without auto-merge.**
+  - [ ] **D (design):** design brief in docs/MASCOT.md — name is DECIDED
+        by the owner (2026-07-07): **Lola la Lechuza**. SVG art direction
+        with pose sketches (idle, correct-hop, curious-miss, celebrate
+        with head spin — owl-realistic ~270° tilt-turns for small moments,
+        one playful full spin reserved for 3-star celebrations — and
+        sleeping), per-screen placement map, animation timing spec
+        (~600ms, subtle), dark-mode palette. Owner has waived the design
+        gate (2026-07-07): the brief auto-merges like any iteration and
+        implementation proceeds immediately after.
   - [ ] **I1 (implementation):** mascot component (inline SVG + CSS states,
         no JS animation libs) on home + results screens; helping-frame copy
         ("Ayuda a <name>…"); reduced-motion + dark-mode verified.
