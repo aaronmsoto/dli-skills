@@ -214,9 +214,11 @@ if (!(await page.locator(".match-board.no-hover").count())) fail("match: fresh b
     const verb = SETS[0].verbs.find((v) => v.inf === inf);
     return { left: l.textContent, right: conjugate(verb, "present")[PERSONS.indexOf(personLabel)] };
   });
-  await page.locator(".match-col.left .match-card", { hasText: first.left }).first().click();
-  await page.locator(".match-col.right .match-card", { hasText: first.right }).first().click();
-  await page.waitForSelector(".match-title .lola.is-turn", { timeout: 800 });
+  // exact-text matching: hasText is substring-based and "es" ⊂ "eres" etc.
+  const exact = (t) => new RegExp(`^${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+  await page.locator(".match-col.left .match-card").filter({ hasText: exact(first.left) }).first().click();
+  await page.locator(".match-col.right .match-card").filter({ hasText: exact(first.right) }).first().click();
+  await page.waitForSelector(".match-title .lola.is-turn", { timeout: 1200 });
   ok("match: Lola turns her head on a matched pair");
 }
 const solved = await page.evaluate(async () => {
