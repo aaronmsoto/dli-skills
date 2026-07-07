@@ -67,6 +67,9 @@ never become an app dependency.
   `#/play/3/present/choice`, `#/play/3/contrast`, `#/informe`). DOM built with
   a small `el()` helper; no innerHTML for user-derived strings. The contrast
   challenge records under key `<setId>.past.contrast` (STARS_PER_SET = 30).
+  🎧 Escucha records under `<setId>.<tense>.listen` — badges on a parallel
+  track, deliberately excluded from MODES and every star denominator;
+  the mode renders only when `ttsAvailable()`.
   Print styles live in styles.css (`@media print` + `.no-print`).
 - Persons are always indexed 0-5 (yo, tú, él/ella/Ud., nosotros, vosotros,
   ellos/Uds.); vosotros (index 4) is filtered at the UI layer per user setting,

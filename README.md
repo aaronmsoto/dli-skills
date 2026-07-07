@@ -38,6 +38,10 @@ zero-setup, and usable from any browser without registration or data collection.
   API (no network, no data sent anywhere): correct answers and study-table
   taps are spoken; one-tap mute; hidden automatically on devices without a
   Spanish voice
+- **🎧 Escucha** — listening mode (on devices with a Spanish voice): the
+  form is spoken, never shown; pick what you heard from four options, with
+  unlimited replay and a 🐢 slow button. Earns a parallel track of 🎧
+  badges that never count toward stars, so voiceless devices lose nothing
 - **🔁 Repasa hoy** — a spaced-repetition queue on the home screen: activities
   come back for review after 0/1/3/7 days depending on stars earned
 - **🖨️ Printables** — print-friendly conjugation tables and a progress report
@@ -75,7 +79,7 @@ No build step — it's a static site with ES modules.
 
 ```bash
 npm start          # python3 -m http.server 8080 → http://localhost:8080
-npm test           # 40 accuracy + feature-logic tests (Node ≥ 18)
+npm test           # accuracy + feature-logic + budget tests (Node ≥ 18)
 ```
 
 ## Project structure

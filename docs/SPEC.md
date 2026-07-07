@@ -112,6 +112,20 @@ the learner types. Inline SVG + CSS only, aria-hidden, dark-mode palette
 tokens, full prefers-reduced-motion static fallback, hidden in print,
 budget-tested (tests/payload.test.mjs).
 
+### 4.3g Listening mode (🎧 Escucha, M3 — recognition v1)
+Per group × tense, shown only when a Spanish TTS voice exists (direct
+routes redirect otherwise). The target form is spoken, never shown; the
+learner picks from 4 written options built by the existing distractor
+engine — which naturally forces person-ending discrimination
+(tiene/tienes/tienen) and the stress-as-tense contrast (hablo/habló).
+Unlimited 🔊 replay plus 🐢 slow replay (rate 0.65); listening prompts
+bypass the mute setting (entering the mode is explicit audio intent).
+**Badges, not stars:** results record under `<set>.<tense>.listen` on a
+parallel 🎧 track (same 60/80/100% tiers) shown on group cards, home,
+results, review queue, and the report — never counted in star totals, so
+voiceless devices are not penalized. Typed variant deferred (owner
+decision) pending SME input.
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +
