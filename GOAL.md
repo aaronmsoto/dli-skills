@@ -103,7 +103,9 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 ## Non-goals (do not build)
 
 Accounts, servers, dashboards, analytics, other languages (until M5 is done
-and a human re-scopes), gamification beyond stars/streaks, external services.
+and a human re-scopes), external services, and economy-style gamification
+(coins, shops, loot, competitive leaderboards). The mascot companion (M6) is
+explicitly IN scope; stars/streaks remain the only scorekeeping.
 
 ## Definition of done (any milestone item)
 
