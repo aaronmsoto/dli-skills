@@ -105,8 +105,11 @@ main                     production — merge = deploy to GitHub Pages (test-gat
   loop doesn't repeat it.
 - **One-time repo settings this model depends on:**
   1. Settings → General → ✅ *Allow auto-merge*.
-  2. Settings → Branches → protection rule for `dev`: require status checks
+  2. Settings → Actions → General → Workflow permissions →
+     ✅ *Allow GitHub Actions to create and approve pull requests*
+     (release-pr.yml needs it to open the rolling release PR).
+  3. Settings → Branches → protection rule for `dev`: require status checks
      `unit` and `e2e` to pass (this is what auto-merge waits on).
-  3. Protection rule for `main`: require a pull request with 1 approval.
-  4. Settings → General → default branch = `main`.
-  5. Settings → Environments → `github-pages` → allow `main` to deploy.
+  4. Protection rule for `main`: require a pull request with 1 approval.
+  5. Settings → General → default branch = `main`.
+  6. Settings → Environments → `github-pages` → allow `main` to deploy.
