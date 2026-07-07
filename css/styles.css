@@ -370,13 +370,26 @@ a { color: var(--brand); }
   75% { transform: translateY(-5px); }
 }
 
+/* in-game perch: Lola flies along the progress bar toward the nest */
+.lola-help { color: var(--ink-soft); font-size: 0.95rem; margin: 6px 0 0; }
+.bar-holder { position: relative; flex: 1; padding-top: 46px; }
+.bar-holder .progress-bar { width: 100%; }
+.play-lola {
+  position: absolute; bottom: 13px; left: 0;
+  transform: translateX(-40%);
+  transition: left 400ms ease;
+  pointer-events: none;
+}
+.lola-nest { position: absolute; right: -4px; bottom: 11px; line-height: 0; pointer-events: none; }
+.match-title { display: flex; align-items: center; gap: 10px; }
+
 /* placements */
 .home-title { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .lola-greeting { color: var(--ink-soft); font-size: 1rem; margin: 0.2em 0; }
 .results .lola-wrap { margin-bottom: -8px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .lola, .lola * { animation: none !important; transition: none !important; }
+  .lola, .lola *, .play-lola { animation: none !important; transition: none !important; }
   /* static pose swaps instead of motion */
   .lola.is-hop .lola-wing-pose, .lola.is-celebrate { transform: none; }
   .lola.is-curious .lola-head { transform: rotate(18deg); }

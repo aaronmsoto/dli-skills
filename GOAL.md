@@ -90,7 +90,7 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
   - [x] **I1 (implementation):** mascot component (inline SVG + CSS states,
         no JS animation libs) on home + results screens; helping-frame copy
         ("Ayuda a <name>…"); reduced-motion + dark-mode verified.
-  - [ ] **I2 (implementation):** in-game integration — owl travels the
+  - [x] **I2 (implementation):** in-game integration — owl travels the
         round's progress path; reacts to correct (hop forward) and
         incorrect (curious tilt, never negative); 3-star celebration.
   - [ ] **V (validation):** e2e coverage — mascot states assert on
