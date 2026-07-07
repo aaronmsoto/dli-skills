@@ -71,8 +71,13 @@ await page.waitForSelector(".set-card");
 const cards = await page.locator(".set-card").count();
 if (cards !== 20) fail(`home: expected 20 set cards, got ${cards}`);
 await assertNoStrayNull("home");
+// mascot: Lola greets on home, decorative only
+await page.waitForSelector(".home-title .lola-wrap .lola");
+if ((await page.locator(".lola-wrap").getAttribute("aria-hidden")) !== "true") fail("home: Lola must be aria-hidden");
+const greeting = await page.locator(".lola-greeting").innerText();
+if (!greeting.includes("Lola la Lechuza")) fail(`home: greeting missing, got "${greeting}"`);
 await page.screenshot({ path: `${SHOTS}/home.png` });
-ok("home renders 20 groups");
+ok("home renders 20 groups + Lola greeter");
 
 // ---------- set screen ----------
 await page.click('a[href="#/set/1"]');
@@ -92,6 +97,7 @@ for (const [tense, expected] of [["present", "soy"], ["preterite", "fui"], ["imp
   await assertNoStrayNull(`study ${tense}`);
 }
 if ((await page.locator(".conj-table tbody tr").count()) !== 5) fail("study: expected 5 person rows (vosotros off)");
+if (await page.locator(".lola-wrap").count()) fail("study: no mascot allowed (scarcity of stimulation)");
 await page.screenshot({ path: `${SHOTS}/study.png` });
 ok("study tables verified: soy / fui / era");
 
@@ -104,6 +110,13 @@ for (let q = 0; q < 10; q++) {
   await page.waitForTimeout(1050);
 }
 await page.waitForSelector(".results");
+// Lola state must match the star count deterministically
+{
+  const starsOn = await page.locator(".big-stars .star.on").count();
+  const expectClass = starsOn === 3 ? "is-spin" : starsOn >= 1 ? "is-celebrate" : "is-idle";
+  if (!(await page.locator(`.results .lola.${expectClass}`).count()))
+    fail(`results: ${starsOn} stars should show Lola ${expectClass}`);
+}
 ok(`choice round completes → ${(await page.locator(".score-line").innerText()).trim()}`);
 await page.screenshot({ path: `${SHOTS}/choice-results.png` });
 
@@ -166,7 +179,9 @@ if (solved !== "ok") fail(`match: ${solved}`);
 await page.waitForSelector(".results");
 const matchScore = (await page.locator(".score-line").innerText()).trim();
 if (!matchScore.startsWith("6 / 6")) fail(`match: expected 6/6, got ${matchScore}`);
-ok(`match mode full solve → ${matchScore}`);
+// 6/6 = 3 stars → Lola's signature head-spin celebration
+if (!(await page.locator(".results .lola.is-spin").count())) fail("results: expected Lola is-spin on 3 stars");
+ok(`match mode full solve → ${matchScore} (Lola spins)`);
 
 // ---------- Contrast: full solve via cue → tense ----------
 await page.goto(`${BASE}/#/play/1/contrast`);
@@ -279,6 +294,16 @@ await voiced.locator(".cell-speak").first().click();
 if ((await voiced.evaluate(() => window.__spoken.length)) !== 0) fail("mute: spoke while muted");
 ok("mute toggle silences speech");
 await voiced.close();
+
+// ---------- reduced motion: Lola must be static ----------
+const rmPage = await browser.newPage({ reducedMotion: "reduce" });
+trackErrors(rmPage);
+await rmPage.goto(`${BASE}/#/`);
+await rmPage.waitForSelector(".lola.is-idle");
+const anim = await rmPage.evaluate(() => getComputedStyle(document.querySelector(".lola.is-idle")).animationName);
+if (anim !== "none") fail(`reduced motion: idle animation should be none, got "${anim}"`);
+await rmPage.close();
+ok("reduced motion: Lola idle is static");
 
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);

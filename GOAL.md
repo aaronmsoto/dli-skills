@@ -87,7 +87,7 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
         (~600ms, subtle), dark-mode palette. Owner has waived the design
         gate (2026-07-07): the brief auto-merges like any iteration and
         implementation proceeds immediately after.
-  - [ ] **I1 (implementation):** mascot component (inline SVG + CSS states,
+  - [x] **I1 (implementation):** mascot component (inline SVG + CSS states,
         no JS animation libs) on home + results screens; helping-frame copy
         ("Ayuda a <name>…"); reduced-motion + dark-mode verified.
   - [ ] **I2 (implementation):** in-game integration — owl travels the
