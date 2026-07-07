@@ -42,6 +42,11 @@ zero-setup, and usable from any browser without registration or data collection.
   come back for review after 0/1/3/7 days depending on stars earned
 - **🖨️ Printables** — print-friendly conjugation tables and a progress report
   (star grid per group with a name line) students can hand to a teacher
+- **🦉 Lola la Lechuza** — a silent barn-owl companion (inline SVG, ~5 KB):
+  she flies along the progress bar toward her nest as answers land, hops on
+  correct answers, tilts her head curiously on misses (never scolds), and
+  does her signature head-spin on 3-star rounds; fully static under
+  reduced-motion and hidden in print (design rationale in docs/MASCOT.md)
 - **Mastery tracking** — 0-3 stars per activity, best-score persistence in
   `localStorage`; no accounts, no server, no analytics
 - **Vosotros toggle** — off by default (US convention), one click to include
