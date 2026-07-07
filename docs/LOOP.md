@@ -20,7 +20,10 @@ main                     production — merge = deploy to GitHub Pages (test-gat
 - Auto-merge into `dev` is native GitHub auto-merge waiting on the required
   `unit` and `e2e` checks (`.github/workflows/ci.yml`).
 - `release-pr.yml` keeps a rolling `Release: dev → main` PR open whenever
-  `dev` is ahead. Only a human merges it; that merge is the deploy.
+  `dev` is ahead, and on every push to `dev` it refreshes the PR body with a
+  current manifest: the iteration list, diffstat, and links to the release's
+  `journal/` entries. Only a human merges it (always a merge commit); that
+  merge is the deploy.
 
 ## The loop
 
