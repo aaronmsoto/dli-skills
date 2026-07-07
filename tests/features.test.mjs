@@ -1,12 +1,12 @@
 /**
- * Tests for the contrast-mode generator and the spaced-repetition logic.
- * Run: npm test
+ * Tests for the contrast-mode generator, the Práctica word bank, and the
+ * spaced-repetition logic. Run: npm test
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { SETS } from "../js/verbs.js";
 import { conjugate } from "../js/conjugator.js";
-import { buildContrastQuestions, TENSE_CUES, QUESTIONS_PER_ROUND } from "../js/game.js";
+import { buildContrastQuestions, buildPracticaBank, TENSE_CUES, QUESTIONS_PER_ROUND } from "../js/game.js";
 import { reviewIntervalMs, isDue } from "../js/storage.js";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -44,6 +44,36 @@ test("contrast: preterite and imperfect never coincide across the whole dataset"
       }
     }
   }
+});
+
+test("práctica bank: one tile per person, multiset-equal to the engine's column", () => {
+  const persons = [0, 1, 2, 3, 5]; // vosotros off
+  for (const set of [SETS[0], SETS[9], SETS[19]]) {
+    for (const v of set.verbs) {
+      for (const tense of ["present", "preterite", "imperfect"]) {
+        const bank = buildPracticaBank(v, tense, persons);
+        const expected = persons.map((p) => conjugate(v, tense)[p]);
+        assert.equal(bank.length, persons.length, `${v.inf} ${tense}: bank size`);
+        assert.deepEqual([...bank].sort(), [...expected].sort(),
+          `${v.inf} ${tense}: bank must match the column, duplicates included`);
+      }
+    }
+  }
+});
+
+test("práctica bank: imperfect duplicates (yo/él) yield two identical tiles", () => {
+  const hablar = SETS[0].verbs.find((v) => v.inf === "hablar") ?? SETS[0].verbs[0];
+  const bank = buildPracticaBank(hablar, "imperfect", [0, 1, 2, 3, 5]);
+  const yo = conjugate(hablar, "imperfect")[0];
+  assert.equal(conjugate(hablar, "imperfect")[2], yo, "imperfect yo/él coincide");
+  assert.equal(bank.filter((f) => f === yo).length, 2, "both duplicate tiles present");
+});
+
+test("práctica bank: respects the vosotros setting via the persons argument", () => {
+  const verb = SETS[0].verbs[0];
+  const withVos = buildPracticaBank(verb, "present", [0, 1, 2, 3, 4, 5]);
+  assert.equal(withVos.length, 6);
+  assert.ok(withVos.includes(conjugate(verb, "present")[4]), "vosotros form present when included");
 });
 
 test("spaced repetition: intervals grow with mastery", () => {

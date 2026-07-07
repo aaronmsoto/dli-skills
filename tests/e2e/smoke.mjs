@@ -83,7 +83,9 @@ ok("home renders 20 groups + Lola greeter");
 await page.click('a[href="#/set/1"]');
 await page.waitForSelector(".tense-card");
 if ((await page.locator(".tense-card").count()) !== 3) fail("set: expected 3 tense cards");
-if ((await page.locator(".mode-card").count()) !== 5) fail("set: expected 5 activity cards");
+if ((await page.locator(".mode-card").count()) !== 6) fail("set: expected 6 activity cards");
+if (!(await page.locator(".practica-card").count())) fail("set: Práctica card missing");
+if (await page.locator(".practica-card .star").count()) fail("set: Práctica is unscored — no stars on its card");
 if (await page.locator(".listen-card").count()) fail("set: Escucha must be hidden without a Spanish voice");
 await assertNoStrayNull("set");
 await page.screenshot({ path: `${SHOTS}/set.png` });
@@ -360,7 +362,7 @@ ok(`tts speaks person + form (study: "${spoken[0].text}", match: "${matchSpoken[
 // ---------- 🎧 Escucha (listen mode): voiced device ----------
 await voiced.goto(`${BASE}/#/set/1`);
 await voiced.waitForSelector(".listen-card");
-if ((await voiced.locator(".mode-card").count()) !== 6) fail("escucha: voiced set screen should show 6 activity cards");
+if ((await voiced.locator(".mode-card").count()) !== 7) fail("escucha: voiced set screen should show 7 activity cards");
 await voiced.goto(`${BASE}/#/study/1/present`);
 await voiced.waitForSelector(".conj-table");
 if (!(await voiced.locator(".study-actions .listen-link").count())) fail("study: voiced device must link Escucha");
@@ -429,6 +431,28 @@ await voiced.locator(".hint-panel .cell-speak").first().click();
 const hintSpoken = await voiced.evaluate(() => window.__spoken.at(-1).text);
 if (hintSpoken !== hintExpected) fail(`hint speak: expected "${hintExpected}", got "${hintSpoken}"`);
 ok(`hint: tapping a form speaks it ("${hintSpoken}")`);
+
+// 🧱 Práctica on a voiced device: placement speaks person + form (standard
+// rules), filled cells become tap-to-hear like the Estudia table, Lola hops
+await voiced.goto(`${BASE}/#/practica/1/present`);
+await voiced.waitForSelector(".bank-tile");
+const placeSpoken = await voiced.evaluate(async () => {
+  window.__spoken.length = 0;
+  const { SETS } = await import("./js/verbs.js");
+  const { conjugate } = await import("./js/conjugator.js");
+  const yo = conjugate(SETS[0].verbs[0], "present")[0];
+  [...document.querySelectorAll(".bank-tile")].find((t) => t.textContent === yo).click();
+  document.querySelector(".practica-table tbody tr .drop-slot").click();
+  return { spoken: window.__spoken.map((u) => u.text), yo };
+});
+if (placeSpoken.spoken.at(-1) !== `yo ${placeSpoken.yo}`)
+  fail(`practica speech: expected "yo ${placeSpoken.yo}", got ${JSON.stringify(placeSpoken.spoken)}`);
+await voiced.waitForSelector(".match-title .lola.is-hop", { timeout: 800 });
+await voiced.evaluate(() => { window.__spoken.length = 0; });
+await voiced.locator(".practica-table td.filled .cell-speak").first().click();
+const cellSpoken = await voiced.evaluate(() => window.__spoken.at(-1)?.text);
+if (cellSpoken !== `yo ${placeSpoken.yo}`) fail(`practica cell speak: expected "yo ${placeSpoken.yo}", got "${cellSpoken}"`);
+ok(`practica voiced: placement speaks "yo ${placeSpoken.yo}", filled cell replays it, Lola hops`);
 
 // mute stops speech
 await voiced.goto(`${BASE}/#/study/1/present`);
@@ -536,6 +560,83 @@ await page.locator(".hints-toggle").check();
 await page.goto(`${BASE}/#/play/1/present/type`);
 await page.waitForSelector(".hint-btn");
 ok("hint: footer toggle hides and restores hints (default checked)");
+
+// ---------- 🧱 M8 Práctica: unscored table rebuild ----------
+await page.goto(`${BASE}/#/study/1/present`);
+await page.reload();
+await page.waitForSelector(".study-actions");
+if (!(await page.locator(".study-actions .practica-link").count())) fail("practica: study screen must link Práctica");
+await page.goto(`${BASE}/#/set/1`);
+await page.waitForSelector(".practica-card");
+const beforeStore = await page.evaluate(() => localStorage.getItem("conjuga.v1"));
+await page.goto(`${BASE}/#/practica/1/present`);
+await page.waitForSelector(".bank-tile");
+// voiceless: the activity still works, with zero audio affordances
+if (await page.locator(".cell-speak").count()) fail("practica: voiceless device must not render speak buttons");
+if ((await page.locator(".drop-slot").count()) !== 5) fail("practica: active column should show 5 empty slots (vosotros off)");
+if ((await page.locator(".bank-tile").count()) !== 5) fail("practica: bank should hold 5 tiles");
+// wrong placement: corrective, non-punitive, tile not consumed
+{
+  const wrong = await page.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate } = await import("./js/conjugator.js");
+    const yo = conjugate(SETS[0].verbs[0], "present")[0];
+    return [...document.querySelectorAll(".bank-tile")].find((t) => t.textContent !== yo).textContent;
+  });
+  const exact = (t) => new RegExp(`^${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+  const wrongTile = page.locator(".bank-tile").filter({ hasText: exact(wrong) }).first();
+  await wrongTile.click();
+  await page.locator(".practica-table tbody tr").first().locator(".drop-slot").click();
+  await page.waitForSelector(".feedback.bad");
+  if (!(await page.locator(".match-title .lola.is-curious").count())) fail("practica: Lola should be curious on a miss, never negative");
+  if ((await page.locator(".bank-tile").count()) !== 5) fail("practica: wrong placement must not consume the tile");
+  if (await page.locator(".practica-table td.filled").count()) fail("practica: wrong placement must not fill the cell");
+  await wrongTile.click(); // deselect before the scripted solve
+}
+// full rebuild: all 5 columns, word by word, driven by the engine
+const solvedPractica = await page.evaluate(async () => {
+  const { SETS } = await import("./js/verbs.js");
+  const { conjugate } = await import("./js/conjugator.js");
+  const persons = [0, 1, 2, 3, 5];
+  for (let vi = 0; vi < 5; vi++) {
+    const verb = SETS[0].verbs[vi];
+    for (let ri = 0; ri < persons.length; ri++) {
+      const form = conjugate(verb, "present")[persons[ri]];
+      const tile = [...document.querySelectorAll(".bank-tile")].find((t) => t.textContent === form);
+      if (!tile) return `no tile for ${verb.inf} → ${form}`;
+      if (!tile.classList.contains("picked")) tile.click();
+      const slot = document.querySelectorAll(".practica-table tbody tr")[ri].querySelector(".drop-slot");
+      if (!slot) return `no slot at row ${ri} for ${verb.inf}`;
+      slot.click();
+      await new Promise((r) => setTimeout(r, 15));
+    }
+  }
+  return "ok";
+});
+if (solvedPractica !== "ok") fail(`practica: ${solvedPractica}`);
+await page.waitForSelector(".practica-done");
+if (!(await page.locator(".match-title .lola.is-celebrate").count())) fail("practica: Lola should celebrate the finished table");
+// the rebuilt table must equal the engine's, cell by cell
+const gridOk = await page.evaluate(async () => {
+  const { SETS } = await import("./js/verbs.js");
+  const { conjugate } = await import("./js/conjugator.js");
+  const persons = [0, 1, 2, 3, 5];
+  const rows = [...document.querySelectorAll(".practica-table tbody tr")];
+  for (let ri = 0; ri < rows.length; ri++) {
+    const tds = [...rows[ri].querySelectorAll("td")];
+    for (let vi = 0; vi < 5; vi++) {
+      const want = conjugate(SETS[0].verbs[vi], "present")[persons[ri]];
+      if (tds[vi].textContent !== want) return `cell r${ri}v${vi}: want "${want}" got "${tds[vi].textContent}"`;
+    }
+  }
+  return true;
+});
+if (gridOk !== true) fail(`practica: rebuilt table mismatch — ${gridOk}`);
+// unscored, truly: completing the whole table writes NOTHING
+const afterStore = await page.evaluate(() => localStorage.getItem("conjuga.v1"));
+if (afterStore !== beforeStore) fail("practica: must not record any progress (stars, badges, or otherwise)");
+ok("practica: full table rebuild, corrective retry, celebration, nothing recorded");
+await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
