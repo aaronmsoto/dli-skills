@@ -46,7 +46,8 @@ export function speak(text, rate = 0.85) {
   const u = new SpeechSynthesisUtterance(text);
   u.voice = cachedVoice;
   u.lang = cachedVoice.lang;
-  u.rate = rate; // 0.85 default for young learners; 0.65 = 🐢 slow replay
+  u.rate = rate; // 0.85 default for young learners; 0.5 = 🐢 slow replay
+  // (keep slow at 0.5: several engines flatten smaller rate differences)
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(u);
 }
