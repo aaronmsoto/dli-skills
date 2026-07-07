@@ -229,6 +229,12 @@ a { color: var(--brand); }
 .feedback.bad .btn { margin-top: 10px; }
 .feedback.almost { background: var(--almost-bg); color: var(--almost); font-weight: bold; }
 
+/* -------- escucha (listening mode) -------- */
+.listen-controls { display: flex; gap: 10px; justify-content: center; margin: 10px 0 6px; flex-wrap: wrap; }
+.listen-question { margin: 8px 0 0; font-size: 1.15rem; }
+.badges .badge { opacity: 0.25; font-size: 1.05rem; filter: grayscale(1); }
+.badges .badge.on { opacity: 1; filter: none; }
+
 /* sticky-hover suppression (see suppressHover in app.js) */
 .no-hover .choice:hover:not(:disabled) { border-color: transparent; }
 .no-hover .match-card:hover:not(:disabled) { border-color: transparent; }

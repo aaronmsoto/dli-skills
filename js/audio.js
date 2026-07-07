@@ -41,12 +41,12 @@ export function ttsAvailable() {
 }
 
 /** Speak Spanish text (queued after anything currently speaking is cancelled). */
-export function speak(text) {
+export function speak(text, rate = 0.85) {
   if (!ttsAvailable() || !text) return;
   const u = new SpeechSynthesisUtterance(text);
   u.voice = cachedVoice;
   u.lang = cachedVoice.lang;
-  u.rate = 0.85; // a touch slower for young learners
+  u.rate = rate; // 0.85 default for young learners; 0.65 = 🐢 slow replay
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(u);
 }

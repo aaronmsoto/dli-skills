@@ -15,6 +15,10 @@ import { speak, ttsAvailable } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
 
 const MODES = ["choice", "type", "match"];
+// Escucha is a parallel track: badges, not stars — never in MODES, so no
+// star denominator, sampling, or next-mode logic ever counts it.
+const LISTEN = "listen";
+const LISTEN_META = { icon: "🎧", es: "Escucha", en: "Listen & pick" };
 const MODE_META = {
   choice: { icon: "✅", es: "Elige", en: "Pick it" },
   type: { icon: "✏️", es: "Escribe", en: "Type it" },
@@ -106,6 +110,16 @@ function starRow(n, max = 3) {
     Array.from({ length: max }, (_, i) => el("span", { class: i < n ? "star on" : "star" }, i < n ? "★" : "☆")));
 }
 
+function badgeRow(n, max = 3) {
+  return el("span", { class: "stars badges", "aria-label": `${n} de ${max} insignias de escucha` },
+    Array.from({ length: max }, (_, i) => el("span", { class: i < n ? "badge on" : "badge" }, "🎧")));
+}
+
+/** 🎧 badges earned in a set (max 9 = 3 tenses × 3); parallel to stars. */
+function listenBadges(setId) {
+  return TENSES.reduce((sum, t) => sum + (store.getBest(setId, t, LISTEN)?.stars ?? 0), 0);
+}
+
 function personDisplay(i) {
   return PERSONS[i];
 }
@@ -120,7 +134,7 @@ function parseRoute() {
     return { screen: "study", setId: +parts[1], tense: parts[2] };
   if (parts[0] === "play" && SETS[+parts[1] - 1] && parts[2] === "contrast")
     return { screen: "contrast", setId: +parts[1] };
-  if (parts[0] === "play" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]) && MODES.includes(parts[3]))
+  if (parts[0] === "play" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]) && (MODES.includes(parts[3]) || parts[3] === LISTEN))
     return { screen: "play", setId: +parts[1], tense: parts[2], mode: parts[3] };
   if (parts[0] === "informe") return { screen: "report" };
   return { screen: "home" };
@@ -156,6 +170,7 @@ window.addEventListener("hashchange", render);
 
 function reviewLabel(item) {
   if (item.mode === "contrast") return `Grupo ${item.setId} · ⚔️ ¿Pretérito o imperfecto?`;
+  if (item.mode === LISTEN) return `Grupo ${item.setId} · ${TENSE_LABELS[item.tense].es} · 🎧 Escucha`;
   return `Grupo ${item.setId} · ${TENSE_LABELS[item.tense].es} · ${MODE_META[item.mode].icon} ${MODE_META[item.mode].es}`;
 }
 
@@ -173,7 +188,7 @@ function renderReviewQueue() {
       due.map((item) =>
         el("a", { class: "review-item", href: reviewHref(item) },
           el("span", {}, reviewLabel(item)),
-          starRow(item.stars)))),
+          item.mode === LISTEN ? badgeRow(item.stars) : starRow(item.stars)))),
   );
 }
 
@@ -196,7 +211,9 @@ function renderHome() {
         return el("a", { class: "set-card", href: `#/set/${s.id}` },
           el("span", { class: "set-num" }, `Grupo ${s.id}`),
           el("span", { class: "set-verbs" }, s.verbs.map((v) => v.inf).join(" · ")),
-          el("span", { class: "set-progress" }, `⭐ ${earned}/${STARS_PER_SET}`),
+          el("span", { class: "set-progress" },
+            `⭐ ${earned}/${STARS_PER_SET}`,
+            listenBadges(s.id) ? ` · 🎧 ${listenBadges(s.id)}/9` : ""),
         );
       }),
     ),
@@ -277,6 +294,14 @@ function renderSet(setId) {
           starRow(best?.stars ?? 0),
         );
       }),
+      // Escucha exists only where a Spanish voice does; badges, not stars.
+      ttsAvailable()
+        ? el("a", { class: "mode-card listen-card", href: `#/play/${set.id}/${tense}/${LISTEN}` },
+          el("span", { class: "mode-icon" }, LISTEN_META.icon),
+          el("strong", {}, LISTEN_META.es),
+          el("span", { class: "mode-en" }, LISTEN_META.en),
+          badgeRow(store.getBest(set.id, tense, LISTEN)?.stars ?? 0))
+        : null,
     ),
 
     el("h2", {}, "3 · Reto ", el("span", { class: "h-en" }, "(challenge)")),
@@ -340,6 +365,11 @@ function renderPlay(setId, tense, mode) {
   const { vosotros } = store.getSettings();
 
   if (mode === "match") return renderMatch(set, tense, vosotros);
+  if (mode === LISTEN && !ttsAvailable()) {
+    // shared/bookmarked link on a voiceless device — send to the group screen
+    go(`#/set/${setId}`);
+    return;
+  }
 
   const targets = sampleTargets(set.verbs, tense, QUESTIONS_PER_ROUND, vosotros);
   const state = { i: 0, score: 0, streak: 0, misses: [], usedAccentRetry: false };
@@ -381,6 +411,19 @@ function renderPlay(setId, tense, mode) {
     renderQuestion();
   }
 
+  // Escucha: the form is heard, never shown. Prompts bypass the mute
+  // setting — entering the listening mode is explicit audio intent.
+  function listenPromptCard(t) {
+    return el("div", { class: "prompt" },
+      el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
+      el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en" }, "Which form do you hear?")),
+      el("div", { class: "listen-controls" },
+        el("button", { class: "btn primary", type: "button", onclick: () => speak(t.answer) }, "🔊 Escuchar"),
+        el("button", { class: "btn", type: "button", onclick: () => speak(t.answer, 0.65) }, "🐢 Despacio")),
+      el("span", { class: "prompt-verb" }, `${t.verb.inf} — ${t.verb.en}`),
+    );
+  }
+
   function promptCard(t) {
     return el("div", { class: "prompt" },
       el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
@@ -397,7 +440,8 @@ function renderPlay(setId, tense, mode) {
     lola.setState("is-idle");
     const t = targets[state.i];
     const feedback = el("div", { class: "feedback", role: "status" });
-    stage.replaceChildren(promptCard(t), feedback);
+    stage.replaceChildren(mode === LISTEN ? listenPromptCard(t) : promptCard(t), feedback);
+    if (mode === LISTEN) speak(t.answer);
 
     const lockAndAdvance = (correct, chosenText) => {
       if (correct) {
@@ -425,7 +469,7 @@ function renderPlay(setId, tense, mode) {
       }
     };
 
-    if (mode === "choice") {
+    if (mode === "choice" || mode === LISTEN) {
       const options = buildChoices(t, TENSES);
       const grid = el("div", { class: "choices" },
         options.map((opt, idx) =>
@@ -720,7 +764,8 @@ function renderReport() {
               el("th", { scope: "col" }, "Grupo"),
               TENSES.map((t) => el("th", { scope: "col" }, `${TENSE_META[t].icon} ${TENSE_LABELS[t].es}`)),
               el("th", { scope: "col" }, "⚔️ Reto"),
-              el("th", { scope: "col" }, "Total"))),
+              el("th", { scope: "col" }, "🎧 Escucha"),
+              el("th", { scope: "col" }, "Total ⭐"))),
           el("tbody", {},
             SETS.map((s) =>
               el("tr", {},
@@ -732,9 +777,11 @@ function renderReport() {
                   return el("td", {}, `${earned}/9`);
                 }),
                 el("td", {}, `${store.getBest(s.id, CONTRAST_KEY.tense, CONTRAST_KEY.mode)?.stars ?? 0}/3`),
+                el("td", {}, `${listenBadges(s.id)}/9`),
                 el("td", { class: "report-row-total" }, `${earnedStars(s.id)}/${STARS_PER_SET}`)))))),
       el("p", { class: "report-note" },
         "Estrellas por actividad: ★ ≥60% · ★★ ≥80% · ★★★ 100%. ",
+        "Las insignias 🎧 (escucha) son un logro aparte y no cuentan en el total de estrellas. ",
         "El progreso vive solo en este dispositivo (sin cuentas). ",
         "Stars per activity; progress is stored only on this device."),
       el("div", { class: "study-actions no-print" },
@@ -763,7 +810,7 @@ function showResults(set, tense, mode, score, total, misses) {
     el("div", { class: "results" },
       el("h1", {}, "Resultados"),
       lola.el,
-      el("div", { class: "big-stars" }, starRow(stars)),
+      el("div", { class: "big-stars" }, mode === LISTEN ? badgeRow(stars) : starRow(stars)),
       el("p", { class: "score-line" }, `${score} / ${total} · ${pct}%`),
       el("p", { class: "result-msg" }, msg),
       misses.length ? el("div", { class: "review" },
