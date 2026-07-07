@@ -173,6 +173,7 @@ transforms/opacity only).
 | `is-turn` | streak ≥3 · match pair found | quick ~270° look-back head turn and return | 550 ms | side-glance pose |
 | `is-spin` | **3-star results only** | full 360° head spin + sparkles + one bounce | 900 ms, once | sparkle-eyed static pose |
 | `is-celebrate` | 1-2 star results | double hop + wing flap | 600 ms | wings-out pose |
+| `is-hint` | hint panel open (M7) | Lola raises a magnifying glass to her eye and holds it (investigator pose) while the learner studies the column | pose in ≤300 ms, holds | same static pose |
 
 The head spin is the signature move (owner request) and the only sanctioned
 >600 ms moment; it fires at most once per results screen.
