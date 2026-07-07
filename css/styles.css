@@ -229,6 +229,25 @@ a { color: var(--brand); }
 .feedback.bad .btn { margin-top: 10px; }
 .feedback.almost { background: var(--almost-bg); color: var(--almost); font-weight: bold; }
 
+/* -------- pistas (M7 hint mode) -------- */
+.hint-btn {
+  display: block; margin: 12px auto 0;
+  font: inherit; font-size: 0.95rem;
+  border: 2px solid var(--brand-soft); background: var(--card); color: var(--ink);
+  border-radius: 999px; padding: 8px 18px; cursor: pointer; box-shadow: var(--shadow);
+}
+.hint-btn:hover, .hint-btn:focus-visible, .hint-btn.open { border-color: var(--brand); }
+.hint-panel { margin: 0 auto 14px; }
+.hint-tables { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.conj-table.hint-table { min-width: 0; width: auto; font-size: 0.95rem; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.hint-table th, .hint-table td { padding: 6px 14px; }
+
+/* Lola's magnifying glass (is-hint) */
+.lola-lens { opacity: 0; transition: opacity 250ms ease; }
+.lola.is-hint .lola-lens { opacity: 1; }
+.lola.is-hint { animation: none; }
+.lola.is-hint .lola-head { transform: rotate(-6deg); transition: transform 250ms ease; }
+
 /* -------- escucha (listening mode) -------- */
 .listen-controls { display: flex; gap: 10px; justify-content: center; margin: 10px 0 6px; flex-wrap: wrap; }
 .listen-question { margin: 8px 0 0; font-size: 1.15rem; }

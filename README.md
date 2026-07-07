@@ -42,6 +42,10 @@ zero-setup, and usable from any browser without registration or data collection.
   form is spoken, never shown; pick what you heard from four options, with
   unlimited replay and a 🐢 slow button. Earns a parallel track of 🎧
   badges that never count toward stars, so voiceless devices lose nothing
+- **🔍 Pistas (hints)** — kid-requested: a magnifying-glass button on quiz
+  questions opens the Estudia column for that verb (both past columns in
+  the contrast challenge); Lola raises her own magnifying glass while you
+  peek. No penalty; a footer checkbox (on by default) can turn hints off
 - **🔁 Repasa hoy** — a spaced-repetition queue on the home screen: activities
   come back for review after 0/1/3/7 days depending on stars earned
 - **🖨️ Printables** — print-friendly conjugation tables and a progress report
