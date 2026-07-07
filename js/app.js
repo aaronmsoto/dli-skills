@@ -121,9 +121,15 @@ function makeHint(verb, tenses, lola) {
           el("thead", {}, el("tr", {},
             el("th", { scope: "col" }, ""),
             el("th", { scope: "col" }, `${verb.inf} · ${TENSE_LABELS[tn].es}`))),
-          el("tbody", {}, persons.map((pp) => el("tr", {},
-            el("th", { scope: "row" }, personDisplay(pp)),
-            el("td", {}, conjugate(verb, tn)[pp]))))))));
+          el("tbody", {}, persons.map((pp) => {
+            const form = conjugate(verb, tn)[pp];
+            return el("tr", {},
+              el("th", { scope: "row" }, personDisplay(pp)),
+              el("td", {}, ttsAvailable()
+                // same tap-to-hear affordance as the Estudia table
+                ? el("button", { class: "cell-speak", onclick: () => sayForm(pp, form) }, form)
+                : form));
+          }))))));
   const btn = el("button", {
     class: "hint-btn", type: "button", "aria-expanded": "false",
     "aria-label": "Pista: ver la tabla del verbo",

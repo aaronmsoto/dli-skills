@@ -413,6 +413,23 @@ await page.goto(`${BASE}/#/play/1/present/listen`);
 await page.waitForSelector(".tense-card");
 ok("escucha: voiceless direct route redirects to group screen");
 
+// hint-panel forms are tap-to-hear on voiced devices (parity with Estudia)
+await voiced.goto(`${BASE}/#/play/1/present/choice`);
+await voiced.waitForSelector(".hint-btn");
+await voiced.locator(".hint-btn").click();
+await voiced.waitForSelector(".hint-panel:not([hidden]) .cell-speak");
+const hintExpected = await voiced.evaluate(async () => {
+  const { SETS } = await import("./js/verbs.js");
+  const { conjugate } = await import("./js/conjugator.js");
+  const inf = document.querySelector(".prompt-verb").textContent.split(" — ")[0];
+  const verb = SETS[0].verbs.find((v) => v.inf === inf);
+  return `yo ${conjugate(verb, "present")[0]}`;
+});
+await voiced.locator(".hint-panel .cell-speak").first().click();
+const hintSpoken = await voiced.evaluate(() => window.__spoken.at(-1).text);
+if (hintSpoken !== hintExpected) fail(`hint speak: expected "${hintExpected}", got "${hintSpoken}"`);
+ok(`hint: tapping a form speaks it ("${hintSpoken}")`);
+
 // mute stops speech
 await voiced.goto(`${BASE}/#/study/1/present`);
 await voiced.waitForSelector(".sound-toggle");
@@ -497,6 +514,9 @@ await page.waitForSelector(".hint-btn"); // default ON
   if (await page.locator(".hint-panel:not([hidden])").count()) fail("hint: panel must reset on question advance");
   ok("hint: 🔍 shows the engine-correct column, Lola investigates, panel resets");
 }
+// hint cells are plain text without a voice (no dead buttons)
+if (await page.locator(".hint-panel .cell-speak").count()) fail("hint: voiceless devices must not render speak buttons");
+
 // contrast: hint shows BOTH past columns
 await page.goto(`${BASE}/#/play/1/contrast`);
 await page.waitForSelector(".hint-btn");
