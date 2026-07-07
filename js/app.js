@@ -419,7 +419,9 @@ function renderPlay(setId, tense, mode) {
       el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en" }, "Which form do you hear?")),
       el("div", { class: "listen-controls" },
         el("button", { class: "btn primary", type: "button", onclick: () => speak(t.answer) }, "🔊 Escuchar"),
-        el("button", { class: "btn", type: "button", onclick: () => speak(t.answer, 0.65) }, "🐢 Despacio")),
+        // 0.5, not ~0.65: iOS maps sub-1.0 rates non-linearly and many
+        // Android voices quantize, so smaller contrasts sound identical.
+        el("button", { class: "btn", type: "button", onclick: () => speak(t.answer, 0.5) }, "🐢 Despacio")),
       el("span", { class: "prompt-verb" }, `${t.verb.inf} — ${t.verb.en}`),
     );
   }
