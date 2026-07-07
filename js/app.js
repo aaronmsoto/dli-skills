@@ -532,7 +532,8 @@ function renderMatch(set, tense, vosotros) {
       state.matched++;
       feedback.className = "feedback good";
       feedback.textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
-      say(card.side === "R" ? card.label : a.card.label);
+      const pair = pairs.find((p) => p.id === card.id);
+      sayForm(pair.person, pair.right);
       if (state.matched === pairs.length) {
         setTimeout(() => showResults(set, tense, "match", state.firstTryHits, pairs.length, []), 700);
       }

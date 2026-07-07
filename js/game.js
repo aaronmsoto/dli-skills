@@ -132,6 +132,7 @@ export function buildMatchPairs(verbs, tense, includeVosotros) {
     .filter((t, i, arr) => arr.findIndex((x) => x.answer === t.answer) === i);
   return targets.map((t, i) => ({
     id: i,
+    person: t.person,
     left: `${t.personLabel} · ${t.verb.inf}`,
     right: t.answer,
   }));
