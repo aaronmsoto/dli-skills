@@ -25,8 +25,9 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
-**Queue (owner-set, 2026-07-07): M8 (CURRENT) → M5 (reduced) → M9 → M10.**
-M2 stays on hold (SME input); M4 is paused indefinitely. Loops work the
+**Queue (owner-set, 2026-07-07): M5 (reduced, CURRENT) → M9 → M10.**
+M8 shipped to dev 2026-07-07. M2 stays on hold (SME input); M4 is paused
+indefinitely. Loops work the
 queue in this order regardless of milestone numbering below.
 
 - [x] **M0 — Core trainer (v0.1)** · shipped 2026-07-07
@@ -84,7 +85,8 @@ queue in this order regardless of milestone numbering below.
 - [ ] **M5 — Polish pass (reduced 2026-07-07: accessibility-audit items
   moved into M10's formal WCAG/heuristic work — only what M10 does NOT
   cover remains here)**
-  Performance budget check (<100 KB), copy review by a bilingual educator
+  Performance budget check (<120 KB raw — raised from 100 KB by owner
+  decision 2026-07-07; further raises are owner-only), copy review by a bilingual educator
   (human SME — not loop work), printable study-sheet layout tune-up.
 - [x] **M6 — Mascot epic: Lola la Lechuza (complete on dev 2026-07-07; ships with the next release merge)**
   Turn the placeholder 🦉 into a real character woven through the
@@ -119,7 +121,7 @@ queue in this order regardless of milestone numbering below.
   - [x] **V (validation):** e2e coverage — mascot states assert on
         correct/incorrect/completion; reduced-motion emulation shows static
         poses; mobile (360×640) and dark-mode screenshots; payload check
-        stays < 100 KB total.
+        stays under the payload budget (100 KB then; 120 KB since 2026-07-07).
   - [x] **RT (regression):** full unit + e2e suites green with zero
         weakened assertions; answer-flow timing unchanged (existing e2e
         timings still pass); localStorage schema untouched; print styles
@@ -159,14 +161,15 @@ queue in this order regardless of milestone numbering below.
         voice exists, and the ⚔️ Contrast challenge when the tense is a
         past tense — with e2e coverage.
 
-- [ ] **M8 — 🧩 Práctica (rebuild the table) — CURRENT**
+- [x] **M8 — 🧱 Práctica (rebuild the table)** · complete on dev 2026-07-07
+  (icon is 🧱, not 🧩 — Empareja already owns 🧩 and icons stay distinct)
   Source — direct feedback from a recent K-5 DLI graduate (owner's family,
   2026-07-07): her favorite classroom activity was per-word matching of
   tenses — teacher provides the root word and the conjugated forms as
   options, students match each form to its person, rebuilding the paradigm
   inside the familiar table shape.
   **Owner decision (2026-07-07): Option 2 shape (a new activity following
-  the Estudia table), named "🧩 Práctica", and UNSCORED — no stars, no
+  the Estudia table), named "🧱 Práctica", and UNSCORED — no stars, no
   badges, no result recording or attribution of any kind.** It is a
   pressure-free, practice-based extension of the Estudia interface — a
   bridging activity between passive study and the scored quizzes
@@ -174,7 +177,7 @@ queue in this order regardless of milestone numbering below.
   the chart's visual scaffold intact (NBPTS Std IV scaffolding;
   recognition-before-production ladder preserved).
   Acceptance criteria:
-  - [ ] **Interaction:** the Estudia-style table for the group's 5 verbs ×
+  - [x] **Interaction:** the Estudia-style table for the group's 5 verbs ×
         current tense, with the active verb's column EMPTY; that verb's
         forms appear shuffled in a bank of big (≥44px) tap targets. The
         learner taps a form, then taps its person row (tap-tap matching —
@@ -184,27 +187,27 @@ queue in this order regardless of milestone numbering below.
         word, column by column: when a column completes, the next verb's
         column empties and its bank appears, through all 5 verbs, ending
         in a completion celebration.
-  - [ ] **Vocalization per standard rules:** correct placement speaks the
+  - [x] **Vocalization per standard rules:** correct placement speaks the
         form with its person (`sayForm`) when a Spanish voice exists;
         placed cells are tap-to-hear like the Estudia table; every audio
         affordance hides when `ttsAvailable()` is false (the activity
         itself works voiceless); the sound setting is respected.
-  - [ ] **Identical forms are interchangeable:** where two persons share a
+  - [x] **Identical forms are interchangeable:** where two persons share a
         form (imperfect yo/él·ella·Ud. always; some preterites), placing
         the duplicate tile on either matching row is correct.
-  - [ ] **Unscored, truly:** no writes to stars or badges, no
+  - [x] **Unscored, truly:** no writes to stars or badges, no
         `recordResult`, STARS_PER_SET unchanged (30), informe and review
         queue unaffected. The set screen and study screen present Práctica
         with no star/badge affordance.
-  - [ ] **Entry points:** the study screen's action list presents
-        🧩 Práctica FIRST (before Elige), per the standing rule that
+  - [x] **Entry points:** the study screen's action list presents
+        🧱 Práctica FIRST (before Elige), per the standing rule that
         Estudia links every activity; the group screen offers it per
         tense without scoring UI.
-  - [ ] **Scoping:** vosotros filtered per setting (never removed from
+  - [x] **Scoping:** vosotros filtered per setting (never removed from
         data); NO 🔍 hint button (the activity IS the chart — record in
         SPEC); Lola per docs/MASCOT.md (hop on placement, curious on
         miss, celebration on table completion).
-  - [ ] **Validation:** unit tests for any new sampling/shuffle helper
+  - [x] **Validation:** unit tests for any new sampling/shuffle helper
         (incl. the duplicate-form rule); e2e for the full flow — empty
         column + bank render, correct placement fills + speaks person-
         prefixed form, wrong placement corrects non-punitively, column

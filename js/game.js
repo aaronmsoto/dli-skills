@@ -125,6 +125,18 @@ export function buildContrastQuestions(verbs, count, includeVosotros) {
   });
 }
 
+/**
+ * 🧱 Práctica (M8, unscored): the shuffled word bank for one verb's column.
+ * One tile per person — duplicate forms (imperfect yo/él always; some
+ * preterites) appear once per person, and placing either duplicate tile on
+ * either matching row is correct (the UI checks by string equality), so the
+ * bank length always equals the person count.
+ */
+export function buildPracticaBank(verb, tense, persons) {
+  const forms = conjugate(verb, tense);
+  return shuffle(persons.map((p) => forms[p]));
+}
+
 /** Build the pairs for a matching round: personLabel+infinitive ↔ form. */
 export function buildMatchPairs(verbs, tense, includeVosotros) {
   const targets = sampleTargets(verbs, tense, MATCH_PAIRS, includeVosotros)

@@ -47,8 +47,8 @@ See docs/STANDARDS.md for the alignment detail.
 - The 5 verbs with English glosses.
 - Step 1: pick a tense (Presente / Pretérito / Imperfecto) — each card shows
   icon, semantic hint, and an example sentence.
-- Step 2: pick an activity — Estudia, Elige, Escribe, Empareja — with stars
-  earned for the selected tense.
+- Step 2: pick an activity — Estudia, 🧱 Práctica (unscored), Elige,
+  Escribe, Empareja — stars shown for the scored games in the selected tense.
 
 ### 4.3 Activities
 - **Estudia (study):** one table — rows = persons, columns = the 5 verbs —
@@ -138,6 +138,23 @@ turns the feature off everywhere. Deliberately absent from Empareja (the
 board is already visible) and 🎧 Escucha (a visible column would undermine
 the listening task).
 
+### 4.3i Práctica (🧱 rebuild the table, M8 — unscored, from direct K-5 user feedback)
+A practice-based extension of the Estudia interface (a recent DLI graduate's
+favorite classroom activity: teacher gives the root word and the forms,
+students match each form to its person). The Estudia-style table renders
+with the active verb's column EMPTY; that verb's forms sit shuffled in a
+bank of big tap targets. Tap a word, then its person row: correct fills the
+cell (which becomes tap-to-hear, per the standard vocalization rules) and
+speaks person + form; incorrect shakes and invites a retry — the activity
+cannot be failed. Columns advance verb by verb through the group; finishing
+the table earns a Lola celebration and links onward to the games.
+UNSCORED by owner decision: no stars, no badges, no recordResult of any
+kind (the ladder is Estudia → Práctica → Elige → Escribe → Empareja).
+Duplicate forms (imperfect yo/él) match by string equality, so either tile
+fits either matching row. No 🔍 hint button — the activity IS the chart.
+Entry points: first action link on the study screen; an unscored card on
+the group screen. Icon is 🧱 (Empareja already owns 🧩).
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +
@@ -147,7 +164,7 @@ the listening task).
 ### 4.5 Non-functional
 - **Accessibility:** WCAG-minded — ARIA live region for feedback, focus-visible
   styles, keyboard play, ≥44px targets, dark mode, prefers-reduced-motion.
-- **Performance:** no network calls after load; total payload < 100 KB.
+- **Performance:** no network calls after load; total payload < 120 KB raw (~30 KB gzipped; budget owner-raised from 100 KB on 2026-07-07).
 - **Privacy:** no cookies, no analytics, no external requests, no PII.
 - **Browser support:** evergreen browsers (ES2020 modules).
 

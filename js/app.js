@@ -3,13 +3,14 @@
  *   #/                      home (set picker + review queue)
  *   #/set/3                 set detail (tense + mode picker)
  *   #/study/3/present       study tables
+ *   #/practica/3/present    🧱 rebuild-the-table practice (unscored)
  *   #/play/3/present/choice game round (choice | type | match)
  *   #/play/3/contrast       ¿pretérito o imperfecto? challenge
  *   #/informe               printable progress report
  */
 import { SETS } from "./verbs.js";
 import { conjugate, PERSONS, TENSES, TENSE_LABELS, normalizeAnswer, stripAccents } from "./conjugator.js";
-import { sampleTargets, buildChoices, buildMatchPairs, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
+import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
 import * as store from "./storage.js";
 import { speak, ttsAvailable } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
@@ -19,6 +20,10 @@ const MODES = ["choice", "type", "match"];
 // star denominator, sampling, or next-mode logic ever counts it.
 const LISTEN = "listen";
 const LISTEN_META = { icon: "🎧", es: "Escucha", en: "Listen & pick" };
+// Práctica is UNSCORED by owner decision (M8): no stars, no badges, no
+// recordResult — a pressure-free bridge between Estudia and the quizzes.
+// 🧱, not 🧩: Empareja already owns 🧩 and icons must stay distinct.
+const PRACTICA_META = { icon: "🧱", es: "Práctica", en: "Rebuild the table" };
 const MODE_META = {
   choice: { icon: "✅", es: "Elige", en: "Pick it" },
   type: { icon: "✏️", es: "Escribe", en: "Type it" },
@@ -172,6 +177,8 @@ function parseRoute() {
   if (parts[0] === "set" && SETS[+parts[1] - 1]) return { screen: "set", setId: +parts[1] };
   if (parts[0] === "study" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]))
     return { screen: "study", setId: +parts[1], tense: parts[2] };
+  if (parts[0] === "practica" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]))
+    return { screen: "practica", setId: +parts[1], tense: parts[2] };
   if (parts[0] === "play" && SETS[+parts[1] - 1] && parts[2] === "contrast")
     return { screen: "contrast", setId: +parts[1] };
   if (parts[0] === "play" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]) && (MODES.includes(parts[3]) || parts[3] === LISTEN))
@@ -199,6 +206,7 @@ function render() {
   if (route.screen === "home") renderHome();
   else if (route.screen === "set") renderSet(route.setId);
   else if (route.screen === "study") renderStudy(route.setId, route.tense);
+  else if (route.screen === "practica") renderPractica(route.setId, route.tense);
   else if (route.screen === "contrast") renderContrast(route.setId);
   else if (route.screen === "report") renderReport();
   else renderPlay(route.setId, route.tense, route.mode);
@@ -332,6 +340,13 @@ function renderSet(setId) {
         el("strong", {}, "Estudia"),
         el("span", { class: "mode-en" }, "See the tables"),
       ),
+      // unscored on purpose: no starRow here, ever (M8 owner decision)
+      el("a", { class: "mode-card practica-card", href: `#/practica/${set.id}/${tense}` },
+        el("span", { class: "mode-icon" }, PRACTICA_META.icon),
+        el("strong", {}, PRACTICA_META.es),
+        el("span", { class: "mode-en" }, PRACTICA_META.en),
+        el("span", { class: "mode-free" }, "práctica libre · free practice"),
+      ),
       MODES.map((m) => {
         const best = store.getBest(set.id, tense, m);
         return el("a", { class: "mode-card", href: `#/play/${set.id}/${tense}/${m}` },
@@ -399,6 +414,10 @@ function renderStudy(setId, tense) {
               })))),
       )),
     el("div", { class: "study-actions" },
+      // Práctica first: the rebuild-the-table step sits between studying
+      // the chart and the scored games (Estudia → Práctica → Elige → …)
+      el("a", { class: "btn primary practica-link", href: `#/practica/${setId}/${tense}` },
+        `${PRACTICA_META.icon} ${PRACTICA_META.es}`),
       MODES.map((m) => el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/${m}` },
         `${MODE_META[m].icon} ${MODE_META[m].es}`)),
       // every current activity is reachable from Estudia (M7 owner add-on)
@@ -412,6 +431,137 @@ function renderStudy(setId, tense) {
         : null,
       el("button", { class: "btn print-btn", onclick: () => window.print() }, "🖨️ Imprimir")),
   );
+}
+
+// ---------------------------------------------------------------- práctica
+
+/**
+ * 🧱 Práctica (M8) — rebuild the Estudia table by matching each form to its
+ * person, column by column. UNSCORED by owner decision: no stars/badges,
+ * no recordResult, can't be failed. Vocalization per the standard rules.
+ * Duplicate forms (imperfect yo/él) match by string equality, so either
+ * tile fits either matching row.
+ */
+function renderPractica(setId, tense) {
+  const set = SETS[setId - 1];
+  const { vosotros } = store.getSettings();
+  const persons = [0, 1, 2, 3, 4, 5].filter((p) => vosotros || p !== 4);
+  const speakable = ttsAvailable();
+  const lola = createLola(52);
+  const state = { verbIdx: 0, selected: null, remaining: 0 };
+
+  const feedback = el("div", { class: "feedback", role: "status" });
+  const bankWrap = el("div", { class: "practica-bank-wrap" });
+  const say2 = (cls, text) => { feedback.className = `feedback ${cls}`; feedback.textContent = text; announce(text); };
+
+  const heads = set.verbs.map((v) => el("th", { scope: "col" },
+    el("span", { class: "th-inf" }, v.inf), el("span", { class: "th-gloss" }, v.en)));
+  const cells = set.verbs.map(() => ({}));
+  const table = el("table", { class: "conj-table practica-table" },
+    el("thead", {}, el("tr", {}, el("th", { scope: "col" }, ""), heads)),
+    el("tbody", {}, persons.map((p) =>
+      el("tr", {},
+        el("th", { scope: "row" }, personDisplay(p)),
+        set.verbs.map((v, vi) => (cells[vi][p] = el("td", { class: "practica-cell" })))))));
+
+  mount(
+    el("nav", { class: "crumbs" },
+      el("a", { href: `#/set/${setId}` }, "← Salir"),
+      el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
+      soundToggle()),
+    el("h1", { class: "match-title" }, lola.el, `${PRACTICA_META.icon} Práctica — ${TENSE_LABELS[tense].es}`),
+    el("p", { class: "match-help" },
+      "Reconstruye la tabla palabra por palabra. Rebuild the table word by word — no stars, just practice."),
+    el("div", { class: "table-scroll" }, table),
+    bankWrap, feedback,
+  );
+
+  function startColumn() {
+    const verb = set.verbs[state.verbIdx];
+    state.selected = null;
+    state.remaining = persons.length;
+    heads.forEach((h, vi) => h.classList.toggle("col-active", vi === state.verbIdx));
+    for (const p of persons) {
+      const td = cells[state.verbIdx][p];
+      td.classList.add("col-active");
+      td.replaceChildren(el("button", {
+        class: "drop-slot", "aria-label": `Colocar la forma de ${personDisplay(p)}`,
+        onclick: () => place(p),
+      }, "____"));
+    }
+    bankWrap.replaceChildren(
+      el("p", { class: "bank-title" },
+        el("strong", {}, verb.inf), ` — ${verb.en} · toca una palabra y luego su fila`),
+      el("div", { class: "practica-bank", "aria-label": `Palabras de ${verb.inf}` },
+        buildPracticaBank(verb, tense, persons).map((form) => {
+          const b = el("button", {
+            class: "match-card bank-tile", "aria-pressed": "false",
+            onclick: () => pickTile(form, b),
+          }, form);
+          return b;
+        })));
+    suppressHover(bankWrap);
+  }
+
+  function pickTile(form, btn) {
+    const prev = bankWrap.querySelector(".bank-tile.picked");
+    if (prev && prev !== btn) { prev.classList.remove("picked"); prev.setAttribute("aria-pressed", "false"); }
+    const on = !btn.classList.contains("picked");
+    btn.classList.toggle("picked", on);
+    btn.setAttribute("aria-pressed", String(on));
+    state.selected = on ? { form, btn } : null;
+  }
+
+  function place(p) {
+    const verb = set.verbs[state.verbIdx];
+    if (!state.selected) {
+      return say2("almost", "Primero toca una palabra del banco. Pick a word from the bank first.");
+    }
+    const { form, btn } = state.selected;
+    const td = cells[state.verbIdx][p];
+    if (form === conjugate(verb, tense)[p]) {
+      state.selected = null;
+      btn.remove();
+      td.classList.remove("col-active");
+      td.classList.add("filled");
+      td.replaceChildren(speakable
+        ? el("button", { class: "cell-speak", onclick: () => sayForm(p, form) }, form)
+        : form);
+      lola.setState("is-hop");
+      say2("good", `${PRAISE[Math.floor(Math.random() * PRAISE.length)]} ${personDisplay(p)} ${form}`);
+      sayForm(p, form);
+      if (--state.remaining === 0) columnDone();
+    } else {
+      lola.setState("is-curious");
+      for (const b of [btn, td.querySelector(".drop-slot")]) {
+        if (!b) continue;
+        b.classList.add("shake");
+        setTimeout(() => b.classList.remove("shake"), 400);
+      }
+      say2("bad", "Casi — inténtalo otra vez. Try again!");
+    }
+  }
+
+  function columnDone() {
+    state.verbIdx++;
+    if (state.verbIdx < set.verbs.length) {
+      say2("good", "¡Columna completa! Siguiente verbo →");
+      return startColumn();
+    }
+    heads.forEach((h) => h.classList.remove("col-active"));
+    lola.setState("is-celebrate");
+    say2("good", "¡Tabla completa!");
+    bankWrap.replaceChildren(
+      el("div", { class: "practica-done" },
+        el("p", { class: "score-line" }, "¡Tabla completa! 🎉"),
+        el("p", {}, "¡Muy bien! Ahora, ¿un juego? · Great! Ready for a game?"),
+        el("div", { class: "result-actions" },
+          el("a", { class: "btn", href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
+          el("button", { class: "btn", onclick: () => render() }, "🔁 Otra vez"),
+          el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/choice` }, "✅ Elige"))));
+  }
+
+  startColumn();
 }
 
 // ---------------------------------------------------------------- play
