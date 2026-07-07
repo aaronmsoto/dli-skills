@@ -1,0 +1,39 @@
+# Keeps a rolling "Release: dev → main" pull request open whenever dev is
+# ahead of main. Merging that PR (a human decision) deploys to GitHub Pages
+# via deploy.yml (test-gated).
+#
+# Note: PRs created with GITHUB_TOKEN don't trigger other workflows, so the
+# release PR itself may show no checks — dev is already CI-gated on every
+# push, and the deploy on merge re-runs the test suite regardless.
+name: Release PR
+
+on:
+  push:
+    branches: [dev]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open the rolling dev → main release PR if none exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          existing=$(gh pr list --repo "$GITHUB_REPOSITORY" --base main --head dev --state open --json number --jq '.[0].number' || true)
+          if [ -n "$existing" ]; then
+            echo "Release PR #$existing already open; the push updated it automatically."
+            exit 0
+          fi
+          ahead=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...dev" --jq '.ahead_by')
+          if [ "$ahead" = "0" ]; then
+            echo "dev is not ahead of main; nothing to release."
+            exit 0
+          fi
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head dev \
+            --title "Release: dev → main" \
+            --body "$(printf 'Rolling release PR, auto-maintained on every push to `dev`.\n\nMerging deploys to GitHub Pages (test-gated by deploy.yml). Review the accumulated diff — individual iterations were each CI-gated (unit + e2e) before auto-merging into `dev`; per-iteration context is in `journal/`.\n\nClose this PR to skip a release; it will be reopened on the next push to dev.')"
