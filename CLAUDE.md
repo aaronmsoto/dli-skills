@@ -64,11 +64,22 @@ remote environment); check for console errors and screenshot each screen.
   ellos/Uds.); vosotros (index 4) is filtered at the UI layer per user setting,
   never removed from data.
 
-## Deployment
+## Git workflow & deployment
 
-`.github/workflows/deploy.yml` publishes the repo root to GitHub Pages on push
-to `main` (plus manual `workflow_dispatch`). All asset URLs must remain
-relative (the app is served from /dli-skills-builder/, not the domain root).
+- **Never commit or push directly to `main`.** All work happens on dev
+  branches (`dev/<topic>`, `feature/<topic>`, or an agent session branch);
+  commit there and push with `git push -u origin <branch>`.
+- **Merging to `main` is the deploy.** `.github/workflows/deploy.yml` runs
+  the test suite and publishes the repo root to GitHub Pages only on push to
+  `main` (a PR merge) or a manual `workflow_dispatch`. Pushes to dev branches
+  never deploy.
+- Open a pull request from the dev branch into `main` when the work is
+  validated (tests passing, UI exercised in a browser). The deploy is
+  test-gated, but run `npm test` before pushing anyway — a red test suite
+  blocks the Pages publish, leaving production on the previous version.
+- Keep changes deployable: `main` should always represent the live site.
+- All asset URLs must remain relative (the app is served from
+  /dli-skills-builder/, not the domain root).
 
 ## Documentation map
 
