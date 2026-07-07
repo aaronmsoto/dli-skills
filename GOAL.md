@@ -25,6 +25,10 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
+**Queue (owner-set, 2026-07-07): M8 (CURRENT) → M5 (reduced) → M9 → M10.**
+M2 stays on hold (SME input); M4 is paused indefinitely. Loops work the
+queue in this order regardless of milestone numbering below.
+
 - [x] **M0 — Core trainer (v0.1)** · shipped 2026-07-07
   Engine + 100 verbs + Estudia/Elige/Escribe/Empareja + stars + Pages deploy.
 - [x] **M1 — Audio, contrast, review, printables (v0.2)** · shipped 2026-07-07
@@ -70,15 +74,18 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
         options never reveal it in the prompt, slow replay uses a lower
         rate, mode hidden + route guarded without a voice; suites green.
   - Deferred (not blocking M3): typed Escucha variant — revisit with SME.
-- [ ] **M4 — Near-future & progressive**
+- [ ] **M4 — Near-future & progressive (PAUSED indefinitely — owner
+  decision 2026-07-07; loops must NOT work on this until the owner
+  reactivates it here)**
   `ir a + infinitive` and present progressive (gerund generation with
   irregular gerunds: leyendo, oyendo, diciendo, pidiendo, viniendo, …),
   same test rigor as existing tenses; UI framing "muy pronto ⏭️ / ahora
   mismo 🔄".
-- [ ] **M5 — Polish pass**
-  Accessibility audit (keyboard-only full playthrough, screen-reader labels,
-  contrast check), performance budget check (<100 KB), copy review by a
-  bilingual educator, printable study-sheet layout tune-up.
+- [ ] **M5 — Polish pass (reduced 2026-07-07: accessibility-audit items
+  moved into M10's formal WCAG/heuristic work — only what M10 does NOT
+  cover remains here)**
+  Performance budget check (<100 KB), copy review by a bilingual educator
+  (human SME — not loop work), printable study-sheet layout tune-up.
 - [x] **M6 — Mascot epic: Lola la Lechuza (complete on dev 2026-07-07; ships with the next release merge)**
   Turn the placeholder 🦉 into a real character woven through the
   experience, applying the JiJi (ST Math) design principles documented in
@@ -152,52 +159,59 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
         voice exists, and the ⚔️ Contrast challenge when the tense is a
         past tense — with e2e coverage.
 
-- [ ] **M8 — 🧩 Per-word tense matching ("Construye la tabla") — DECISION
-  PENDING (owner will select an approach; loops must NOT implement until
-  this hold is lifted here)**
+- [ ] **M8 — 🧩 Práctica (rebuild the table) — CURRENT**
   Source — direct feedback from a recent K-5 DLI graduate (owner's family,
   2026-07-07): her favorite classroom activity was per-word matching of
-  tenses. The teacher provided the root word (infinitive) and the various
-  conjugated forms as options, and students matched each form to its person.
-  Conceptually it merges the Empareja matching UI with a single Estudia
-  column: instead of matching person↔form pairs scattered across a board,
-  the learner rebuilds ONE verb's paradigm, form by form, inside the
-  familiar table shape.
-  Intent: honor this as a bridging activity between passive study (Estudia)
-  and recognition quizzing (Elige) — the learner assembles the chart rather
-  than reading it, which is active recall with the table's visual scaffold
-  intact (NBPTS Std IV scaffolding; recognition-before-production ladder
-  preserved).
-  Options on the table (owner will decide):
-  1. **Estudia toggle** — extend the Estudia table with a matching mode:
-     a toggle clears the table and the learner fills it back in word by
-     word (column by column) via a matching UI.
-     - Pro: zero new navigation; the chart-rebuild happens exactly where
-       the chart lives; strongest "same table, now active" connection.
-     - Con: Estudia is currently the app's one pressure-free reference
-       surface (and the printable); mixing an activity into it complicates
-       that role, the print styles, and the hint panel's "matches Estudia
-       exactly" contract. Scoring is awkward — Estudia has no star slot.
-  2. **New quiz type** — a fourth activity ("🧩 Construye" / Build the
-     table), positioned as the FIRST quiz after Estudia in the ladder
-     (Estudia → Construye → Elige → Escribe → Empareja): one verb per
-     round-step, its 5-6 forms shuffled in a bank, the learner places each
-     form onto the correct person row of an empty column.
-     - Pro: clean fit with the existing mode architecture (a `build` mode
-       key alongside choice/type/match), its own star track, hint/Lola/TTS
-       integration for free, Estudia stays pure.
-     - Con: star math changes (STARS_PER_SET grows unless Construye is
-       badge-tracked like 🎧 Escucha); one more card per tense on the
-       group screen.
-  3. **Another shape** — e.g. fold it into Empareja as a "one verb at a
-     time" variant, or make it an unscored warm-up that auto-offers before
-     a group's first Elige round.
-  Current loop recommendation (advisory only): **option 2**, closest to
-  the classroom original, keeps Estudia's reference/printable role intact,
-  and reuses the proven mode plumbing; decide separately whether it earns
-  stars (grows the denominator) or badges (parallel track, like Escucha).
-  Acceptance criteria: to be written AFTER the owner picks a direction —
-  the chosen option becomes the criteria list here and the hold is lifted.
+  tenses — teacher provides the root word and the conjugated forms as
+  options, students match each form to its person, rebuilding the paradigm
+  inside the familiar table shape.
+  **Owner decision (2026-07-07): Option 2 shape (a new activity following
+  the Estudia table), named "🧩 Práctica", and UNSCORED — no stars, no
+  badges, no result recording or attribution of any kind.** It is a
+  pressure-free, practice-based extension of the Estudia interface — a
+  bridging activity between passive study and the scored quizzes
+  (Estudia → Práctica → Elige → Escribe → Empareja), active recall with
+  the chart's visual scaffold intact (NBPTS Std IV scaffolding;
+  recognition-before-production ladder preserved).
+  Acceptance criteria:
+  - [ ] **Interaction:** the Estudia-style table for the group's 5 verbs ×
+        current tense, with the active verb's column EMPTY; that verb's
+        forms appear shuffled in a bank of big (≥44px) tap targets. The
+        learner taps a form, then taps its person row (tap-tap matching —
+        touch-first, fully keyboard-operable). Correct placement fills the
+        cell; incorrect gets a gentle corrective cue and the form returns
+        for retry — the activity cannot be failed. Work proceeds word by
+        word, column by column: when a column completes, the next verb's
+        column empties and its bank appears, through all 5 verbs, ending
+        in a completion celebration.
+  - [ ] **Vocalization per standard rules:** correct placement speaks the
+        form with its person (`sayForm`) when a Spanish voice exists;
+        placed cells are tap-to-hear like the Estudia table; every audio
+        affordance hides when `ttsAvailable()` is false (the activity
+        itself works voiceless); the sound setting is respected.
+  - [ ] **Identical forms are interchangeable:** where two persons share a
+        form (imperfect yo/él·ella·Ud. always; some preterites), placing
+        the duplicate tile on either matching row is correct.
+  - [ ] **Unscored, truly:** no writes to stars or badges, no
+        `recordResult`, STARS_PER_SET unchanged (30), informe and review
+        queue unaffected. The set screen and study screen present Práctica
+        with no star/badge affordance.
+  - [ ] **Entry points:** the study screen's action list presents
+        🧩 Práctica FIRST (before Elige), per the standing rule that
+        Estudia links every activity; the group screen offers it per
+        tense without scoring UI.
+  - [ ] **Scoping:** vosotros filtered per setting (never removed from
+        data); NO 🔍 hint button (the activity IS the chart — record in
+        SPEC); Lola per docs/MASCOT.md (hop on placement, curious on
+        miss, celebration on table completion).
+  - [ ] **Validation:** unit tests for any new sampling/shuffle helper
+        (incl. the duplicate-form rule); e2e for the full flow — empty
+        column + bank render, correct placement fills + speaks person-
+        prefixed form, wrong placement corrects non-punitively, column
+        advance, full completion, voiceless variant, and a localStorage
+        assertion that NOTHING was recorded; docs in sync (SPEC,
+        STANDARDS if pedagogy-affecting, README/about as needed); full
+        regression green.
 
 - [ ] **M9 — 🪟 Transparency & attribution epic**
   Make the app's standards grounding visible IN the product, and give every
@@ -251,10 +265,8 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
   this milestone as a decision-pending task for owner triage (M8 pattern).
   /docs is BUILT this sprint, not just planned. New pages stay UNLINKED
   from app navigation until the owner links them.
-  Note: M10 subsumes and goes deeper than M5's accessibility-audit and
-  copy-review items — when M10 completes, M5 shrinks to whatever it left
-  over (performance budget check, printable layout tune-up) unless the
-  owner retires it.
+  Note: M5 was reduced on 2026-07-07 — its accessibility-audit items now
+  live here; M5 keeps only what M10 does not cover.
   Acceptance criteria, in order:
   - [ ] **A1 (UX principles audit):** Don-Norman-principles audit
         (discoverability, affordances, signifiers, feedback, mapping,
@@ -291,21 +303,23 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
         design/pedagogy-changing findings appended here as decision-pending
         tasks with the auditor's recommendation. No fix may weaken an
         existing test.
-  - [ ] **P (public report page):** `usability.html` (the about.html
-        pattern — served at `/usability`-equivalent path, UNLINKED from
-        app nav): methodology overview of all four evaluations, scores,
+  - [ ] **P (usability report — part of /docs, owner decision
+        2026-07-07):** `docs/usability.html` — the "Usability &
+        Accessibility" page lives INSIDE the public /docs section (not a
+        root page): methodology overview of all four evaluations, scores,
         findings summary, fixed-vs-open status, date of audit. Content
-        mirrors docs/audits (no drift); bilingual header, English body.
+        mirrors docs/audits (no drift); bilingual header, English body;
+        linked from the /docs hub, UNLINKED from app nav.
   - [ ] **D (public docs hub):** `docs/index.html` — the repo's `docs/`
         directory already deploys with Pages, so `/docs/` becomes a real
         public route. Three sections: **how to use the app** (learners /
         parents / teachers, incl. offline-ish behavior, localStorage
         privacy, voice availability), **how it supports DLI standards**
         (per-screen mapping, links to the two standards documents), and
-        **usability & accessibility adherence** (links usability.html +
-        the four audit reports). Relative URLs only; unlinked from app
+        **usability & accessibility adherence** (links docs/usability.html
+        + the four audit reports). Relative URLs only; unlinked from app
         nav until the owner links it.
-  - [ ] **V/RT:** e2e coverage for usability.html and docs/index.html
+  - [ ] **V/RT:** e2e coverage for docs/usability.html and docs/index.html
         (load, key content, relative links resolve); axe-core automated
         pass wired as a CI-friendly check with zero Critical/Serious
         remaining; full regression green.
