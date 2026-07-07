@@ -1,7 +1,8 @@
 # MASCOT.md — research & design brief for the Conjuga mascot (epic M6)
 
-Status: **research seeded** (2026-07-07); design phase pending; the design
-brief at the bottom requires **human approval before any implementation**.
+Status: **name decided — Lola la Lechuza** (owner, 2026-07-07); design gate
+waived by owner; R phase complete below; D brief follows in the next
+iteration.
 
 ## Why a mascot
 
@@ -65,13 +66,59 @@ visual imitation.
   encouraging.
 - Works with the existing DOM/`el()` architecture; no schema changes.
 
-## Open design decisions (resolve in design phase, with owner)
+## Comparable mascots — what to borrow, what to avoid (R phase)
 
-1. **Name** — working name "Ollie"; bilingual candidates: **Oli** (works in
-   both languages), Lola la Lechuza, Búho Beto, Luna. Criteria: easy for
-   K-5 to say in Spanish, gender-neutral, no trademark collisions.
-2. Species flavor: generic cute owl vs. lechuza (barn owl) silhouette.
-3. Where the owl lives on each screen (home greeter / play companion on the
-   progress path / results celebration / study observer).
-4. Whether the owl's journey persists (e.g., flies further as total stars
-   grow) or resets per round.
+**Duo (Duolingo)** — the green owl; enormous brand success, but the
+cautionary tale for us. Duo's engagement machinery leans on *extrinsic
+pressure*: push-notification nagging, streak-loss guilt, passive-aggressive
+memes. Effective for adult retention; wrong for K-5 pedagogy and directly
+opposed to NBPTS Std V (low-anxiety environments). **Borrow:** the
+owl-as-teacher archetype, an instantly readable silhouette, expressive eyes
+doing most of the acting. **Avoid:** guilt mechanics, notifications of any
+kind, sadness/disappointment poses, any tie between the mascot's mood and
+the learner's failures.
+
+**ClassDojo monsters** — proof that a *classroom-culture* mascot works in
+K-5: kids name them, draw them, and the characters frame the experience
+without living inside the learning content. **Borrow:** rounded shapes and
+big eyes (safe, huggable proportions), mascot-as-classroom-identity.
+**Avoid:** tying the character to behavior points — our stars measure
+mastery, and Lola never judges.
+
+**Scratch Cat (MIT Scratch)** — a silent, neutral tool mascot: the default
+sprite that belongs to the kids, never instructs, never gates anything.
+**Borrow:** quiet dependable presence owned by the learner. **Avoid (for
+us):** being so neutral that no feedback relationship exists — JiJi's core
+lesson is that the character should carry the progress signal.
+
+## Motion & attention notes for K-5 (R phase)
+
+- **Feedback animations ≤ ~600 ms**, one at a time; on a miss the child's
+  eye must land on the corrective text, so miss-motion stays smaller and
+  slower than success-motion.
+- **Idle motion minimal** (blink every 4-6 s, gentle 2-3 px bob) — constant
+  animation next to reading material harms early-reader attention.
+- **Vestibular safety:** spins can cause real discomfort;
+  `prefers-reduced-motion` must replace ALL motion — including the
+  celebration head spin — with static pose swaps (opacity/pose only).
+- Mascot is decorative: `aria-hidden="true"`; no information may exist only
+  in the mascot (text + ARIA live region stay authoritative).
+- Never animate while the learner is typing (Escribe input focused =
+  Lola holds still and watches).
+
+## Design decisions
+
+1. **Name: RESOLVED — Lola la Lechuza** (owner, 2026-07-07). K-5-friendly
+   Spanish alliteration; "lechuza" (barn owl) gives the white heart-shaped
+   face — a silhouette, palette, and species treatment visually distinct
+   from every existing mascot owl (Duo is a round green cartoon owl; no
+   imitation risk).
+2. **Head spin: ADOPTED as the signature move** (owner request).
+   Owl-realistic ~270° look-back turns for small delights; ONE playful full
+   360° spin reserved for 3-star celebrations. Static "sparkle-eyed" pose
+   under reduced motion.
+3. **Species flavor:** lechuza (barn owl) — white heart face, tawny body,
+   dark button eyes.
+4. Remaining for the D brief (next iteration): per-screen placement map,
+   full pose/timing spec, light/dark palettes, copy lines, and whether
+   Lola's journey persists across rounds (stars-driven) or resets per round.
