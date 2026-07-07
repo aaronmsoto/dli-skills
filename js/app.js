@@ -12,7 +12,7 @@ import { conjugate, PERSONS, TENSES, TENSE_LABELS, normalizeAnswer, stripAccents
 import { sampleTargets, buildChoices, buildMatchPairs, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
 import * as store from "./storage.js";
 import { speak, ttsAvailable } from "./audio.js";
-import { createLola } from "./mascot.js";
+import { createLola, createNest } from "./mascot.js";
 
 const MODES = ["choice", "type", "match"];
 const MODE_META = {
@@ -331,6 +331,7 @@ function renderPlay(setId, tense, mode) {
 
   const targets = sampleTargets(set.verbs, tense, QUESTIONS_PER_ROUND, vosotros);
   const state = { i: 0, score: 0, streak: 0, misses: [], usedAccentRetry: false };
+  const lola = createLola(46);
 
   const header = el("div", { class: "play-header" });
   const stage = el("div", { class: "stage" });
@@ -339,14 +340,19 @@ function renderPlay(setId, tense, mode) {
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
       soundToggle()),
+    el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
   );
 
   function renderHeader() {
+    const pct = (state.i / targets.length) * 100;
     header.replaceChildren(
       el("div", { class: "progress-wrap" },
-        el("div", { class: "progress-bar" },
-          el("div", { class: "progress-fill", style: `width:${(state.i / targets.length) * 100}%` })),
+        el("div", { class: "bar-holder" },
+          el("div", { class: "progress-bar" },
+            el("div", { class: "progress-fill", style: `width:${pct}%` })),
+          el("span", { class: "play-lola", style: `left:${pct}%` }, lola.el),
+          createNest()),
         el("span", { class: "progress-text" }, `${Math.min(state.i + 1, targets.length)} / ${targets.length}`)),
       el("span", { class: "streak", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
     );
@@ -376,6 +382,7 @@ function renderPlay(setId, tense, mode) {
 
   function renderQuestion() {
     renderHeader();
+    lola.setState("is-idle");
     const t = targets[state.i];
     const feedback = el("div", { class: "feedback", role: "status" });
     stage.replaceChildren(promptCard(t), feedback);
@@ -384,6 +391,7 @@ function renderPlay(setId, tense, mode) {
       if (correct) {
         state.score++;
         state.streak++;
+        lola.setState(state.streak >= 3 ? "is-turn" : "is-hop");
         const msg = PRAISE[Math.floor(Math.random() * PRAISE.length)];
         feedback.className = "feedback good";
         feedback.textContent = `${msg} ${personDisplay(t.person)} ${t.answer}`;
@@ -393,6 +401,7 @@ function renderPlay(setId, tense, mode) {
       } else {
         state.streak = 0;
         state.misses.push(t);
+        lola.setState("is-curious");
         feedback.className = "feedback bad";
         feedback.replaceChildren(
           `Casi. La respuesta es: `,
@@ -442,6 +451,8 @@ function renderPlay(setId, tense, mode) {
       const input = el("input", {
         class: "type-input", type: "text", autocomplete: "off", autocapitalize: "none",
         spellcheck: "false", "aria-label": "Escribe la forma del verbo", enterkeyhint: "done",
+        onfocus: () => lola.setState("is-watching"),
+        onblur: () => lola.setState("is-idle"),
       });
       const check = () => {
         const given = normalizeAnswer(input.value);
@@ -481,6 +492,7 @@ function renderPlay(setId, tense, mode) {
 function renderMatch(set, tense, vosotros) {
   const pairs = buildMatchPairs(set.verbs, tense, vosotros);
   const state = { matched: 0, firstTryHits: 0, attemptedIds: new Set(), selected: null };
+  const lola = createLola(52);
 
   const feedback = el("div", { class: "feedback", role: "status" });
   const board = el("div", { class: "match-board" });
@@ -489,7 +501,7 @@ function renderMatch(set, tense, vosotros) {
       el("a", { href: `#/set/${set.id}` }, "← Salir"),
       el("a", { href: `#/study/${set.id}/${tense}` }, "📖 Estudia"),
       soundToggle()),
-    el("h1", {}, `🧩 Empareja — ${TENSE_LABELS[tense].es}`),
+    el("h1", { class: "match-title" }, lola.el, `🧩 Empareja — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
     board, feedback,
   );
@@ -532,6 +544,7 @@ function renderMatch(set, tense, vosotros) {
       state.attemptedIds.add(card.id);
       for (const b of [a.btn, btn]) { b.classList.add("done"); b.disabled = true; }
       state.matched++;
+      lola.setState("is-turn");
       feedback.className = "feedback good";
       feedback.textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
       const pair = pairs.find((p) => p.id === card.id);
@@ -558,6 +571,7 @@ function renderContrast(setId) {
   const { vosotros } = store.getSettings();
   const questions = buildContrastQuestions(set.verbs, QUESTIONS_PER_ROUND, vosotros);
   const state = { i: 0, score: 0, streak: 0, misses: [] };
+  const lola = createLola(46);
 
   const header = el("div", { class: "play-header" });
   const stage = el("div", { class: "stage" });
@@ -571,14 +585,19 @@ function renderContrast(setId) {
     el("p", { class: "match-help" },
       "La palabra del tiempo es la pista: ", el("strong", {}, "una vez ⭐"), " o ",
       el("strong", {}, "muchas veces 🌙"), ". The time word is your clue."),
+    el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
   );
 
   function renderHeader() {
+    const pct = (state.i / questions.length) * 100;
     header.replaceChildren(
       el("div", { class: "progress-wrap" },
-        el("div", { class: "progress-bar" },
-          el("div", { class: "progress-fill", style: `width:${(state.i / questions.length) * 100}%` })),
+        el("div", { class: "bar-holder" },
+          el("div", { class: "progress-bar" },
+            el("div", { class: "progress-fill", style: `width:${pct}%` })),
+          el("span", { class: "play-lola", style: `left:${pct}%` }, lola.el),
+          createNest()),
         el("span", { class: "progress-text" }, `${Math.min(state.i + 1, questions.length)} / ${questions.length}`)),
       el("span", { class: "streak", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
     );
@@ -593,6 +612,7 @@ function renderContrast(setId) {
 
   function renderQuestion() {
     renderHeader();
+    lola.setState("is-idle");
     const q = questions[state.i];
     const feedback = el("div", { class: "feedback", role: "status" });
     const grid = el("div", { class: "choices contrast-choices" },
@@ -606,6 +626,7 @@ function renderContrast(setId) {
             if (correct) {
               state.score++;
               state.streak++;
+              lola.setState(state.streak >= 3 ? "is-turn" : "is-hop");
               const msg = PRAISE[Math.floor(Math.random() * PRAISE.length)];
               feedback.className = "feedback good";
               feedback.textContent = `${msg} ${q.cue} → ${TENSE_LABELS[q.tense].es} ${TENSE_META[q.tense].icon}`;
@@ -615,6 +636,7 @@ function renderContrast(setId) {
             } else {
               state.streak = 0;
               state.misses.push({ person: q.person, answer: q.answer, verb: q.verb, tense: q.tense });
+              lola.setState("is-curious");
               for (const b of grid.querySelectorAll("button")) {
                 if (b.textContent.endsWith(q.answer)) b.classList.add("correct");
               }

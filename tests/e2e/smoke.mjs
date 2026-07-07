@@ -103,12 +103,23 @@ ok("study tables verified: soy / fui / era");
 
 // ---------- Elige: complete a full round ----------
 await page.goto(`${BASE}/#/play/1/present/choice`);
+await page.waitForSelector(".play-lola .lola");
+if (!(await page.locator(".lola-nest").count())) fail("play: nest missing from progress bar");
+if (!(await page.locator(".lola-help").count())) fail("play: helping copy missing");
+let sawCurious = false;
 for (let q = 0; q < 10; q++) {
   await page.waitForSelector(".choice:not(:disabled)");
   await page.locator(".choice").first().click();
-  try { await page.locator(".feedback.bad button").click({ timeout: 400 }); } catch { /* correct → auto-advance */ }
+  try {
+    const nextBtn = page.locator(".feedback.bad button");
+    await nextBtn.waitFor({ timeout: 400 });
+    // wrong answer → Lola is curious, never negative
+    if (await page.locator(".play-lola .lola.is-curious").count()) sawCurious = true;
+    await nextBtn.click();
+  } catch { /* correct → auto-advance */ }
   await page.waitForTimeout(1050);
 }
+if (!sawCurious) fail("play: expected Lola is-curious on at least one wrong answer");
 await page.waitForSelector(".results");
 // Lola state must match the star count deterministically
 {
@@ -139,11 +150,13 @@ const currentAnswer = (tenseExpr) => page.evaluate(async (tenseCode) => {
 // ---------- Escribe: correct answer + accent tolerance ----------
 await page.goto(`${BASE}/#/play/1/present/type`);
 await page.waitForSelector(".type-input");
+await page.waitForSelector(".play-lola .lola.is-watching"); // input autofocus → Lola watches
 const a1 = await currentAnswer("present");
 await page.fill(".type-input", a1);
 await page.click(".type-form .btn.primary");
 await page.waitForSelector(".feedback.good");
-ok(`type mode accepts correct answer: ${a1}`);
+await page.waitForSelector(".play-lola .lola.is-hop", { timeout: 800 }); // correct → hop
+ok(`type mode accepts correct answer: ${a1} (Lola watches, then hops)`);
 await page.waitForTimeout(1100);
 const a2 = await currentAnswer("present");
 const stripped = a2.normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -159,10 +172,25 @@ if (stripped !== a2) {
 // ---------- Empareja: full solve ----------
 await page.goto(`${BASE}/#/play/1/present/match`);
 await page.waitForSelector(".match-card");
+// first pair clicked via UI so we can watch Lola's look-back turn
+{
+  const first = await page.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const l = document.querySelector(".match-col.left .match-card");
+    const [personLabel, inf] = l.textContent.split(" · ");
+    const verb = SETS[0].verbs.find((v) => v.inf === inf);
+    return { left: l.textContent, right: conjugate(verb, "present")[PERSONS.indexOf(personLabel)] };
+  });
+  await page.locator(".match-col.left .match-card", { hasText: first.left }).first().click();
+  await page.locator(".match-col.right .match-card", { hasText: first.right }).first().click();
+  await page.waitForSelector(".match-title .lola.is-turn", { timeout: 800 });
+  ok("match: Lola turns her head on a matched pair");
+}
 const solved = await page.evaluate(async () => {
   const { SETS } = await import("./js/verbs.js");
   const { conjugate, PERSONS } = await import("./js/conjugator.js");
-  const left = [...document.querySelectorAll(".match-col.left .match-card")];
+  const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
   const right = [...document.querySelectorAll(".match-col.right .match-card")];
   for (const l of left) {
     const [personLabel, inf] = l.textContent.split(" · ");
@@ -185,6 +213,7 @@ ok(`match mode full solve → ${matchScore} (Lola spins)`);
 
 // ---------- Contrast: full solve via cue → tense ----------
 await page.goto(`${BASE}/#/play/1/contrast`);
+await page.waitForSelector(".play-lola .lola");
 for (let q = 0; q < 10; q++) {
   await page.waitForSelector(".contrast-choices .choice:not(:disabled)");
   const correct = await currentAnswer("FROM_CUE");

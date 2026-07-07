@@ -82,3 +82,18 @@ export function createLola(size = 64) {
 
   return { el: wrap, setState };
 }
+
+/** A small twig nest — the goal at the end of Lola's flight path. */
+export function createNest(size = 26) {
+  const wrap = document.createElement("span");
+  wrap.className = "lola-nest";
+  wrap.setAttribute("aria-hidden", "true");
+  wrap.innerHTML = `
+<svg width="${size}" height="${Math.round(size * 0.62)}" viewBox="0 0 60 37">
+  <ellipse cx="30" cy="14" rx="26" ry="9" fill="var(--lola-chest)"/>
+  <path d="M4 14 Q30 44 56 14 Q30 30 4 14 Z" fill="var(--lola-wing)"/>
+  <path d="M6 16 Q30 36 54 16" stroke="var(--lola-body)" stroke-width="2.5" fill="none"/>
+  <path d="M10 20 Q30 34 50 20" stroke="var(--lola-beak)" stroke-width="2" fill="none" opacity="0.7"/>
+</svg>`;
+  return wrap;
+}
