@@ -27,7 +27,7 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
 ## Commands
 
 ```bash
-npm test     # node --test tests/*.test.mjs — 40 accuracy/invariant/feature tests
+npm test     # node --test tests/*.test.mjs — accuracy/invariant/feature/budget tests
 npm run e2e  # headless-Chromium end-to-end suite (tests/e2e/smoke.mjs)
 npm start    # python3 -m http.server 8080 (any static server works)
 ```
@@ -59,6 +59,10 @@ never become an app dependency.
   (due after 0/1/3/7 days for 0/1/2/3 stars; entries without `at` never due).
 - `js/audio.js` — Web Speech TTS. Prefers a local es-MX/es-US voice; every
   audio control hides when `ttsAvailable()` is false. `sound` setting mutes.
+- `js/mascot.js` — Lola la Lechuza (inline SVG; states are single CSS
+  classes; decorative/aria-hidden; silent — TTS is for Spanish forms only;
+  binding design spec in docs/MASCOT.md; keep within the 15 KB budget and
+  the payload test in tests/payload.test.mjs).
 - `js/app.js` — hash-routed screens (`#/set/3`, `#/study/3/present`,
   `#/play/3/present/choice`, `#/play/3/contrast`, `#/informe`). DOM built with
   a small `el()` helper; no innerHTML for user-derived strings. The contrast

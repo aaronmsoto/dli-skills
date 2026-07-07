@@ -63,7 +63,7 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
   Accessibility audit (keyboard-only full playthrough, screen-reader labels,
   contrast check), performance budget check (<100 KB), copy review by a
   bilingual educator, printable study-sheet layout tune-up.
-- [ ] **M6 — Mascot epic: make the owl a fun, integrated companion (CURRENT)**
+- [x] **M6 — Mascot epic: Lola la Lechuza (complete on dev 2026-07-07; ships with the next release merge)**
   Turn the placeholder 🦉 into a real character woven through the
   experience, applying the JiJi (ST Math) design principles documented in
   docs/MASCOT.md — character-as-feedback, forward-motion-as-progress,
@@ -93,11 +93,11 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
   - [x] **I2 (implementation):** in-game integration — owl travels the
         round's progress path; reacts to correct (hop forward) and
         incorrect (curious tilt, never negative); 3-star celebration.
-  - [ ] **V (validation):** e2e coverage — mascot states assert on
+  - [x] **V (validation):** e2e coverage — mascot states assert on
         correct/incorrect/completion; reduced-motion emulation shows static
         poses; mobile (360×640) and dark-mode screenshots; payload check
         stays < 100 KB total.
-  - [ ] **RT (regression):** full unit + e2e suites green with zero
+  - [x] **RT (regression):** full unit + e2e suites green with zero
         weakened assertions; answer-flow timing unchanged (existing e2e
         timings still pass); localStorage schema untouched; print styles
         unaffected (mascot hidden in print).

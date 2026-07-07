@@ -39,6 +39,13 @@
     --bad-bg: #7f1d1d;
     --almost: #fde047;
     --almost-bg: #713f12;
+    --lola-face: #f2ead9;
+    --lola-face-line: #d9cbae;
+    --lola-body: #a8834e;
+    --lola-wing: #8f6e3e;
+    --lola-chest: #d9c6a0;
+    --lola-eye: #1e1b18;
+    --lola-beak: #c98f45;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   }
 }
@@ -376,7 +383,7 @@ a { color: var(--brand); }
 .bar-holder .progress-bar { width: 100%; }
 .play-lola {
   position: absolute; bottom: 13px; left: 0;
-  transform: translateX(-40%);
+  transform: translateX(-50%);
   transition: left 400ms ease;
   pointer-events: none;
 }

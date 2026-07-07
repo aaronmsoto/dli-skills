@@ -324,6 +324,38 @@ if ((await voiced.evaluate(() => window.__spoken.length)) !== 0) fail("mute: spo
 ok("mute toggle silences speech");
 await voiced.close();
 
+// ---------- print: Lola hidden everywhere ----------
+await page.goto(`${BASE}/#/`);
+await page.waitForSelector(".lola-wrap");
+await page.emulateMedia({ media: "print" });
+if (await page.locator(".lola-wrap").first().isVisible()) fail("print: Lola must be hidden");
+await page.emulateMedia({ media: "screen" });
+ok("print: Lola hidden");
+
+// ---------- dark mode: Lola renders with dark palette ----------
+const darkPage = await browser.newPage({ colorScheme: "dark", viewport: { width: 900, height: 900 } });
+trackErrors(darkPage);
+await darkPage.goto(`${BASE}/#/`);
+await darkPage.waitForSelector(".home-title .lola");
+const darkBody = await darkPage.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--lola-body").trim());
+if (darkBody.toLowerCase() !== "#a8834e") fail(`dark mode: expected dark Lola body token, got "${darkBody}"`);
+await darkPage.screenshot({ path: `${SHOTS}/home-dark.png` });
+await darkPage.close();
+ok("dark mode: Lola dark palette active");
+
+// ---------- mobile 360×640: no overflow, perch inside viewport ----------
+const mob = await browser.newPage({ viewport: { width: 360, height: 640 } });
+trackErrors(mob);
+await mob.goto(`${BASE}/#/play/1/present/choice`);
+await mob.waitForSelector(".play-lola .lola");
+const overflow = await mob.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+if (overflow) fail("mobile: horizontal overflow on play screen");
+const box = await mob.locator(".play-lola").boundingBox();
+if (!box || box.x < 0 || box.x + box.width > 360) fail(`mobile: perch out of viewport (${JSON.stringify(box)})`);
+await mob.screenshot({ path: `${SHOTS}/play-mobile.png` });
+await mob.close();
+ok("mobile 360px: no overflow, Lola perch in view");
+
 // ---------- reduced motion: Lola must be static ----------
 const rmPage = await browser.newPage({ reducedMotion: "reduce" });
 trackErrors(rmPage);
