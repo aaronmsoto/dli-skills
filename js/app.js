@@ -68,6 +68,11 @@ function announce(msg) {
   requestAnimationFrame(() => (live.textContent = msg));
 }
 
+/** Append screen content, skipping nulls (native append() stringifies them). */
+function mount(...nodes) {
+  app.append(...nodes.flat().filter(Boolean));
+}
+
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
@@ -162,7 +167,7 @@ function renderReviewQueue() {
 function renderHome() {
   const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
 
-  app.append(
+  mount(
     el("header", { class: "hero" },
       soundToggle(),
       el("h1", {}, "🦉 Conjuga"),
@@ -221,7 +226,7 @@ function renderSet(setId) {
 
   const contrastBest = store.getBest(set.id, CONTRAST_KEY.tense, CONTRAST_KEY.mode);
 
-  app.append(
+  mount(
     el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), soundToggle()),
     el("h1", {}, `Grupo ${set.id}`),
     el("ul", { class: "verb-chips" },
@@ -281,7 +286,7 @@ function renderStudy(setId, tense) {
 
   const speakable = ttsAvailable();
 
-  app.append(
+  mount(
     el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), soundToggle()),
     el("h1", {}, `📖 Estudia — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "study-hint" }, `${TENSE_META[tense].icon} ${TENSE_META[tense].hint} — ej.: `,
@@ -327,7 +332,7 @@ function renderPlay(setId, tense, mode) {
 
   const header = el("div", { class: "play-header" });
   const stage = el("div", { class: "stage" });
-  app.append(
+  mount(
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
@@ -477,7 +482,7 @@ function renderMatch(set, tense, vosotros) {
 
   const feedback = el("div", { class: "feedback", role: "status" });
   const board = el("div", { class: "match-board" });
-  app.append(
+  mount(
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${set.id}` }, "← Salir"),
       el("a", { href: `#/study/${set.id}/${tense}` }, "📖 Estudia"),
@@ -553,7 +558,7 @@ function renderContrast(setId) {
 
   const header = el("div", { class: "play-header" });
   const stage = el("div", { class: "stage" });
-  app.append(
+  mount(
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/preterite` }, "📖 Pretérito"),
@@ -657,7 +662,7 @@ function renderReport() {
   const today = new Date().toLocaleDateString("es", { year: "numeric", month: "long", day: "numeric" });
   const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
 
-  app.append(
+  mount(
     el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver")),
     el("div", { class: "report" },
       el("h1", {}, "📄 Informe de progreso — Conjuga"),
