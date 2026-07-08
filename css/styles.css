@@ -238,6 +238,19 @@ a { color: var(--brand); }
 /* -------- study -------- */
 .study-hint { color: var(--ink-soft); }
 .table-scroll { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+/* freeze the persons/label column while the table scrolls (owner bug
+   report 2026-07-08 — critical on phones in Práctica; Estudia and the
+   informe share the pattern). Sticky cells need SOLID backgrounds. */
+.table-scroll .conj-table tbody th,
+.table-scroll .conj-table thead th:first-child {
+  position: sticky; left: 0; z-index: 2;
+  background: var(--card);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.10);
+}
+.table-scroll .conj-table thead th:first-child { background: var(--brand-soft); z-index: 3; }
+.table-scroll .conj-table tbody tr:nth-child(even) th {
+  background: color-mix(in srgb, var(--brand-soft) 35%, var(--card));
+}
 .conj-table { border-collapse: collapse; width: 100%; background: var(--card); min-width: 640px; }
 .conj-table th, .conj-table td { padding: 10px 12px; text-align: left; }
 .conj-table thead th { background: var(--brand-soft); }
