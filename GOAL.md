@@ -25,13 +25,10 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
-**Queue: IDLE — every loop-workable item is done (2026-07-08). M12 is
-next but ON HOLD until the owner supplies an ElevenLabs key + voice
-candidates (see M12).**
-Shipped to dev: M8 (07-07), M5 loop items, M9, M10 incl. same-day owner
-triage (07-08). Awaiting owner: M5's SME copy review + human
-screen-reader pass, the M2 hold, the M4 pause, (/docs linking decided
-and shipped 2026-07-08 as M11). The queue line here — not milestone
+**Queue: IDLE — every loop-workable item is done (M12 complete
+2026-07-08).** Shipped to dev: M8 (07-07); M5 loop items, M9, M10, M11,
+M12 (07-08). Awaiting owner: M5's SME copy review + human screen-reader
+pass, the M2 hold, the M4 pause. The queue line here — not milestone
 numbering — sets loop priority.
 
 - [x] **M0 — Core trainer (v0.1)** · shipped 2026-07-07
@@ -371,8 +368,13 @@ numbering — sets loop priority.
   screens, link set, focus/Esc/outside-click behavior, NBPTS-first
   order, per-route footer docs link, and real navigation to /docs.
 
-- [ ] **M12 — 🎙️ Premium Spanish audio via pre-generated ElevenLabs clips
-  (ON HOLD — do NOT start until the owner provides BOTH inputs below)**
+- [x] **M12 — 🎙️ Premium Spanish audio via pre-generated ElevenLabs clips**
+  · complete on dev 2026-07-08. Inputs: voice `rixsIpPlTphvsJd2mI03`,
+  key in local .env only (git-ignored); owner upgraded to Creator
+  (unblocks library voices via API + carries the commercial license for
+  distributing the clips). Owner tuning decisions after two
+  audition rounds: **dual-generated speeds** — 🔊 normal 0.85 and 🐢
+  despacio 0.70 (real recordings, no playbackRate tricks).
   Owner decision (2026-07-08): architecture is **pre-generated static
   clips** — never runtime API calls. A local, owner-run script generates
   every clip with the owner's ElevenLabs key; the key never ships, never
@@ -387,12 +389,12 @@ numbering — sets loop priority.
   2. Voice direction: candidate voice IDs to audition, or a chosen
      es-MX/es-419 voice. R1 exists to support this choice.
   Acceptance criteria, in order:
-  - [ ] **R1 (voice audition — first, feeds owner input #2):**
+  - [x] **R1 (voice audition — first, feeds owner input #2):**
         `tools/audition-voices.mjs` generates a small sample set (same
         6-8 phrases) for 3-4 candidate Latin-American Spanish voices;
         owner + SME pick the voice. Verify distribution license for
         generated audio on the chosen plan tier and record it here.
-  - [ ] **G (generation tooling, dev-only like Playwright/axe):**
+  - [x] **G (generation tooling, dev-only like Playwright/axe):**
         `tools/generate-audio.mjs` — reads the key from env, generates
         person-prefixed clips ("yo hablo") for all 100 verbs × 3 tenses ×
         6 persons (~1,800 clips, ~20k credits one-time; compact mp3
@@ -401,7 +403,7 @@ numbering — sets loop priority.
         and a unit test (manifest ↔ dataset correspondence). Clips are
         committed as static assets (outside the gzipped JS/CSS/HTML
         payload budget — they lazy-load per tap like images).
-  - [ ] **I (integration):** js/audio.js gains a backend chain —
+  - [x] **I (integration):** js/audio.js gains a backend chain —
         static clip (HTMLAudioElement) → Web Speech → hidden. Mute
         setting honored across backends; 🐢 Despacio via
         playbackRate 0.5 + preservesPitch (no second clip set);
@@ -409,7 +411,7 @@ numbering — sets loop priority.
         **Gate change:** audio availability = any backend, so
         🎧 Escucha unlocks on voiceless-but-online devices (the big
         classroom win: Chromebooks without Spanish voices).
-  - [ ] **V/RT:** e2e stubs network audio like it stubs
+  - [x] **V/RT:** e2e stubs network audio like it stubs
         speechSynthesis; asserts fallback order (clip first, Web Speech
         when clips unreachable, UI hidden when neither), despacio
         playbackRate, Escucha available voiceless-online and still
@@ -420,6 +422,16 @@ numbering — sets loop priority.
   Non-negotiables: no runtime ElevenLabs calls from the app, no key in
   the repo or CI, no server/proxy, Web Speech remains the offline
   fallback, and the payload budget still governs code (not clips).
+
+- [x] **M13 — 📌 Frozen persons column on scrolling tables (owner bug
+  report, complete on dev 2026-07-08)**
+  On phones, scrolling Práctica's table to reach later verb columns
+  scrolled the persons column out of view — the learner lost the row
+  labels mid-task. Fix: spreadsheet-style freeze (`position: sticky`,
+  solid backgrounds incl. even-row striping) on the first column of
+  every `.table-scroll` conjugation table — Práctica (critical),
+  Estudia, and the informe. E2e scrolls the table at 360px and asserts
+  the persons column's x-position does not move.
 
 ## Non-goals (do not build)
 

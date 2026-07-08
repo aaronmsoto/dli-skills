@@ -1,10 +1,12 @@
 /**
- * Text-to-speech via the browser's built-in Web Speech API. No network, no
- * dependencies. If the device has no Spanish voice (or no speechSynthesis at
- * all), `ttsAvailable()` returns false and the UI hides every audio control.
- *
- * Voice quality varies by device; we prefer a local es-* voice and fall back
- * to any Spanish voice. Rate is slightly slowed for young learners.
+ * Spanish audio, two backends (M12):
+ *  1. Pre-generated clips (audio/manifest.json → mp3s, one per exact spoken
+ *     text) — recorded once with ElevenLabs by the owner, served as static
+ *     assets like images. No text ever leaves the device at runtime.
+ *  2. Web Speech API fallback — device-local, works offline.
+ * UI gates on `audioAvailable()` (either backend). `ttsAvailable()` still
+ * reports the local-voice backend alone. Everything hides when neither
+ * backend exists (offline device without a Spanish voice).
  */
 
 let cachedVoice = null;
@@ -40,9 +42,43 @@ export function ttsAvailable() {
   return cachedVoice !== null;
 }
 
-/** Speak Spanish text (queued after anything currently speaking is cancelled). */
+// ---------------- clip backend (M12) ----------------
+
+let clipIndex = null; // { base, map: spokenText → relative mp3 path }
+let currentClip = null;
+
+/** Load the clip manifest (call once at boot; resolves even offline). */
+export async function initClips(base = "audio/") {
+  try {
+    const res = await fetch(`${base}manifest.json`);
+    if (res.ok) clipIndex = { base, map: await res.json() };
+  } catch { /* offline or clips absent — Web Speech remains the fallback */ }
+}
+
+export function clipsAvailable() {
+  return clipIndex !== null;
+}
+
+/** Either backend works → audio UI may render. */
+export function audioAvailable() {
+  return clipsAvailable() || ttsAvailable();
+}
+
+/** Speak Spanish text: clip first, Web Speech fallback. */
 export function speak(text, rate = 0.85) {
-  if (!ttsAvailable() || !text) return;
+  if (!text) return;
+  // dual-generated speeds (owner, 2026-07-08): 🐢 plays a REAL slower
+  // recording (0.70) rather than a playbackRate trick; normal is 0.85
+  const rel = clipIndex?.map[text]?.[rate <= 0.5 ? "s" : "n"];
+  if (rel) {
+    currentClip?.pause();
+    window.speechSynthesis?.cancel?.();
+    const clip = new Audio(clipIndex.base + rel);
+    currentClip = clip;
+    clip.play().catch(() => { /* autoplay edge — user gestures re-enable */ });
+    return;
+  }
+  if (!ttsAvailable()) return;
   const u = new SpeechSynthesisUtterance(text);
   u.voice = cachedVoice;
   u.lang = cachedVoice.lang;

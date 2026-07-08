@@ -59,6 +59,11 @@ const trackErrors = (p) => {
 };
 const page = await browser.newPage({ viewport: { width: 900, height: 900 } });
 trackErrors(page);
+// M12: this context simulates NO AUDIO AT ALL (no local voice, clips
+// unreachable) so every "voiceless" assertion below keeps its meaning.
+// 204 (not abort): the empty body fails res.json() → clip backend stays
+// off, and nothing is logged to the console-error tracker.
+await page.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
 
 async function assertNoStrayNull(name) {
   const text = await page.locator("#app").innerText();
@@ -319,6 +324,8 @@ ok(`tts availability honest (available=${available}, toggles=${toggles})`);
 
 const voiced = await browser.newPage();
 trackErrors(voiced);
+// M12: block clips here too — this context exercises the Web Speech path.
+await voiced.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
 await voiced.addInitScript(() => {
   const fakeVoice = { lang: "es-MX", localService: true, name: "Fake ES" };
   window.__spoken = [];
@@ -936,6 +943,75 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await page.goBack();
   await page.waitForSelector(".conj-table");
   ok("menu: ☰ on all screens; links/focus/Esc/click-outside; docs hub reachable");
+}
+
+// ---------- 🎙️ M12 clips backend: voiceless-but-online device ----------
+{
+  const clips = await browser.newPage();
+  trackErrors(clips);
+  // NO speechSynthesis stub (voiceless device); clips reachable; Audio stubbed
+  await clips.addInitScript(() => {
+    window.__played = [];
+    class FakeAudio {
+      constructor(src) { this.src = src; this.playbackRate = 1; this.preservesPitch = false; }
+      play() { window.__played.push({ src: this.src, rate: this.playbackRate }); return Promise.resolve(); }
+      pause() {}
+    }
+    Object.defineProperty(window, "Audio", { configurable: true, value: FakeAudio });
+  });
+  const manifest = JSON.parse(await (await fetch(`${BASE}/audio/manifest.json`)).text());
+  // audio UI renders from clips alone
+  await clips.goto(`${BASE}/#/study/1/present`);
+  await clips.waitForSelector(".cell-speak");
+  await clips.locator(".cell-speak").first().click();
+  const p1 = await clips.evaluate(() => window.__played.at(-1));
+  if (!p1 || !p1.src.endsWith(manifest["yo soy"].n)) fail(`clips: study tap should play the NORMAL "yo soy" clip, got ${JSON.stringify(p1)}`);
+  // 🎧 Escucha unlocks voiceless-but-online (the M12 classroom win)
+  await clips.goto(`${BASE}/#/set/1`);
+  await clips.waitForSelector(".mode-card");
+  if (!(await clips.locator(".listen-card").count())) fail("clips: Escucha card must appear with clips available");
+  if ((await clips.locator(".mode-card").count()) !== 7) fail("clips: set screen should show 7 activity cards");
+  await clips.goto(`${BASE}/#/play/1/present/listen`);
+  await clips.waitForSelector(".listen-controls");
+  const prompt = await clips.evaluate(() => window.__played.at(-1));
+  const bare = Object.entries(manifest).filter(([t]) => !t.includes(" "));
+  if (!prompt || !bare.some(([, v]) => prompt.src.endsWith(v.n)))
+    fail(`clips: escucha must speak a BARE-form NORMAL clip, got ${JSON.stringify(prompt)}`);
+  await clips.locator(".listen-controls .btn", { hasText: "Despacio" }).click();
+  const slow = await clips.evaluate(() => window.__played.at(-1));
+  if (!bare.some(([, v]) => slow.src.endsWith(v.s)))
+    fail(`clips: 🐢 must play the dual-generated SLOW (0.70) clip, got ${JSON.stringify(slow)}`);
+  // mute silences the clip backend too
+  await clips.goto(`${BASE}/#/study/1/present`);
+  await clips.waitForSelector(".sound-toggle");
+  await clips.locator(".sound-toggle").click();
+  await clips.evaluate(() => { window.__played.length = 0; });
+  await clips.locator(".cell-speak").first().click();
+  if (await clips.evaluate(() => window.__played.length)) fail("clips: mute must silence clip playback");
+  await clips.close();
+  ok("clips: voiceless-but-online audio incl. Escucha; bare prompts; 🐢 = real 0.70 clip; mute works");
+}
+
+// ---------- 📌 M13: persons column stays frozen while tables scroll (360px) ----------
+{
+  const sticky = await browser.newPage({ viewport: { width: 360, height: 640 } });
+  trackErrors(sticky);
+  for (const route of ["#/practica/1/present", "#/study/1/present"]) {
+    await sticky.goto(`${BASE}/${route}`);
+    await sticky.waitForSelector(".conj-table tbody th");
+    const before = await sticky.evaluate(() => document.querySelector(".conj-table tbody th").getBoundingClientRect().x);
+    const scrolled = await sticky.evaluate(() => {
+      const sc = document.querySelector(".table-scroll");
+      sc.scrollLeft = 300;
+      return sc.scrollLeft;
+    });
+    if (scrolled < 100) fail(`sticky ${route}: table should overflow-scroll at 360px (scrollLeft=${scrolled})`);
+    await sticky.waitForTimeout(60);
+    const after = await sticky.evaluate(() => document.querySelector(".conj-table tbody th").getBoundingClientRect().x);
+    if (Math.abs(after - before) > 1) fail(`sticky ${route}: persons column moved (x ${before} → ${after})`);
+  }
+  await sticky.close();
+  ok("sticky: persons column frozen while Práctica/Estudia tables scroll on phones");
 }
 
 // ---------- wrap up ----------

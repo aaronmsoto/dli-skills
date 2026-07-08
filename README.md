@@ -36,10 +36,11 @@ zero-setup, and usable from any browser without registration or data collection.
 - **⚔️ ¿Pretérito o imperfecto?** — a per-group challenge mode where a time
   cue (*ayer, una vez / siempre, todos los días…*) signals which past tense
   fits — the storytelling contrast, practiced head-to-head
-- **🔊 Audio** — Spanish text-to-speech via the browser's built-in Web Speech
-  API (no network, no data sent anywhere): correct answers and study-table
-  taps are spoken; one-tap mute; hidden automatically on devices without a
-  Spanish voice
+- **🔊 Audio** — high-quality pre-recorded Spanish clips (static files that
+  download like images — no text is sent anywhere), with the browser's
+  built-in Web Speech voice as the offline fallback: correct answers and
+  study-table taps are spoken; one-tap mute; controls hide only when
+  neither source is available
 - **🎧 Escucha** — listening mode (on devices with a Spanish voice): the
   form is spoken, never shown; pick what you heard from four options, with
   unlimited replay and a 🐢 slow button. Earns a parallel track of 🎧

@@ -31,8 +31,10 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
    e.g. "yo hablo") whenever `ttsAvailable()` — Estudia cells, hint-panel
    cells, revealed answers, placed Práctica tiles, etc. Every audio
    affordance hides when no Spanish voice exists, and each feature must
-   still work voiceless. `say()` respects the sound setting; explicit
-   listening prompts (🎧 Escucha) are the only mute exemption.
+   still work with no audio backend at all. `say()` respects the sound
+   setting; explicit listening prompts (🎧 Escucha) are the only mute
+   exemption. Gate on `audioAvailable()` (clips OR local voice), not
+   `ttsAvailable()` alone.
 2. **Estudia links every activity.** The study screen's action row must
    list ALL activities available for that group/tense. Adding, renaming,
    or gating an activity means updating the study-actions row, the group
@@ -87,8 +89,12 @@ never become an app dependency.
 - `js/storage.js` — localStorage wrapper; stars = 3 (100%), 2 (≥80%), 1 (≥60%);
   each result stores an `at` timestamp driving the spaced-repetition queue
   (due after 0/1/3/7 days for 0/1/2/3 stars; entries without `at` never due).
-- `js/audio.js` — Web Speech TTS. Prefers a local es-MX/es-US voice; every
-  audio control hides when `ttsAvailable()` is false. `sound` setting mutes.
+- `js/audio.js` — two backends: pre-generated clips (audio/manifest.json,
+  exact-spoken-text → mp3; generated via tools/generate-audio.mjs with the
+  owner's ElevenLabs key in a git-ignored .env — NEVER commit keys or call
+  ElevenLabs at runtime) then Web Speech TTS fallback (prefers a local
+  es-MX/es-US voice). UI gates on `audioAvailable()` (either backend);
+  Escucha works voiceless-but-online. `sound` setting mutes both.
 - `js/mascot.js` — Lola la Lechuza (inline SVG; states are single CSS
   classes; decorative/aria-hidden; silent — TTS is for Spanish forms only;
   binding design spec in docs/MASCOT.md; keep within the 15 KB budget and
@@ -101,7 +107,7 @@ never become an app dependency.
   challenge records under key `<setId>.past.contrast` (STARS_PER_SET = 30).
   🎧 Escucha records under `<setId>.<tense>.listen` — badges on a parallel
   track, deliberately excluded from MODES and every star denominator;
-  the mode renders only when `ttsAvailable()`.
+  the mode renders only when `audioAvailable()` (clips or local voice).
   Print styles live in styles.css (`@media print` + `.no-print`).
 - Persons are always indexed 0-5 (yo, tú, él/ella/Ud., nosotros, vosotros,
   ellos/Uds.); vosotros (index 4) is filtered at the UI layer per user setting,
