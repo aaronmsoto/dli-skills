@@ -278,18 +278,18 @@ queue in this order regardless of milestone numbering below.
   Note: M5 was reduced on 2026-07-07 — its accessibility-audit items now
   live here; M5 keeps only what M10 does not cover.
   Acceptance criteria, in order:
-  - [ ] **A1 (UX principles audit):** Don-Norman-principles audit
+  - [x] **A1 (UX principles audit):** Don-Norman-principles audit
         (discoverability, affordances, signifiers, feedback, mapping,
         constraints, conceptual model) across all screens per the
         methodology in mastepanoski/claude-skills
         `don-norman-principles-audit` — catastrophic/high/medium/low
         severities, per-principle evidence, 1-3 recommendations each,
         prioritized list + overall score. Report: `docs/audits/norman.md`.
-  - [ ] **A2 (heuristic evaluation):** Nielsen 10-heuristics audit per
+  - [x] **A2 (heuristic evaluation):** Nielsen 10-heuristics audit per
         `nielsen-heuristics-audit` — 0-4 severity scale, violations with
         exact locations and affected tasks, cross-heuristic patterns,
         quick wins, positive highlights. Report: `docs/audits/nielsen.md`.
-  - [ ] **A3 (cognitive walkthrough):** per `cognitive-walkthrough` — the
+  - [x] **A3 (cognitive walkthrough):** per `cognitive-walkthrough` — the
         four questions (right goal? action findable? affordance clear?
         progress visible?) applied step-by-step to ≥4 defined tasks with
         defined personas: a DLI 3rd grader on a tablet (novice, emerging
@@ -299,7 +299,7 @@ queue in this order regardless of milestone numbering below.
         use 🔍 Pistas, and print the informe. Per-step ✅/⚠️/❌ ratings,
         failure points, success-likelihood table.
         Report: `docs/audits/walkthrough.md`.
-  - [ ] **A4 (WCAG audit):** WCAG **2.2 Level AA** audit per
+  - [x] **A4 (WCAG audit):** WCAG **2.2 Level AA** audit per
         `wcag-accessibility-audit` — automated pass (axe-core run
         dev-only through the existing Playwright harness; NEVER an app
         dependency) plus manual passes: full keyboard-only playthrough,
@@ -308,6 +308,19 @@ queue in this order regardless of milestone numbering below.
         organized by POUR with success-criterion citations and
         Critical/Serious/Moderate/Minor severities.
         Report: `docs/audits/wcag.md`.
+  - Decision-pending findings from the audits (owner triage — loops must
+    NOT implement these until an option is chosen here):
+    - [ ] **NN-1/DN-4/CW-3 (high):** footer setting toggles on a game
+          screen silently restart the round. Options: (a) confirm before
+          restarting, (b) apply the setting at the next round instead,
+          (c) disable the two toggles during an active round with a short
+          note. Auditor recommendation: (b) — least friction, no modal.
+    - [ ] **NN-3/DN-1/CW-1 (medium):** no "start here" cue for a
+          brand-new learner on the 20-card home grid. Options: (a) a
+          small "¡Empieza aquí!" ribbon on the first unstarted group,
+          (b) a "Continúa" card tracking the furthest-played group,
+          (c) leave as is. Auditor recommendation: (a) — smallest, no
+          new state.
   - [ ] **F (fix wave):** per the autonomy decision above — auto-fix the
         mandated tiers with tests per fix; each fix cites its finding ID;
         design/pedagogy-changing findings appended here as decision-pending
