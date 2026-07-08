@@ -25,7 +25,9 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
-**Queue: IDLE — every loop-workable item is done (2026-07-08).**
+**Queue: IDLE — every loop-workable item is done (2026-07-08). M12 is
+next but ON HOLD until the owner supplies an ElevenLabs key + voice
+candidates (see M12).**
 Shipped to dev: M8 (07-07), M5 loop items, M9, M10 incl. same-day owner
 triage (07-08). Awaiting owner: M5's SME copy review + human
 screen-reader pass, the M2 hold, the M4 pause, (/docs linking decided
@@ -368,6 +370,56 @@ numbering — sets loop priority.
   🔊 shifts left) and hidden in print. E2e covers presence on all
   screens, link set, focus/Esc/outside-click behavior, NBPTS-first
   order, per-route footer docs link, and real navigation to /docs.
+
+- [ ] **M12 — 🎙️ Premium Spanish audio via pre-generated ElevenLabs clips
+  (ON HOLD — do NOT start until the owner provides BOTH inputs below)**
+  Owner decision (2026-07-08): architecture is **pre-generated static
+  clips** — never runtime API calls. A local, owner-run script generates
+  every clip with the owner's ElevenLabs key; the key never ships, never
+  enters CI, never gets committed; the app makes zero third-party calls
+  at runtime, keeping the published privacy claims true. Rationale: an
+  API key cannot be safely shipped in a public static site (ElevenLabs
+  offers no domain restriction; their client-side pattern needs a
+  token-minting server, which golden rule #2 forbids).
+  **Required owner inputs before any loop work (the hold):**
+  1. An ElevenLabs API key, provided as a local environment variable
+     (`ELEVENLABS_API_KEY`) at generation time only.
+  2. Voice direction: candidate voice IDs to audition, or a chosen
+     es-MX/es-419 voice. R1 exists to support this choice.
+  Acceptance criteria, in order:
+  - [ ] **R1 (voice audition — first, feeds owner input #2):**
+        `tools/audition-voices.mjs` generates a small sample set (same
+        6-8 phrases) for 3-4 candidate Latin-American Spanish voices;
+        owner + SME pick the voice. Verify distribution license for
+        generated audio on the chosen plan tier and record it here.
+  - [ ] **G (generation tooling, dev-only like Playwright/axe):**
+        `tools/generate-audio.mjs` — reads the key from env, generates
+        person-prefixed clips ("yo hablo") for all 100 verbs × 3 tenses ×
+        6 persons (~1,800 clips, ~20k credits one-time; compact mp3
+        format, ~15-35 MB total), idempotent/resumable (only missing
+        clips), verifies files, writes a manifest consumed by the app
+        and a unit test (manifest ↔ dataset correspondence). Clips are
+        committed as static assets (outside the gzipped JS/CSS/HTML
+        payload budget — they lazy-load per tap like images).
+  - [ ] **I (integration):** js/audio.js gains a backend chain —
+        static clip (HTMLAudioElement) → Web Speech → hidden. Mute
+        setting honored across backends; 🐢 Despacio via
+        playbackRate 0.5 + preservesPitch (no second clip set);
+        vosotros clips generated but filtered at UI as always.
+        **Gate change:** audio availability = any backend, so
+        🎧 Escucha unlocks on voiceless-but-online devices (the big
+        classroom win: Chromebooks without Spanish voices).
+  - [ ] **V/RT:** e2e stubs network audio like it stubs
+        speechSynthesis; asserts fallback order (clip first, Web Speech
+        when clips unreachable, UI hidden when neither), despacio
+        playbackRate, Escucha available voiceless-online and still
+        hidden voiceless-offline, mute silences both backends; docs
+        (SPEC/STANDARDS-neutral, about.html, /docs privacy wording)
+        updated honestly: "audio files download like images; no text
+        leaves the device"; full regression green.
+  Non-negotiables: no runtime ElevenLabs calls from the app, no key in
+  the repo or CI, no server/proxy, Web Speech remains the offline
+  fallback, and the payload budget still governs code (not clips).
 
 ## Non-goals (do not build)
 
