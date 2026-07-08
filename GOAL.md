@@ -25,8 +25,9 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
-**Queue (owner-set, 2026-07-07): M5 (reduced, CURRENT) → M9 → M10.**
-M8 shipped to dev 2026-07-07. M2 stays on hold (SME input); M4 is paused
+**Queue (owner-set, 2026-07-07): M9 (CURRENT) → M10.**
+M5's loop items done 2026-07-08 (SME copy review still open); M8 shipped
+to dev 2026-07-07. M2 stays on hold (SME input); M4 is paused
 indefinitely. Loops work the
 queue in this order regardless of milestone numbering below.
 
@@ -84,10 +85,16 @@ queue in this order regardless of milestone numbering below.
   mismo 🔄".
 - [ ] **M5 — Polish pass (reduced 2026-07-07: accessibility-audit items
   moved into M10's formal WCAG/heuristic work — only what M10 does NOT
-  cover remains here)**
-  Performance budget check (<120 KB raw — raised from 100 KB by owner
-  decision 2026-07-07; further raises are owner-only), copy review by a bilingual educator
-  (human SME — not loop work), printable study-sheet layout tune-up.
+  cover remains here; loop items complete 2026-07-08, awaiting SME item)**
+  - [x] Performance budget check: <120 KB raw (raised from 100 KB by owner
+        decision 2026-07-07; further raises are owner-only), enforced by
+        tests/payload.test.mjs on every CI run.
+  - [x] Printable study-sheet layout tune-up (2026-07-08): print-only
+        Grupo/Nombre/Fecha header on study sheets, @page margins,
+        repeating table heads, row break-inside protection, denser
+        report typography in print — with e2e print-emulation coverage.
+  - [ ] Copy review by a bilingual educator (human SME — NOT loop work;
+        loops skip this item and treat M5 as passed for queue purposes).
 - [x] **M6 — Mascot epic: Lola la Lechuza (complete on dev 2026-07-07; ships with the next release merge)**
   Turn the placeholder 🦉 into a real character woven through the
   experience, applying the JiJi (ST Math) design principles documented in

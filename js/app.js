@@ -390,6 +390,10 @@ function renderStudy(setId, tense) {
   mount(
     el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), soundToggle()),
     el("h1", {}, `📖 Estudia — ${TENSE_LABELS[tense].es}`),
+    // classroom print header: appears only on the printed study sheet
+    el("p", { class: "print-fields print-only" },
+      `Grupo ${setId} · Nombre: `, el("span", { class: "fill-line" }, ""),
+      "  Fecha: ", el("span", { class: "fill-line short" }, "")),
     el("p", { class: "study-hint" }, `${TENSE_META[tense].icon} ${TENSE_META[tense].hint} — ej.: `,
       el("em", {}, TENSE_META[tense].example)),
     speakable

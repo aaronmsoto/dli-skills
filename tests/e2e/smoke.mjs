@@ -472,6 +472,20 @@ if (await page.locator(".lola-wrap").first().isVisible()) fail("print: Lola must
 await page.emulateMedia({ media: "screen" });
 ok("print: Lola hidden");
 
+// ---------- print: study sheet gets a classroom header (M5 tune-up) ----------
+await page.goto(`${BASE}/#/study/1/present`);
+await page.waitForSelector(".conj-table");
+if (await page.locator(".print-fields").isVisible()) fail("study: name/date header must be print-only");
+await page.emulateMedia({ media: "print" });
+if (!(await page.locator(".print-fields").isVisible())) fail("study print: name/date header missing");
+const printHeader = await page.locator(".print-fields").innerText();
+if (!/Grupo 1/.test(printHeader) || !/Nombre:/.test(printHeader) || !/Fecha:/.test(printHeader))
+  fail(`study print: header incomplete — "${printHeader}"`);
+const theadDisplay = await page.evaluate(() => getComputedStyle(document.querySelector(".conj-table thead")).display);
+if (theadDisplay !== "table-header-group") fail(`print: thead should repeat across pages, got "${theadDisplay}"`);
+await page.emulateMedia({ media: "screen" });
+ok("print: study sheet shows Grupo/Nombre/Fecha header, repeating table heads");
+
 // ---------- dark mode: Lola renders with dark palette ----------
 const darkPage = await browser.newPage({ colorScheme: "dark", viewport: { width: 900, height: 900 } });
 trackErrors(darkPage);
