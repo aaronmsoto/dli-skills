@@ -28,9 +28,9 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 **Queue: IDLE — every loop-workable item is done (2026-07-08).**
 Shipped to dev: M8 (07-07), M5 loop items, M9, M10 incl. same-day owner
 triage (07-08). Awaiting owner: M5's SME copy review + human
-screen-reader pass, the M2 hold, the M4 pause, and the decision to link
-/docs & the usability page from app navigation. The queue line here —
-not milestone numbering — sets loop priority.
+screen-reader pass, the M2 hold, the M4 pause, (/docs linking decided
+and shipped 2026-07-08 as M11). The queue line here — not milestone
+numbering — sets loop priority.
 
 - [x] **M0 — Core trainer (v0.1)** · shipped 2026-07-07
   Engine + 100 verbs + Estudia/Elige/Escribe/Empareja + stars + Pages deploy.
@@ -353,6 +353,20 @@ not milestone numbering — sets loop priority.
         (load, key content, relative links resolve); axe-core automated
         pass wired as a CI-friendly check with zero Critical/Serious
         remaining; full regression green.
+
+- [x] **M11 — 🧭 Site menu & public docs linking (owner-directed, complete
+  on dev 2026-07-08)**
+  Owner decisions: footer standards links reordered NBPTS-first (the
+  foundational teaching standards); /docs is now PUBLIC-LINKED via the
+  footer ("📚 Documentación / Docs") and a new ☰ site menu; navigation is
+  a top-right collapsed hamburger — deliberately unintrusive because
+  contextual back-navigation lives top-left in the crumbs. The ☰ menu is
+  a disclosure (not a modal): Inicio, Informe, Acerca de, Documentación;
+  first link focused on open, Esc/click-outside close, focus returns to
+  the button; on every screen incl. home (hero corner: ☰ owns top-right,
+  🔊 shifts left) and hidden in print. E2e covers presence on all
+  screens, link set, focus/Esc/outside-click behavior, NBPTS-first
+  order, per-route footer docs link, and real navigation to /docs.
 
 ## Non-goals (do not build)
 

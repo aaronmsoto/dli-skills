@@ -666,9 +666,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
       fail(`footer: creator credits missing on ${r}`);
     if (!credits.includes("“A1”") || !credits.includes("“A2”")) fail(`footer: consultant credits missing on ${r}`);
     if ((await page.locator(".footer-std").count()) !== 2) fail(`footer: expected 2 standards links on ${r}`);
+    if (!(await page.locator(".footer-docs").count())) fail(`footer: docs link missing on ${r}`);
   }
   const hrefs = await page.locator(".footer-std").evaluateAll((as) => as.map((a) => [a.href, a.rel]));
   if (!hrefs.some(([h]) => h.includes("nj.gov/education/standards/worldlang"))) fail("footer: NJSLS-WL link missing");
+  if (!hrefs[0][0].includes("nbpts.org")) fail("footer: NBPTS must come first (owner order, 2026-07-08)");
   if (!hrefs.some(([h]) => h.includes("nbpts.org") && h.includes("ECYA-WL"))) fail("footer: NBPTS ECYA-WL link missing");
   if (hrefs.some(([, rel]) => !rel.includes("noopener"))) fail("footer: standards links need rel=noopener");
   // results screen gets the footer too
@@ -898,6 +900,42 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (phoneOverflow) fail("grid: 360px set screen must not overflow horizontally");
   await phone.close();
   ok("set grid: 3 columns on desktop, 2 on small phones, reto full-width");
+}
+
+// ---------- ☰ site menu: on every screen, unintrusive top-right ----------
+{
+  for (const r of ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present", "#/play/1/present/choice", "#/informe"]) {
+    await page.goto(`${BASE}/${r}`);
+    await page.reload();
+    await page.waitForSelector(".menu-btn", { timeout: 4000 }).catch(() => fail(`menu: ☰ missing on ${r}`));
+  }
+  await page.goto(`${BASE}/#/study/1/present`);
+  await page.reload();
+  await page.waitForSelector(".menu-btn");
+  await page.locator(".menu-btn").click();
+  await page.waitForSelector(".menu-panel:not([hidden])");
+  const menuHrefs = await page.locator(".menu-link").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+  for (const want of ["#/", "#/informe", "about.html", "docs/"]) {
+    if (!menuHrefs.includes(want)) fail(`menu: missing link ${want} (got ${menuHrefs})`);
+  }
+  // first link receives focus; Esc closes and returns focus to ☰
+  if (!(await page.evaluate(() => document.activeElement?.classList?.contains("menu-link")))) fail("menu: first link should get focus on open");
+  await page.keyboard.press("Escape");
+  if (await page.locator(".menu-panel:not([hidden])").count()) fail("menu: Esc must close");
+  if (!(await page.evaluate(() => document.activeElement?.classList?.contains("menu-btn")))) fail("menu: focus must return to ☰");
+  // click-outside closes
+  await page.locator(".menu-btn").click();
+  await page.waitForSelector(".menu-panel:not([hidden])");
+  await page.locator("h1").click();
+  if (await page.locator(".menu-panel:not([hidden])").count()) fail("menu: click-outside must close");
+  // the docs link actually reaches the public hub from a hash route
+  await page.locator(".menu-btn").click();
+  await page.locator('.menu-link[href="docs/"]').click();
+  await page.waitForSelector("h1");
+  if (!/Documentación/.test(await page.title())) fail("menu: docs link should land on the /docs hub");
+  await page.goBack();
+  await page.waitForSelector(".conj-table");
+  ok("menu: ☰ on all screens; links/focus/Esc/click-outside; docs hub reachable");
 }
 
 // ---------- wrap up ----------
