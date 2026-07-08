@@ -44,11 +44,12 @@ const SPEECH_PERSONS = ["yo", "tú", "él", "nosotros", "vosotros", "ellos"];
 
 /** Speak Spanish if audio is on and the device has a Spanish voice. */
 function say(text) {
-  if (audioAvailable() && store.getSettings().sound) speak(text);
+  if (audioAvailable() && store.getSettings().sound) return speak(text);
+  return Promise.resolve();
 }
 
 function sayForm(person, form) {
-  say(`${SPEECH_PERSONS[person]} ${form}`);
+  return say(`${SPEECH_PERSONS[person]} ${form}`);
 }
 
 /**
@@ -819,8 +820,12 @@ function renderPlay(setId, tense, mode) {
         feedback.className = "feedback good";
         feedback.textContent = `${msg} ${personDisplay(t.person)} ${t.answer}`;
         announce(msg);
-        sayForm(t.person, t.answer);
-        setTimeout(next, 950);
+        const played = sayForm(t.person, t.answer);
+        if (mode === LISTEN) {
+          played.then(() => setTimeout(next, 300));
+        } else {
+          setTimeout(next, 950);
+        }
       } else {
         state.streak = 0;
         state.misses.push(t);

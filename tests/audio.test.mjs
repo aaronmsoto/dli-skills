@@ -38,3 +38,17 @@ test("audio manifest: full dataset coverage, no dead entries", () => {
     }
   }
 });
+
+test("audio manifest: no two texts share the same clip file", () => {
+  const manifest = JSON.parse(readFileSync(join(ROOT, "audio/manifest.json"), "utf8"));
+  const byFile = {};
+  for (const [text, variants] of Object.entries(manifest)) {
+    for (const [v, rel] of Object.entries(variants)) {
+      if (!byFile[rel]) byFile[rel] = [];
+      byFile[rel].push(text);
+    }
+  }
+  const collisions = Object.entries(byFile).filter(([, texts]) => texts.length > 1);
+  assert.equal(collisions.length, 0,
+    `${collisions.length} clip files are shared by multiple texts, e.g. ${collisions[0]?.[0]} ← ${collisions[0]?.[1].join(" | ")}`);
+});
