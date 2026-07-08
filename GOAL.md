@@ -25,9 +25,9 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
-**Queue: IDLE — every loop-workable item is done (2026-07-08). M12 is
-next but ON HOLD until the owner supplies an ElevenLabs key + voice
-candidates (see M12).**
+**Queue: IDLE. M12 inputs received but generation is BLOCKED on an
+ElevenLabs plan upgrade (see M12) — tooling is ready to run the moment
+the 402 clears.**
 Shipped to dev: M8 (07-07), M5 loop items, M9, M10 incl. same-day owner
 triage (07-08). Awaiting owner: M5's SME copy review + human
 screen-reader pass, the M2 hold, the M4 pause, (/docs linking decided
@@ -372,7 +372,12 @@ numbering — sets loop priority.
   order, per-route footer docs link, and real navigation to /docs.
 
 - [ ] **M12 — 🎙️ Premium Spanish audio via pre-generated ElevenLabs clips
-  (ON HOLD — do NOT start until the owner provides BOTH inputs below)**
+  (inputs received 2026-07-08: voice `rixsIpPlTphvsJd2mI03` + key in
+  local .env only — but BLOCKED: the account is on the Free plan and the
+  API returns 402 "Free users cannot use library voices via the API" for
+  the chosen voice. Loops resume at R1/G once the owner upgrades the
+  plan — Starter+ also carries the commercial license clip distribution
+  needs)**
   Owner decision (2026-07-08): architecture is **pre-generated static
   clips** — never runtime API calls. A local, owner-run script generates
   every clip with the owner's ElevenLabs key; the key never ships, never
