@@ -113,6 +113,17 @@ a { color: var(--brand); }
 .footer-controls { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
 .footer-std { color: var(--brand); }
 .footer-credits { font-size: 0.8rem; margin-top: 6px; } /* no opacity: 4.5:1 at this size (WCAG-1) */
+.footer-applied { width: 100%; margin: 0; color: var(--good); font-weight: 600; }
+
+/* NN-3: "start here" ribbon on the first unstarted group */
+.set-card { position: relative; }
+.start-here {
+  position: absolute; top: -10px; left: 12px;
+  background: var(--brand); color: #fff;
+  font-size: 0.8rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 999px; box-shadow: var(--shadow);
+}
+.start-here .h-en { color: #ede9fe; font-weight: 400; }
 
 /* skip link (WCAG-4): hidden until keyboard focus */
 .skip-link {
@@ -171,7 +182,14 @@ a { color: var(--brand); }
 
 .tense-row, .mode-row { display: grid; gap: 12px; }
 .tense-row { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
-.mode-row { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+/* activities: 2 rows × 3 on tablet/desktop, 3 rows × 2 on small phones
+   (owner layout decision 2026-07-08 — six cards no longer fit one row) */
+.mode-row { grid-template-columns: repeat(3, 1fr); }
+.mode-row.contrast-row { grid-template-columns: 1fr; } /* single reto card stays full-width */
+@media (max-width: 560px) {
+  .mode-row { grid-template-columns: repeat(2, 1fr); }
+  .mode-row.contrast-row { grid-template-columns: 1fr; }
+}
 
 .tense-card, .mode-card {
   display: flex; flex-direction: column; align-items: center; gap: 4px;

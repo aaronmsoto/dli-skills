@@ -25,13 +25,12 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
-**Queue: IDLE — every loop-workable item is done (2026-07-08).** Awaiting
-owner: M10's two triage findings (below), M5's SME copy review, the M2
-hold, and the M4 pause.
-M9 complete on dev 2026-07-08; M5's loop items done 2026-07-08 (SME copy review still open); M8 shipped
-to dev 2026-07-07. M2 stays on hold (SME input); M4 is paused
-indefinitely. Loops work the
-queue in this order regardless of milestone numbering below.
+**Queue: IDLE — every loop-workable item is done (2026-07-08).**
+Shipped to dev: M8 (07-07), M5 loop items, M9, M10 incl. same-day owner
+triage (07-08). Awaiting owner: M5's SME copy review + human
+screen-reader pass, the M2 hold, the M4 pause, and the decision to link
+/docs & the usability page from app navigation. The queue line here —
+not milestone numbering — sets loop priority.
 
 - [x] **M0 — Core trainer (v0.1)** · shipped 2026-07-07
   Engine + 100 verbs + Estudia/Elige/Escribe/Empareja + stars + Pages deploy.
@@ -268,9 +267,9 @@ queue in this order regardless of milestone numbering below.
         correct per-screen citations; payload budget test still green
         (keep panel copy lean); full unit + e2e regression, zero weakened
         assertions.
-- [ ] **M10 — 🔬 Usability & accessibility sprint** · all loop items
-  complete on dev 2026-07-08 — open: the two decision-pending owner-triage
-  findings below (loops must NOT touch until an option is chosen)
+- [x] **M10 — 🔬 Usability & accessibility sprint** · complete on dev
+  2026-07-08 (owner triaged both open findings same day; every audit
+  finding is now fixed or explicitly accepted)
   Four formal evaluations, evidence-first fixes, and public reporting.
   Owner decisions (2026-07-07): loops **auto-fix WCAG Critical/Serious
   findings, Nielsen severity-3/4 violations, and low-risk quick wins**;
@@ -313,17 +312,18 @@ queue in this order regardless of milestone numbering below.
         Report: `docs/audits/wcag.md`.
   - Decision-pending findings from the audits (owner triage — loops must
     NOT implement these until an option is chosen here):
-    - [ ] **NN-1/DN-4/CW-3 (high):** footer setting toggles on a game
+    - [x] **NN-1/DN-4/CW-3 (high):** footer setting toggles on a game
           screen silently restart the round. Options: (a) confirm before
           restarting, (b) apply the setting at the next round instead,
           (c) disable the two toggles during an active round with a short
           note. Auditor recommendation: (b) — least friction, no modal.
-    - [ ] **NN-3/DN-1/CW-1 (medium):** no "start here" cue for a
+          **Owner chose (b) 2026-07-08; shipped.**
+    - [x] **NN-3/DN-1/CW-1 (medium):** no "start here" cue for a
           brand-new learner on the 20-card home grid. Options: (a) a
           small "¡Empieza aquí!" ribbon on the first unstarted group,
           (b) a "Continúa" card tracking the furthest-played group,
           (c) leave as is. Auditor recommendation: (a) — smallest, no
-          new state.
+          new state. **Owner chose (a) 2026-07-08; shipped.**
   - [x] **F (fix wave):** per the autonomy decision above — auto-fix the
         mandated tiers with tests per fix; each fix cites its finding ID;
         design/pedagogy-changing findings appended here as decision-pending
@@ -345,6 +345,10 @@ queue in this order regardless of milestone numbering below.
         **usability & accessibility adherence** (links docs/usability.html
         + the four audit reports). Relative URLs only; unlinked from app
         nav until the owner links it.
+  - [x] **Owner add-on (2026-07-08):** the group screen's activity grid
+        lays out 3-up on tablet/desktop (2 rows of 3 with all six
+        activities) and 2-up under 560px (3 rows of 2); ⚔️ reto keeps its
+        full-width row — with e2e grid-track + no-overflow coverage.
   - [x] **V/RT:** e2e coverage for docs/usability.html and docs/index.html
         (load, key content, relative links resolve); axe-core automated
         pass wired as a CI-friendly check with zero Critical/Serious

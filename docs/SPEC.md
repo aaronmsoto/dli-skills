@@ -48,7 +48,10 @@ See docs/STANDARDS.md for the alignment detail.
 - Step 1: pick a tense (Presente / Pretérito / Imperfecto) — each card shows
   icon, semantic hint, and an example sentence.
 - Step 2: pick an activity — Estudia, 🧱 Práctica (unscored), Elige,
-  Escribe, Empareja — stars shown for the scored games in the selected tense.
+  Escribe, Empareja (+ 🎧 Escucha when a voice exists) — stars shown for
+  the scored games in the selected tense. Layout: 3 columns on
+  tablet/desktop (2 rows of 3 when all six show), 2 columns under 560px
+  (3 rows of 2); the ⚔️ reto card keeps its own full-width row.
 
 ### 4.3 Activities
 - **Estudia (study):** one table — rows = persons, columns = the 5 verbs —
@@ -163,8 +166,16 @@ two standards documents we cite — NBPTS ECYA-WL (nbpts.org PDF) and the
 2020 NJSLS-WL (nj.gov) — with `rel="noopener"`, and the owner-specified
 credit lines (Lucia Perales, EdD · Aaron Soto, MHCID · DLI consultants
 "A1"/"A2" — pseudonyms only, a privacy invariant). Hidden in print.
-Settings toggles re-render the current screen; on a game screen that
-restarts the round (vosotros changes require resampling anyway).
+Settings toggles re-render the current screen — EXCEPT during an active
+round (play/contrast/práctica), where the toggle saves, shows "✓ Guardado
+— se aplica al continuar", and applies as play continues (hints: next
+question; vosotros: next round) so a mid-round tap never discards
+progress (NN-1 fix, owner option b, 2026-07-08).
+
+### 4.1b Start-here cue (NN-3 fix, owner option a, 2026-07-08)
+The first group with zero stars AND zero badges wears a "¡Empieza aquí! /
+Start here" ribbon on the home grid; it advances as groups are started
+and disappears when none are fresh.
 
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message

@@ -790,8 +790,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   }
   await docs.goto(`${BASE}/docs/usability.html`);
   if (!(await docs.getByRole("heading", { name: /Usability & Accessibility/ }).count())) fail("usability page: h1 missing");
-  if ((await docs.locator("td.fixed").count()) < 5) fail("usability page: expected ≥5 FIXED findings");
-  if ((await docs.locator("td.pending").count()) !== 2) fail("usability page: expected exactly 2 owner-triage findings");
+  if ((await docs.locator("td.fixed").count()) < 7) fail("usability page: expected ≥7 FIXED findings");
+  if (await docs.locator("td.pending").count()) fail("usability page: no findings should remain in owner triage");
   await docs.close();
   ok("docs: hub + usability page render; all sections, statuses, and relative links OK");
 }
@@ -828,6 +828,76 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     await axePage.close();
     ok("axe-core: zero critical/serious violations across 7 representative routes");
   }
+}
+
+// ---------- M10 triage fixes: NN-1 defer-not-restart, NN-3 start-here ribbon ----------
+{
+  // NN-3: a fresh learner sees exactly one ribbon, on Grupo 1
+  const freshHome = await browser.newPage();
+  trackErrors(freshHome);
+  await freshHome.goto(`${BASE}/#/`);
+  await freshHome.waitForSelector(".set-card");
+  if ((await freshHome.locator(".start-here").count()) !== 1) fail("ribbon: fresh home should show exactly one ribbon");
+  const freshTarget = await freshHome.locator(".set-card:has(.start-here)").getAttribute("href");
+  if (freshTarget !== "#/set/1") fail(`ribbon: fresh learner should start at Grupo 1, got ${freshTarget}`);
+  await freshHome.close();
+  // this context has Grupo-1 progress → the ribbon moves to Grupo 2
+  await page.goto(`${BASE}/#/`);
+  await page.reload();
+  await page.waitForSelector(".set-card");
+  const seasonedTarget = await page.locator(".set-card:has(.start-here)").getAttribute("href");
+  if (seasonedTarget !== "#/set/2") fail(`ribbon: with Grupo 1 played it should point at Grupo 2, got ${seasonedTarget}`);
+  // NN-1: toggling a footer setting mid-round saves without restarting
+  await page.goto(`${BASE}/#/play/1/present/choice`);
+  await page.reload();
+  await page.waitForSelector(".choice");
+  await page.locator(".choice").first().click();
+  try { await page.locator(".feedback.bad button").click({ timeout: 400 }); } catch {}
+  await page.waitForTimeout(1100);
+  const progressBefore = await page.locator(".progress-text").innerText();
+  if (!progressBefore.startsWith("2 /")) fail(`nn1: expected to be at question 2, got "${progressBefore}"`);
+  await page.locator(".hints-toggle").uncheck();
+  await page.waitForSelector(".footer-applied:not([hidden])");
+  const progressAfter = await page.locator(".progress-text").innerText();
+  if (progressAfter !== progressBefore) fail(`nn1: round restarted (${progressBefore} → ${progressAfter})`);
+  // the saved setting takes effect on the NEXT question
+  await page.locator(".choice:not(:disabled)").first().click();
+  try { await page.locator(".feedback.bad button").click({ timeout: 400 }); } catch {}
+  await page.waitForTimeout(1100);
+  if (await page.locator(".hint-btn").count()) fail("nn1: hints-off must apply on the next question");
+  // off-round screens still re-render immediately (study table gains vosotros row)
+  await page.goto(`${BASE}/#/study/1/present`);
+  await page.reload();
+  await page.waitForSelector(".conj-table");
+  await page.locator(".footer-controls .toggle input").first().check();
+  await page.waitForSelector(".conj-table tbody tr:nth-child(6)");
+  await page.locator(".footer-controls .toggle input").first().uncheck();
+  await page.waitForSelector(".conj-table");
+  if ((await page.locator(".conj-table tbody tr").count()) !== 5) fail("nn1: off-round toggle should re-render immediately");
+  await page.goto(`${BASE}/#/`);
+  await page.locator(".hints-toggle").check();
+  ok("triage fixes: mid-round toggles defer (no restart); start-here ribbon tracks progress");
+}
+
+// ---------- set screen activity grid: 3-up desktop, 2-up small phones ----------
+{
+  const tracks = async (p, sel) =>
+    (await p.evaluate((s) => getComputedStyle(document.querySelector(s)).gridTemplateColumns, sel))
+      .split(" ").filter(Boolean).length;
+  await page.goto(`${BASE}/#/set/1`);
+  await page.reload();
+  await page.waitForSelector(".mode-card");
+  if ((await tracks(page, ".mode-row")) !== 3) fail("grid: desktop activities should sit in 3 columns");
+  if ((await tracks(page, ".contrast-row")) !== 1) fail("grid: reto card should keep a full-width row");
+  const phone = await browser.newPage({ viewport: { width: 360, height: 640 } });
+  trackErrors(phone);
+  await phone.goto(`${BASE}/#/set/1`);
+  await phone.waitForSelector(".mode-card");
+  if ((await tracks(phone, ".mode-row")) !== 2) fail("grid: small phones should show 2 columns (3 rows of 2)");
+  const phoneOverflow = await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  if (phoneOverflow) fail("grid: 360px set screen must not overflow horizontally");
+  await phone.close();
+  ok("set grid: 3 columns on desktop, 2 on small phones, reto full-width");
 }
 
 // ---------- wrap up ----------
