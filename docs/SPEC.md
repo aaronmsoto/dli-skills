@@ -155,6 +155,17 @@ fits either matching row. No 🔍 hint button — the activity IS the chart.
 Entry points: first action link on the study screen; an unscored card on
 the group screen. Icon is 🧱 (Empareja already owns 🧩).
 
+### 4.3j Footer — a component constant (M9 F1-F3)
+`renderFooter()` renders on EVERY screen (home, group, Estudia, Práctica,
+all game rounds, contrast, results, informe): settings toggles (vosotros,
+🔍 Pistas), progress reset, informe + about links, external links to the
+two standards documents we cite — NBPTS ECYA-WL (nbpts.org PDF) and the
+2020 NJSLS-WL (nj.gov) — with `rel="noopener"`, and the owner-specified
+credit lines (Lucia Perales, EdD · Aaron Soto, MHCID · DLI consultants
+"A1"/"A2" — pseudonyms only, a privacy invariant). Hidden in print.
+Settings toggles re-render the current screen; on a game screen that
+restarts the round (vosotros changes require resampling anyway).
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +

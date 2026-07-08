@@ -110,6 +110,8 @@ a { color: var(--brand); }
 /* -------- footer -------- */
 .site-footer { margin-top: 36px; text-align: center; color: var(--ink-soft); font-size: 0.9rem; }
 .footer-controls { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+.footer-std { color: var(--brand); }
+.footer-credits { font-size: 0.8rem; opacity: 0.85; margin-top: 6px; }
 .toggle { cursor: pointer; }
 .linklike {
   background: none; border: none; padding: 0; cursor: pointer;

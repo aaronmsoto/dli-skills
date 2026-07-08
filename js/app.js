@@ -300,7 +300,18 @@ function renderFooter() {
       el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
     ),
     el("p", { class: "footer-note" },
-      "Gratis y sin registro · Free, no login · Aligned to NJSLS-WL Novice levels & NBPTS World Languages standards"),
+      "Gratis y sin registro · Free, no login · Aligned to ",
+      el("a", { class: "footer-std", href: "https://www.nj.gov/education/standards/worldlang/", target: "_blank", rel: "noopener" },
+        "NJSLS-WL (2020)"),
+      " & ",
+      el("a", { class: "footer-std", href: "https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf", target: "_blank", rel: "noopener" },
+        "NBPTS ECYA-WL"),
+      " standards"),
+    // owner-specified credits (M9 F3); kids appear ONLY as pseudonyms
+    el("p", { class: "footer-credits" },
+      "Created by Lucia Perales, EdD (wife/mother/educator) and Aaron Soto, MHCID (husband/father/technologist)",
+      el("br"),
+      "DLI K-5 Graduate “A1” (daughter/consultant) and DLI 3rd Grader “A2” (son/consultant)"),
   );
 }
 
@@ -375,6 +386,7 @@ function renderSet(setId) {
         starRow(contrastBest?.stars ?? 0),
       ),
     ),
+    renderFooter(),
   );
 }
 
@@ -434,6 +446,7 @@ function renderStudy(setId, tense) {
           "⚔️ ¿Pretérito o imperfecto?")
         : null,
       el("button", { class: "btn print-btn", onclick: () => window.print() }, "🖨️ Imprimir")),
+    renderFooter(),
   );
 }
 
@@ -478,6 +491,7 @@ function renderPractica(setId, tense) {
       "Reconstruye la tabla palabra por palabra. Rebuild the table word by word — no stars, just practice."),
     el("div", { class: "table-scroll" }, table),
     bankWrap, feedback,
+    renderFooter(),
   );
 
   function startColumn() {
@@ -594,6 +608,7 @@ function renderPlay(setId, tense, mode) {
       soundToggle()),
     el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
+    renderFooter(),
   );
 
   function renderHeader() {
@@ -778,6 +793,7 @@ function renderMatch(set, tense, vosotros) {
     el("h1", { class: "match-title" }, lola.el, `🧩 Empareja — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
     board, feedback,
+    renderFooter(),
   );
 
   const leftCards = shuffle(pairs).map((p) => ({ side: "L", id: p.id, label: p.left }));
@@ -863,6 +879,7 @@ function renderContrast(setId) {
       el("strong", {}, "muchas veces 🌙"), ". The time word is your clue."),
     el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
+    renderFooter(),
   );
 
   function renderHeader() {
@@ -1004,6 +1021,7 @@ function renderReport() {
       el("div", { class: "study-actions no-print" },
         el("button", { class: "btn primary", onclick: () => window.print() }, "🖨️ Imprimir")),
     ),
+    renderFooter(),
   );
 }
 
@@ -1046,6 +1064,7 @@ function showResults(set, tense, mode, score, total, misses) {
         el("a", { class: "btn", href: `#/set/${set.id}` }, "🏠 Grupo"),
       ),
     ),
+    renderFooter(),
   );
   announce(`Resultados: ${score} de ${total}`);
 }
