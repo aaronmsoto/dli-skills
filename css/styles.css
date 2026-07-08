@@ -455,7 +455,20 @@ a { color: var(--brand); }
 }
 
 /* -------- print -------- */
+.print-only { display: none; }
+
+@page { margin: 14mm; }
+
 @media print {
+  .print-only { display: block; }
+  .print-fields { font-size: 1.05rem; margin: 0.4em 0 0.8em; }
+  /* study-sheet & report layout hygiene (M5 tune-up) */
+  h1 { font-size: 1.5rem; margin: 0 0 0.2em; }
+  thead { display: table-header-group; }
+  .conj-table tr, .review li { break-inside: avoid; page-break-inside: avoid; }
+  .report-table { font-size: 0.85rem; }
+  .report-verbs { font-size: 0.75rem; }
+  .study-hint { font-size: 0.95rem; }
   body { background: #fff; color: #000; font-family: "Segoe UI", system-ui, sans-serif; }
   .crumbs, .sound-toggle, .study-actions, .site-footer, .no-print,
   .tap-hint, .btn, .print-btn, .lola-wrap, .practica-bank-wrap { display: none !important; }
