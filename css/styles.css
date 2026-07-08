@@ -80,7 +80,8 @@ a { color: var(--brand); }
 
 /* -------- hero / home -------- */
 .hero { text-align: center; padding: 12px 0 4px; }
-.hero h1 { font-size: 2.6rem; margin-bottom: 0.1em; }
+.hero h1 { font-size: 2.6rem; margin-bottom: 0; }
+.brand-sub { color: var(--ink-soft); font-size: 0.82rem; margin: 0 0 4px; }
 .tagline { font-size: 1.15rem; margin: 0.2em 0; }
 .tagline-en { color: var(--ink-soft); font-size: 0.9rem; margin: 0.2em 0 0.6em; }
 .total-stars { font-size: 1.05rem; font-weight: bold; margin: 0.3em 0 0; }
@@ -111,6 +112,7 @@ a { color: var(--brand); }
 /* -------- footer -------- */
 .site-footer { margin-top: 36px; text-align: center; color: var(--ink-soft); font-size: 0.9rem; }
 .footer-controls { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+.footer-site { font-weight: 700; margin-bottom: 2px; }
 .footer-std { color: var(--brand); }
 .footer-credits { font-size: 0.8rem; margin-top: 6px; } /* no opacity: 4.5:1 at this size (WCAG-1) */
 .footer-applied { width: 100%; margin: 0; color: var(--good); font-weight: 600; }
@@ -136,7 +138,7 @@ a { color: var(--brand); }
 
 /* -------- ☰ site menu (top-right, unintrusive; crumbs stay contextual) */
 .menu-wrap { position: relative; }
-.crumbs .menu-wrap { margin-left: 0; }
+.crumbs .menu-wrap { margin-left: auto; }
 .menu-btn {
   font: inherit; font-size: 1.15rem; line-height: 1;
   width: 46px; height: 46px;
@@ -157,17 +159,20 @@ a { color: var(--brand); }
   text-decoration: none; color: var(--ink); font-size: 1rem;
 }
 .menu-link:hover, .menu-link:focus-visible { background: var(--brand-soft); }
+button.menu-link { font: inherit; text-align: left; border: none; background: transparent; cursor: pointer; width: 100%; }
+button.menu-link:hover, button.menu-link:focus-visible { background: var(--brand-soft); }
 .hero .menu-wrap { position: absolute; top: 4px; right: 4px; }
 
 /* -------- ℹ️ per-screen standards panel (M9) -------- */
 .info-btn {
   font: inherit; font-size: 1.1rem; line-height: 1;
-  width: 46px; height: 46px; margin-left: auto;
+  width: 46px; height: 46px;
   border: none; border-radius: 50%; cursor: pointer;
   background: var(--card); color: var(--ink); box-shadow: var(--shadow);
 }
-.crumbs .info-btn + .sound-toggle { margin-left: 0; }
-.hero .info-btn { position: absolute; top: 4px; left: 4px; }
+h1 .info-btn { vertical-align: middle; margin-left: 10px; }
+.prompt { position: relative; }
+.prompt .info-btn { position: absolute; top: 10px; right: 10px; }
 .info-btn:hover, .info-btn:focus-visible { background: var(--brand-soft); }
 .info-overlay {
   position: fixed; inset: 0; z-index: 40;
@@ -412,17 +417,7 @@ a { color: var(--brand); }
 .review h2 { margin-top: 0.3em; }
 .result-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
 
-/* -------- sound toggle -------- */
-.sound-toggle {
-  margin-left: auto;
-  font-size: 1.3rem; line-height: 1;
-  width: 46px; height: 46px;
-  border-radius: 50%; border: 2px solid var(--brand-soft);
-  background: var(--card); cursor: pointer; box-shadow: var(--shadow);
-}
-.sound-toggle:hover, .sound-toggle:focus-visible { border-color: var(--brand); }
 .hero { position: relative; }
-.hero .sound-toggle { position: absolute; top: 4px; right: 56px; } /* hamburger owns the corner */
 
 /* -------- speakable study cells -------- */
 .cell-speak {

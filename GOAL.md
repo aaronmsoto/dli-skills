@@ -10,8 +10,11 @@ this file to redirect the loop; agents only check items off via PRs.
 A world-class, free, no-login skills builder for K-5 Spanish Dual Language
 Immersion learners — starting with verb conjugation (100 most common verbs,
 5 at a time, present/preterite/imperfect) and growing toward the skills that
-bridge NJSLS-WL Novice levels to story retelling (7.1.NH.PRSNT.4). Pedagogy
-is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
+carry learners from Novice Low to Novice High storytelling (NCSSFL-ACTFL
+Can-Do levels). Pedagogy is grounded in the NBPTS World Languages
+standards (ECYA-WL), with proficiency levels from the NCSSFL-ACTFL
+Can-Do Statements (docs/STANDARDS.md; national-only per owner
+2026-07-08 — no state-specific standards).
 
 ## Product invariants (violating these fails review — see CLAUDE.md)
 
@@ -53,7 +56,8 @@ numbering — sets loop priority.
         otherwise.
   - [ ] The ⚔️ contrast mode uses sentences instead of bare cue words for
         groups that have them.
-  - [ ] Docs updated (SPEC 4.x, STANDARDS mapping to 7.1.NH.PRSNT.4) and
+  - [ ] Docs updated (SPEC 4.x, STANDARDS mapping to the Novice High
+        presentational Can-Dos) and
         remaining groups tracked here as follow-up items.
 - [x] **M3 — Listening mode (🎧 Escucha)** · complete on dev 2026-07-07 (recognition v1; typed variant deferred with SME)
   Owner decisions (2026-07-07): **recognition-only v1** (typed variant
@@ -432,6 +436,31 @@ numbering — sets loop priority.
   every `.table-scroll` conjugation table — Práctica (critical),
   Estudia, and the informe. E2e scrolls the table at 360px and asserts
   the persons column's x-position does not move.
+
+- [x] **M14 — 🧹 Chrome cleanup (owner-directed, complete on dev 2026-07-08)**
+  ℹ️ standards buttons now sit next to the page/quiz headings — inside
+  the h1 on Estudia/Práctica/Empareja/Informe, on the prompt-card corner
+  in Elige/Escribe/Escucha/Contraste — and are REMOVED from the home and
+  group screens (standards-info module + tests updated to match). The
+  🔊 sound toggle moved inside the ☰ site menu as a labeled row
+  ("Sonido: encendido/apagado"), cleaning the header chrome to just
+  crumbs (top-left) + ☰ (top-right). E2e: ℹ️ present on the 7 activity
+  routes and absent on home/group; placement asserted (h1 vs prompt
+  card); both mute tests exercise the menu-hosted toggle.
+
+- [x] **M15 — 🏛️ National standards + DLIskills.com branding (owner-directed,
+  complete on dev 2026-07-08)**
+  All public standards references are now NATIONAL-ONLY: NBPTS World
+  Languages standards (teaching) + NCSSFL-ACTFL Can-Do Statements
+  (proficiency levels, Novice Low → Novice High) — every NJSLS-WL mention
+  and link removed from the app, About, /docs, README, SPEC, STANDARDS,
+  and the ℹ️ panels (cites now name mode + Novice level). Footer reads
+  "Aligned to NBPTS and NCSSFL-ACTFL World Language standards" with both
+  linked (NBPTS first; ACTFL Can-Do overview PDF). Branding: footer site
+  name "Dual-Language Immersion (DLI) Skills"; home shows
+  "part of DLIskills.com" (exact capitalization) under the Conjuga
+  heading (plain text until the domain serves; link it then). About page
+  GitHub link removed. Standing rule 6 in CLAUDE.md encodes all of it.
 
 ## Non-goals (do not build)
 
