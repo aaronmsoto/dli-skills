@@ -691,7 +691,8 @@ function renderPlay(setId, tense, mode) {
           el("span", { class: "play-lola", style: `left:clamp(26px, ${pct}%, calc(100% - 28px))` }, lola.el),
           createNest()),
         el("span", { class: "progress-text" }, `${Math.min(state.i + 1, targets.length)} / ${targets.length}`)),
-      el("span", { class: "streak", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
+      // role="img" so the aria-label is permitted (axe: aria-prohibited-attr)
+      el("span", { class: "streak", role: "img", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
     );
   }
 
@@ -962,7 +963,8 @@ function renderContrast(setId) {
           el("span", { class: "play-lola", style: `left:clamp(26px, ${pct}%, calc(100% - 28px))` }, lola.el),
           createNest()),
         el("span", { class: "progress-text" }, `${Math.min(state.i + 1, questions.length)} / ${questions.length}`)),
-      el("span", { class: "streak", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
+      // role="img" so the aria-label is permitted (axe: aria-prohibited-attr)
+      el("span", { class: "streak", role: "img", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
     );
   }
 

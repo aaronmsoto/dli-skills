@@ -771,6 +771,65 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("fix wave: per-route titles, skip link, lang=en parts, contrast tokens");
 }
 
+// ---------- /docs public pages (M10 P+D) ----------
+{
+  const docs = await browser.newPage();
+  trackErrors(docs);
+  await docs.goto(`${BASE}/docs/`);
+  const dTitle = await docs.title();
+  if (!/Documentación/.test(dTitle)) fail(`docs hub: bad title "${dTitle}"`);
+  for (const frag of ["Cómo usar", "Estándares DLI", "Usabilidad y accesibilidad"]) {
+    if (!(await docs.getByRole("heading", { name: new RegExp(frag) }).count())) fail(`docs hub: missing section "${frag}"`);
+  }
+  // every relative link on the hub must resolve (app, about, reports, usability)
+  const rel = await docs.evaluate(() =>
+    [...document.querySelectorAll("a[href]")].map((a) => a.getAttribute("href")).filter((h) => !h.startsWith("http")));
+  for (const href of rel) {
+    const status = await docs.evaluate(async (u) => (await fetch(u)).status, href);
+    if (status !== 200) fail(`docs hub: relative link ${href} → HTTP ${status}`);
+  }
+  await docs.goto(`${BASE}/docs/usability.html`);
+  if (!(await docs.getByRole("heading", { name: /Usability & Accessibility/ }).count())) fail("usability page: h1 missing");
+  if ((await docs.locator("td.fixed").count()) < 5) fail("usability page: expected ≥5 FIXED findings");
+  if ((await docs.locator("td.pending").count()) !== 2) fail("usability page: expected exactly 2 owner-triage findings");
+  await docs.close();
+  ok("docs: hub + usability page render; all sections, statuses, and relative links OK");
+}
+
+// ---------- axe-core automated a11y gate (M10 V/RT): zero critical/serious ----------
+{
+  // axe-core is vendored (tests/e2e/vendor/, MPL-2.0 banner retained):
+  // deterministic + offline, and `npm i --no-save axe-core` mid-run would
+  // PRUNE playwright from node_modules (no-deps package.json). Test-only
+  // tooling — never an app dependency, never in the payload budget.
+  const { readFileSync } = await import("node:fs");
+  let axeSource = null;
+  try {
+    axeSource = readFileSync(join(ROOT, "tests/e2e/vendor/axe.min.js"), "utf8");
+  } catch (e) {
+    fail(`axe: vendored axe.min.js missing — ${e.message}`);
+  }
+  if (axeSource) {
+    const axePage = await browser.newPage();
+    trackErrors(axePage);
+    for (const r of ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present", "#/play/1/present/choice", "#/play/1/contrast", "#/informe"]) {
+      await axePage.goto(`${BASE}/${r}`);
+      await axePage.reload();
+      await axePage.waitForSelector(".site-footer");
+      await axePage.addScriptTag({ content: axeSource });
+      const bad = await axePage.evaluate(async () => {
+        const res = await window.axe.run(document, { resultTypes: ["violations"] });
+        return res.violations
+          .filter((v) => v.impact === "critical" || v.impact === "serious")
+          .map((v) => `${v.id}(${v.impact}) ×${v.nodes.length} e.g. ${v.nodes[0]?.target?.join(" ")}`);
+      });
+      if (bad.length) fail(`axe ${r}: ${bad.join(" | ")}`);
+    }
+    await axePage.close();
+    ok("axe-core: zero critical/serious violations across 7 representative routes");
+  }
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();

@@ -146,3 +146,10 @@ workflows or settings, and never weaken tests to get green.
   making pedagogy-affecting changes)
 - `about.html` — learner/parent-facing standards & privacy page (keep in sync
   with docs/STANDARDS.md)
+- `docs/index.html` + `docs/usability.html` — PUBLIC pages (the repo's docs/
+  dir deploys with Pages, so /docs/ is a real route): how-to, standards
+  support, and the audit findings summary. Self-contained styling; relative
+  links; stay UNLINKED from app navigation until the owner links them.
+- `docs/audits/*.md` — the M10 evaluation reports (finding IDs cited by
+  fixes); `tests/e2e/vendor/axe.min.js` is vendored (MPL-2.0) for the CI
+  a11y gate — do NOT npm-install it mid-run (npm prunes playwright)

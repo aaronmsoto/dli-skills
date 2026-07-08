@@ -25,7 +25,9 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
-**Queue (owner-set, 2026-07-07): M10 (CURRENT).**
+**Queue: IDLE — every loop-workable item is done (2026-07-08).** Awaiting
+owner: M10's two triage findings (below), M5's SME copy review, the M2
+hold, and the M4 pause.
 M9 complete on dev 2026-07-08; M5's loop items done 2026-07-08 (SME copy review still open); M8 shipped
 to dev 2026-07-07. M2 stays on hold (SME input); M4 is paused
 indefinitely. Loops work the
@@ -266,8 +268,9 @@ queue in this order regardless of milestone numbering below.
         correct per-screen citations; payload budget test still green
         (keep panel copy lean); full unit + e2e regression, zero weakened
         assertions.
-- [ ] **M10 — 🔬 Usability & accessibility sprint (runs AFTER M9 so the new
-  footer/panels are inside the audit scope)**
+- [ ] **M10 — 🔬 Usability & accessibility sprint** · all loop items
+  complete on dev 2026-07-08 — open: the two decision-pending owner-triage
+  findings below (loops must NOT touch until an option is chosen)
   Four formal evaluations, evidence-first fixes, and public reporting.
   Owner decisions (2026-07-07): loops **auto-fix WCAG Critical/Serious
   findings, Nielsen severity-3/4 violations, and low-risk quick wins**;
@@ -326,14 +329,14 @@ queue in this order regardless of milestone numbering below.
         design/pedagogy-changing findings appended here as decision-pending
         tasks with the auditor's recommendation. No fix may weaken an
         existing test.
-  - [ ] **P (usability report — part of /docs, owner decision
+  - [x] **P (usability report — part of /docs, owner decision
         2026-07-07):** `docs/usability.html` — the "Usability &
         Accessibility" page lives INSIDE the public /docs section (not a
         root page): methodology overview of all four evaluations, scores,
         findings summary, fixed-vs-open status, date of audit. Content
         mirrors docs/audits (no drift); bilingual header, English body;
         linked from the /docs hub, UNLINKED from app nav.
-  - [ ] **D (public docs hub):** `docs/index.html` — the repo's `docs/`
+  - [x] **D (public docs hub):** `docs/index.html` — the repo's `docs/`
         directory already deploys with Pages, so `/docs/` becomes a real
         public route. Three sections: **how to use the app** (learners /
         parents / teachers, incl. offline-ish behavior, localStorage
@@ -342,7 +345,7 @@ queue in this order regardless of milestone numbering below.
         **usability & accessibility adherence** (links docs/usability.html
         + the four audit reports). Relative URLs only; unlinked from app
         nav until the owner links it.
-  - [ ] **V/RT:** e2e coverage for docs/usability.html and docs/index.html
+  - [x] **V/RT:** e2e coverage for docs/usability.html and docs/index.html
         (load, key content, relative links resolve); axe-core automated
         pass wired as a CI-friendly check with zero Critical/Serious
         remaining; full regression green.
