@@ -14,6 +14,7 @@ import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildC
 import * as store from "./storage.js";
 import { speak, ttsAvailable } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
+import { STANDARDS_INFO } from "./standards-info.js";
 
 const MODES = ["choice", "type", "match"];
 // Escucha is a parallel track: badges, not stars — never in MODES, so no
@@ -49,6 +50,53 @@ function say(text) {
 
 function sayForm(person, form) {
   say(`${SPEECH_PERSONS[person]} ${form}`);
+}
+
+/**
+ * ℹ️ per-screen standards panel (M9 I1): a small dialog explaining how the
+ * current page supports the cited standards. Bilingual, adult-focused —
+ * one Spanish-first line for learners, concise English for adults.
+ * Content lives in js/standards-info.js (single source of truth).
+ */
+function infoButton(key) {
+  const info = STANDARDS_INFO[key];
+  if (!info) return null;
+  let overlay = null;
+  const onKey = (e) => {
+    if (e.key === "Escape") return close();
+    if (e.key === "Tab" && overlay) {
+      // the close button is the panel's only focusable — keep focus there
+      e.preventDefault();
+      overlay.querySelector(".info-close").focus();
+    }
+  };
+  const close = () => {
+    overlay?.remove();
+    overlay = null;
+    document.removeEventListener("keydown", onKey);
+    btn.setAttribute("aria-expanded", "false");
+    btn.focus();
+  };
+  const btn = el("button", {
+    class: "info-btn no-print", type: "button", "aria-expanded": "false",
+    "aria-label": "Cómo apoya esta página los estándares / How this page supports the standards",
+    onclick: () => {
+      if (overlay) return close();
+      overlay = el("div", { class: "info-overlay", onclick: (e) => { if (e.target === overlay) close(); } },
+        el("div", { class: "info-panel", role: "dialog", "aria-modal": "true", "aria-label": "Estándares de esta página" },
+          el("button", { class: "info-close", "aria-label": "Cerrar / Close", onclick: close }, "✕"),
+          el("p", { class: "info-kid" }, info.kid),
+          el("p", { class: "info-en" }, info.en),
+          el("p", { class: "info-cites" }, info.cites.join(" · ")),
+          el("p", { class: "info-more" }, "Más en el pie de página y en ",
+            el("a", { href: "about.html" }, "Acerca de / Standards"), ".")));
+      document.body.append(overlay);
+      btn.setAttribute("aria-expanded", "true");
+      overlay.querySelector(".info-close").focus();
+      document.addEventListener("keydown", onKey);
+    },
+  }, "ℹ️");
+  return btn;
 }
 
 /** 🔊/🔇 toggle — hidden entirely on devices with no Spanish voice. */
@@ -199,8 +247,23 @@ function go(hash) {
   location.hash = hash;
 }
 
+/** Per-route page titles (WCAG 2.4.2) — tabs/history distinguish screens. */
+function routeTitle(r) {
+  if (r.screen === "set") return `Grupo ${r.setId} · Conjuga`;
+  if (r.screen === "study") return `Estudia ${TENSE_LABELS[r.tense].es} · Grupo ${r.setId} · Conjuga`;
+  if (r.screen === "practica") return `Práctica · Grupo ${r.setId} · Conjuga`;
+  if (r.screen === "contrast") return `¿Pretérito o imperfecto? · Grupo ${r.setId} · Conjuga`;
+  if (r.screen === "play") {
+    const label = r.mode === LISTEN ? LISTEN_META.es : MODE_META[r.mode].es;
+    return `${label} ${TENSE_LABELS[r.tense].es} · Grupo ${r.setId} · Conjuga`;
+  }
+  if (r.screen === "report") return "Informe de progreso · Conjuga";
+  return "Conjuga — Spanish Verb Skills Builder (K-5 DLI)";
+}
+
 function render() {
   const route = parseRoute();
+  document.title = routeTitle(route);
   app.replaceChildren();
   window.scrollTo(0, 0);
   if (route.screen === "home") renderHome();
@@ -213,6 +276,12 @@ function render() {
 }
 
 window.addEventListener("hashchange", render);
+
+// skip link (WCAG 2.4.1): focus main content without disturbing the hash router
+document.getElementById("skip")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  app.focus();
+});
 
 // ---------------------------------------------------------------- home
 
@@ -231,7 +300,7 @@ function renderReviewQueue() {
   const due = store.dueForReview();
   if (!due.length) return null;
   return el("section", { class: "review-queue", "aria-label": "Repaso de hoy" },
-    el("h2", {}, "🔁 Repasa hoy ", el("span", { class: "h-en" }, "(today's review)")),
+    el("h2", {}, "🔁 Repasa hoy ", el("span", { class: "h-en", lang: "en" }, "(today's review)")),
     el("div", { class: "review-list" },
       due.map((item) =>
         el("a", { class: "review-item", href: reviewHref(item) },
@@ -245,11 +314,12 @@ function renderHome() {
 
   mount(
     el("header", { class: "hero" },
+      infoButton("home"),
       soundToggle(),
       el("h1", { class: "home-title" }, createLola(76).el, "Conjuga"),
       el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
-      el("p", { class: "tagline-en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
+      el("p", { class: "tagline-en", lang: "en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
       el("p", { class: "total-stars" }, `⭐ ${totalEarned} / ${SETS.length * STARS_PER_SET} estrellas`),
     ),
     renderReviewQueue(),
@@ -300,7 +370,18 @@ function renderFooter() {
       el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
     ),
     el("p", { class: "footer-note" },
-      "Gratis y sin registro · Free, no login · Aligned to NJSLS-WL Novice levels & NBPTS World Languages standards"),
+      "Gratis y sin registro · Free, no login · Aligned to ",
+      el("a", { class: "footer-std", href: "https://www.nj.gov/education/standards/worldlang/", target: "_blank", rel: "noopener" },
+        "NJSLS-WL (2020)"),
+      " & ",
+      el("a", { class: "footer-std", href: "https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf", target: "_blank", rel: "noopener" },
+        "NBPTS ECYA-WL"),
+      " standards"),
+    // owner-specified credits (M9 F3); kids appear ONLY as pseudonyms
+    el("p", { class: "footer-credits", lang: "en" },
+      "Created by Lucia Perales, EdD (wife/mother/educator) and Aaron Soto, MHCID (husband/father/technologist)",
+      el("br"),
+      "DLI K-5 Graduate “A1” (daughter/consultant) and DLI 3rd Grader “A2” (son/consultant)"),
   );
 }
 
@@ -313,13 +394,13 @@ function renderSet(setId) {
   const contrastBest = store.getBest(set.id, CONTRAST_KEY.tense, CONTRAST_KEY.mode);
 
   mount(
-    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), soundToggle()),
+    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), infoButton("set"), soundToggle()),
     el("h1", {}, `Grupo ${set.id}`),
     el("ul", { class: "verb-chips" },
       set.verbs.map((v) => el("li", { class: "chip" },
-        el("strong", {}, v.inf), el("span", { class: "gloss" }, ` ${v.en}`)))),
+        el("strong", {}, v.inf), el("span", { class: "gloss", lang: "en" }, ` ${v.en}`)))),
 
-    el("h2", {}, "1 · Elige un tiempo ", el("span", { class: "h-en" }, "(pick a tense)")),
+    el("h2", {}, "1 · Elige un tiempo ", el("span", { class: "h-en", lang: "en" }, "(pick a tense)")),
     el("div", { class: "tense-row", role: "radiogroup", "aria-label": "Tiempo verbal" },
       TENSES.map((t) =>
         el("button", {
@@ -333,18 +414,18 @@ function renderSet(setId) {
           el("span", { class: "tense-example" }, TENSE_META[t].example),
         ))),
 
-    el("h2", {}, "2 · Estudia y juega ", el("span", { class: "h-en" }, "(study, then play)")),
+    el("h2", {}, "2 · Estudia y juega ", el("span", { class: "h-en", lang: "en" }, "(study, then play)")),
     el("div", { class: "mode-row" },
       el("a", { class: "mode-card study", href: `#/study/${set.id}/${tense}` },
         el("span", { class: "mode-icon" }, "📖"),
         el("strong", {}, "Estudia"),
-        el("span", { class: "mode-en" }, "See the tables"),
+        el("span", { class: "mode-en", lang: "en" }, "See the tables"),
       ),
       // unscored on purpose: no starRow here, ever (M8 owner decision)
       el("a", { class: "mode-card practica-card", href: `#/practica/${set.id}/${tense}` },
         el("span", { class: "mode-icon" }, PRACTICA_META.icon),
         el("strong", {}, PRACTICA_META.es),
-        el("span", { class: "mode-en" }, PRACTICA_META.en),
+        el("span", { class: "mode-en", lang: "en" }, PRACTICA_META.en),
         el("span", { class: "mode-free" }, "práctica libre · free practice"),
       ),
       MODES.map((m) => {
@@ -352,7 +433,7 @@ function renderSet(setId) {
         return el("a", { class: "mode-card", href: `#/play/${set.id}/${tense}/${m}` },
           el("span", { class: "mode-icon" }, MODE_META[m].icon),
           el("strong", {}, MODE_META[m].es),
-          el("span", { class: "mode-en" }, MODE_META[m].en),
+          el("span", { class: "mode-en", lang: "en" }, MODE_META[m].en),
           starRow(best?.stars ?? 0),
         );
       }),
@@ -361,20 +442,21 @@ function renderSet(setId) {
         ? el("a", { class: "mode-card listen-card", href: `#/play/${set.id}/${tense}/${LISTEN}` },
           el("span", { class: "mode-icon" }, LISTEN_META.icon),
           el("strong", {}, LISTEN_META.es),
-          el("span", { class: "mode-en" }, LISTEN_META.en),
+          el("span", { class: "mode-en", lang: "en" }, LISTEN_META.en),
           badgeRow(store.getBest(set.id, tense, LISTEN)?.stars ?? 0))
         : null,
     ),
 
-    el("h2", {}, "3 · Reto ", el("span", { class: "h-en" }, "(challenge)")),
+    el("h2", {}, "3 · Reto ", el("span", { class: "h-en", lang: "en" }, "(challenge)")),
     el("div", { class: "mode-row contrast-row" },
       el("a", { class: "mode-card contrast-card", href: `#/play/${set.id}/contrast` },
         el("span", { class: "mode-icon" }, "⚔️"),
         el("strong", {}, "¿Pretérito o imperfecto?"),
-        el("span", { class: "mode-en" }, "Read the time clue, pick the past tense"),
+        el("span", { class: "mode-en", lang: "en" }, "Read the time clue, pick the past tense"),
         starRow(contrastBest?.stars ?? 0),
       ),
     ),
+    renderFooter(),
   );
 }
 
@@ -388,8 +470,12 @@ function renderStudy(setId, tense) {
   const speakable = ttsAvailable();
 
   mount(
-    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), soundToggle()),
+    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), infoButton("study"), soundToggle()),
     el("h1", {}, `📖 Estudia — ${TENSE_LABELS[tense].es}`),
+    // classroom print header: appears only on the printed study sheet
+    el("p", { class: "print-fields print-only" },
+      `Grupo ${setId} · Nombre: `, el("span", { class: "fill-line" }, ""),
+      "  Fecha: ", el("span", { class: "fill-line short" }, "")),
     el("p", { class: "study-hint" }, `${TENSE_META[tense].icon} ${TENSE_META[tense].hint} — ej.: `,
       el("em", {}, TENSE_META[tense].example)),
     speakable
@@ -401,7 +487,7 @@ function renderStudy(setId, tense) {
           el("tr", {},
             el("th", { scope: "col" }, ""),
             set.verbs.map((v) => el("th", { scope: "col" },
-              el("span", { class: "th-inf" }, v.inf), el("span", { class: "th-gloss" }, v.en))))),
+              el("span", { class: "th-inf" }, v.inf), el("span", { class: "th-gloss", lang: "en" }, v.en))))),
         el("tbody", {},
           persons.map((p) =>
             el("tr", {},
@@ -430,6 +516,7 @@ function renderStudy(setId, tense) {
           "⚔️ ¿Pretérito o imperfecto?")
         : null,
       el("button", { class: "btn print-btn", onclick: () => window.print() }, "🖨️ Imprimir")),
+    renderFooter(),
   );
 }
 
@@ -455,7 +542,7 @@ function renderPractica(setId, tense) {
   const say2 = (cls, text) => { feedback.className = `feedback ${cls}`; feedback.textContent = text; announce(text); };
 
   const heads = set.verbs.map((v) => el("th", { scope: "col" },
-    el("span", { class: "th-inf" }, v.inf), el("span", { class: "th-gloss" }, v.en)));
+    el("span", { class: "th-inf" }, v.inf), el("span", { class: "th-gloss", lang: "en" }, v.en)));
   const cells = set.verbs.map(() => ({}));
   const table = el("table", { class: "conj-table practica-table" },
     el("thead", {}, el("tr", {}, el("th", { scope: "col" }, ""), heads)),
@@ -468,12 +555,13 @@ function renderPractica(setId, tense) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
-      soundToggle()),
+      infoButton("practica"), soundToggle()),
     el("h1", { class: "match-title" }, lola.el, `${PRACTICA_META.icon} Práctica — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "match-help" },
       "Reconstruye la tabla palabra por palabra. Rebuild the table word by word — no stars, just practice."),
     el("div", { class: "table-scroll" }, table),
     bankWrap, feedback,
+    renderFooter(),
   );
 
   function startColumn() {
@@ -587,9 +675,10 @@ function renderPlay(setId, tense, mode) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
-      soundToggle()),
+      infoButton(mode), soundToggle()),
     el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
+    renderFooter(),
   );
 
   function renderHeader() {
@@ -602,7 +691,8 @@ function renderPlay(setId, tense, mode) {
           el("span", { class: "play-lola", style: `left:clamp(26px, ${pct}%, calc(100% - 28px))` }, lola.el),
           createNest()),
         el("span", { class: "progress-text" }, `${Math.min(state.i + 1, targets.length)} / ${targets.length}`)),
-      el("span", { class: "streak", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
+      // role="img" so the aria-label is permitted (axe: aria-prohibited-attr)
+      el("span", { class: "streak", role: "img", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
     );
   }
 
@@ -622,7 +712,7 @@ function renderPlay(setId, tense, mode) {
   function listenPromptCard(t) {
     return el("div", { class: "prompt" },
       el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
-      el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en" }, "Which form do you hear?")),
+      el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en", lang: "en" }, "Which form do you hear?")),
       el("div", { class: "listen-controls" },
         el("button", { class: "btn primary", type: "button", onclick: () => speak(t.answer) }, "🔊 Escuchar"),
         // 0.5, not ~0.65: iOS maps sub-1.0 rates non-linearly and many
@@ -770,10 +860,11 @@ function renderMatch(set, tense, vosotros) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${set.id}` }, "← Salir"),
       el("a", { href: `#/study/${set.id}/${tense}` }, "📖 Estudia"),
-      soundToggle()),
+      infoButton("match"), soundToggle()),
     el("h1", { class: "match-title" }, lola.el, `🧩 Empareja — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
     board, feedback,
+    renderFooter(),
   );
 
   const leftCards = shuffle(pairs).map((p) => ({ side: "L", id: p.id, label: p.left }));
@@ -852,13 +943,14 @@ function renderContrast(setId) {
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/preterite` }, "📖 Pretérito"),
       el("a", { href: `#/study/${setId}/imperfect` }, "📖 Imperfecto"),
-      soundToggle()),
+      infoButton("contrast"), soundToggle()),
     el("h1", { class: "contrast-title" }, "⚔️ ¿Pretérito o imperfecto?"),
     el("p", { class: "match-help" },
       "La palabra del tiempo es la pista: ", el("strong", {}, "una vez ⭐"), " o ",
       el("strong", {}, "muchas veces 🌙"), ". The time word is your clue."),
     el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
+    renderFooter(),
   );
 
   function renderHeader() {
@@ -871,7 +963,8 @@ function renderContrast(setId) {
           el("span", { class: "play-lola", style: `left:clamp(26px, ${pct}%, calc(100% - 28px))` }, lola.el),
           createNest()),
         el("span", { class: "progress-text" }, `${Math.min(state.i + 1, questions.length)} / ${questions.length}`)),
-      el("span", { class: "streak", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
+      // role="img" so the aria-label is permitted (axe: aria-prohibited-attr)
+      el("span", { class: "streak", role: "img", "aria-label": "racha" }, state.streak >= 2 ? `🔥 ${state.streak}` : ""),
     );
   }
 
@@ -962,7 +1055,7 @@ function renderReport() {
   const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
 
   mount(
-    el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver")),
+    el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver"), infoButton("report")),
     el("div", { class: "report" },
       el("h1", {}, "📄 Informe de progreso — Conjuga"),
       el("p", { class: "report-fields" },
@@ -1000,6 +1093,7 @@ function renderReport() {
       el("div", { class: "study-actions no-print" },
         el("button", { class: "btn primary", onclick: () => window.print() }, "🖨️ Imprimir")),
     ),
+    renderFooter(),
   );
 }
 
@@ -1042,6 +1136,7 @@ function showResults(set, tense, mode, score, total, misses) {
         el("a", { class: "btn", href: `#/set/${set.id}` }, "🏠 Grupo"),
       ),
     ),
+    renderFooter(),
   );
   announce(`Resultados: ${score} de ${total}`);
 }

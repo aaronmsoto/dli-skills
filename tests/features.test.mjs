@@ -76,6 +76,21 @@ test("práctica bank: respects the vosotros setting via the persons argument", (
   assert.ok(withVos.includes(conjugate(verb, "present")[4]), "vosotros form present when included");
 });
 
+test("standards info: every screen has a bilingual, cited entry (M9 I2)", async () => {
+  const { STANDARDS_INFO } = await import("../js/standards-info.js");
+  const screens = ["home", "set", "study", "practica", "choice", "type", "match", "listen", "contrast", "report"];
+  for (const key of screens) {
+    const info = STANDARDS_INFO[key];
+    assert.ok(info, `missing entry for screen "${key}"`);
+    assert.ok(info.kid?.length > 5, `${key}: needs a Spanish-first kid line`);
+    assert.ok(info.en?.length > 20, `${key}: needs an English standards mapping`);
+    assert.ok(Array.isArray(info.cites) && info.cites.length >= 1, `${key}: needs citations`);
+    assert.ok(info.cites.every((c) => /NBPTS|7\.1\.|NJSLS|COPPA/.test(c)), `${key}: cites must reference real standards`);
+  }
+  assert.deepEqual(Object.keys(STANDARDS_INFO).sort(), [...screens].sort(),
+    "no orphan entries — module and router screens must match");
+});
+
 test("spaced repetition: intervals grow with mastery", () => {
   assert.equal(reviewIntervalMs(0), 0);
   assert.equal(reviewIntervalMs(1), 1 * DAY);

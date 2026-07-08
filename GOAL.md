@@ -25,8 +25,11 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
-**Queue (owner-set, 2026-07-07): M5 (reduced, CURRENT) → M9 → M10.**
-M8 shipped to dev 2026-07-07. M2 stays on hold (SME input); M4 is paused
+**Queue: IDLE — every loop-workable item is done (2026-07-08).** Awaiting
+owner: M10's two triage findings (below), M5's SME copy review, the M2
+hold, and the M4 pause.
+M9 complete on dev 2026-07-08; M5's loop items done 2026-07-08 (SME copy review still open); M8 shipped
+to dev 2026-07-07. M2 stays on hold (SME input); M4 is paused
 indefinitely. Loops work the
 queue in this order regardless of milestone numbering below.
 
@@ -84,10 +87,16 @@ queue in this order regardless of milestone numbering below.
   mismo 🔄".
 - [ ] **M5 — Polish pass (reduced 2026-07-07: accessibility-audit items
   moved into M10's formal WCAG/heuristic work — only what M10 does NOT
-  cover remains here)**
-  Performance budget check (<120 KB raw — raised from 100 KB by owner
-  decision 2026-07-07; further raises are owner-only), copy review by a bilingual educator
-  (human SME — not loop work), printable study-sheet layout tune-up.
+  cover remains here; loop items complete 2026-07-08, awaiting SME item)**
+  - [x] Performance budget check: <120 KB raw (raised from 100 KB by owner
+        decision 2026-07-07; further raises are owner-only), enforced by
+        tests/payload.test.mjs on every CI run.
+  - [x] Printable study-sheet layout tune-up (2026-07-08): print-only
+        Grupo/Nombre/Fecha header on study sheets, @page margins,
+        repeating table heads, row break-inside protection, denser
+        report typography in print — with e2e print-emulation coverage.
+  - [ ] Copy review by a bilingual educator (human SME — NOT loop work;
+        loops skip this item and treat M5 as passed for queue purposes).
 - [x] **M6 — Mascot epic: Lola la Lechuza (complete on dev 2026-07-07; ships with the next release merge)**
   Turn the placeholder 🦉 into a real character woven through the
   experience, applying the JiJi (ST Math) design principles documented in
@@ -216,7 +225,7 @@ queue in this order regardless of milestone numbering below.
         STANDARDS if pedagogy-affecting, README/about as needed); full
         regression green.
 
-- [ ] **M9 — 🪟 Transparency & attribution epic**
+- [x] **M9 — 🪟 Transparency & attribution epic** · complete on dev 2026-07-08
   Make the app's standards grounding visible IN the product, and give every
   page the same footer, credits, and a per-page "why this page" explainer.
   Owner decisions (2026-07-07): footer links to the two standards documents
@@ -224,22 +233,22 @@ queue in this order regardless of milestone numbering below.
   are **bilingual, adult-focused** (one short Spanish-first line a learner
   can read, then concise English standards mapping with citations).
   Acceptance criteria, in order:
-  - [ ] **F1 (footer everywhere):** `renderFooter()` becomes a shared
+  - [x] **F1 (footer everywhere):** `renderFooter()` becomes a shared
         component rendered on EVERY screen (home, group, Estudia, Elige,
         Escribe, Empareja, 🎧 Escucha, ⚔️ Contrast, informe) — today it
         renders only on home. Same toggles/links everywhere; footer keeps
         `.no-print`.
-  - [ ] **F2 (standards links):** the footer links to the official NBPTS
+  - [x] **F2 (standards links):** the footer links to the official NBPTS
         ECYA-WL standards document and the official 2020 NJSLS-WL document
         (external links, `rel="noopener"`); about.html and docs/STANDARDS.md
         use the same canonical URLs.
-  - [ ] **F3 (credits):** two lines at the bottom of the footer, exactly:
+  - [x] **F3 (credits):** two lines at the bottom of the footer, exactly:
         `Created by Lucia Perales, EdD (wife/mother/educator) and Aaron
         Soto, MHCID (husband/father/technologist)` `<br />` `DLI K-5
         Graduate “A1” (daughter/consultant) and DLI 3rd Grader “A2”
         (son/consultant)`. Kids appear ONLY as the pseudonyms A1/A2 —
         never add real names (privacy invariant).
-  - [ ] **I1 (info panels):** an ℹ️ info icon on every screen opens an
+  - [x] **I1 (info panels):** an ℹ️ info icon on every screen opens an
         accessible pop-up/slide-out panel explaining how THAT page supports
         the standards: which NBPTS ECYA-WL standard(s) and NJSLS-WL
         indicator(s) the activity serves and how (e.g., Elige →
@@ -248,19 +257,20 @@ queue in this order regardless of milestone numbering below.
         Dialog semantics: focus moves in on open and returns on close,
         Esc + explicit close button, ≥44px targets, dark mode, static
         under reduced motion, hidden in print.
-  - [ ] **I2 (single source of truth):** panel copy lives in one data
+  - [x] **I2 (single source of truth):** panel copy lives in one data
         module (e.g., `js/standards-info.js`) keyed by screen; a unit test
         asserts every screen key has an entry with citations. The same
         mapping is added to docs/STANDARDS.md as a per-screen table and
         summarized on about.html — repo docs and in-app panels must not
         drift (mirror the mapping, cite the module).
-  - [ ] **V/RT:** e2e — footer (toggles, standards links, credits) present
+  - [x] **V/RT:** e2e — footer (toggles, standards links, credits) present
         on every route; info panel opens/closes on every screen with
         correct per-screen citations; payload budget test still green
         (keep panel copy lean); full unit + e2e regression, zero weakened
         assertions.
-- [ ] **M10 — 🔬 Usability & accessibility sprint (runs AFTER M9 so the new
-  footer/panels are inside the audit scope)**
+- [ ] **M10 — 🔬 Usability & accessibility sprint** · all loop items
+  complete on dev 2026-07-08 — open: the two decision-pending owner-triage
+  findings below (loops must NOT touch until an option is chosen)
   Four formal evaluations, evidence-first fixes, and public reporting.
   Owner decisions (2026-07-07): loops **auto-fix WCAG Critical/Serious
   findings, Nielsen severity-3/4 violations, and low-risk quick wins**;
@@ -271,18 +281,18 @@ queue in this order regardless of milestone numbering below.
   Note: M5 was reduced on 2026-07-07 — its accessibility-audit items now
   live here; M5 keeps only what M10 does not cover.
   Acceptance criteria, in order:
-  - [ ] **A1 (UX principles audit):** Don-Norman-principles audit
+  - [x] **A1 (UX principles audit):** Don-Norman-principles audit
         (discoverability, affordances, signifiers, feedback, mapping,
         constraints, conceptual model) across all screens per the
         methodology in mastepanoski/claude-skills
         `don-norman-principles-audit` — catastrophic/high/medium/low
         severities, per-principle evidence, 1-3 recommendations each,
         prioritized list + overall score. Report: `docs/audits/norman.md`.
-  - [ ] **A2 (heuristic evaluation):** Nielsen 10-heuristics audit per
+  - [x] **A2 (heuristic evaluation):** Nielsen 10-heuristics audit per
         `nielsen-heuristics-audit` — 0-4 severity scale, violations with
         exact locations and affected tasks, cross-heuristic patterns,
         quick wins, positive highlights. Report: `docs/audits/nielsen.md`.
-  - [ ] **A3 (cognitive walkthrough):** per `cognitive-walkthrough` — the
+  - [x] **A3 (cognitive walkthrough):** per `cognitive-walkthrough` — the
         four questions (right goal? action findable? affordance clear?
         progress visible?) applied step-by-step to ≥4 defined tasks with
         defined personas: a DLI 3rd grader on a tablet (novice, emerging
@@ -292,7 +302,7 @@ queue in this order regardless of milestone numbering below.
         use 🔍 Pistas, and print the informe. Per-step ✅/⚠️/❌ ratings,
         failure points, success-likelihood table.
         Report: `docs/audits/walkthrough.md`.
-  - [ ] **A4 (WCAG audit):** WCAG **2.2 Level AA** audit per
+  - [x] **A4 (WCAG audit):** WCAG **2.2 Level AA** audit per
         `wcag-accessibility-audit` — automated pass (axe-core run
         dev-only through the existing Playwright harness; NEVER an app
         dependency) plus manual passes: full keyboard-only playthrough,
@@ -301,19 +311,32 @@ queue in this order regardless of milestone numbering below.
         organized by POUR with success-criterion citations and
         Critical/Serious/Moderate/Minor severities.
         Report: `docs/audits/wcag.md`.
-  - [ ] **F (fix wave):** per the autonomy decision above — auto-fix the
+  - Decision-pending findings from the audits (owner triage — loops must
+    NOT implement these until an option is chosen here):
+    - [ ] **NN-1/DN-4/CW-3 (high):** footer setting toggles on a game
+          screen silently restart the round. Options: (a) confirm before
+          restarting, (b) apply the setting at the next round instead,
+          (c) disable the two toggles during an active round with a short
+          note. Auditor recommendation: (b) — least friction, no modal.
+    - [ ] **NN-3/DN-1/CW-1 (medium):** no "start here" cue for a
+          brand-new learner on the 20-card home grid. Options: (a) a
+          small "¡Empieza aquí!" ribbon on the first unstarted group,
+          (b) a "Continúa" card tracking the furthest-played group,
+          (c) leave as is. Auditor recommendation: (a) — smallest, no
+          new state.
+  - [x] **F (fix wave):** per the autonomy decision above — auto-fix the
         mandated tiers with tests per fix; each fix cites its finding ID;
         design/pedagogy-changing findings appended here as decision-pending
         tasks with the auditor's recommendation. No fix may weaken an
         existing test.
-  - [ ] **P (usability report — part of /docs, owner decision
+  - [x] **P (usability report — part of /docs, owner decision
         2026-07-07):** `docs/usability.html` — the "Usability &
         Accessibility" page lives INSIDE the public /docs section (not a
         root page): methodology overview of all four evaluations, scores,
         findings summary, fixed-vs-open status, date of audit. Content
         mirrors docs/audits (no drift); bilingual header, English body;
         linked from the /docs hub, UNLINKED from app nav.
-  - [ ] **D (public docs hub):** `docs/index.html` — the repo's `docs/`
+  - [x] **D (public docs hub):** `docs/index.html` — the repo's `docs/`
         directory already deploys with Pages, so `/docs/` becomes a real
         public route. Three sections: **how to use the app** (learners /
         parents / teachers, incl. offline-ish behavior, localStorage
@@ -322,7 +345,7 @@ queue in this order regardless of milestone numbering below.
         **usability & accessibility adherence** (links docs/usability.html
         + the four audit reports). Relative URLs only; unlinked from app
         nav until the owner links it.
-  - [ ] **V/RT:** e2e coverage for docs/usability.html and docs/index.html
+  - [x] **V/RT:** e2e coverage for docs/usability.html and docs/index.html
         (load, key content, relative links resolve); axe-core automated
         pass wired as a CI-friendly check with zero Critical/Serious
         remaining; full regression green.

@@ -472,6 +472,20 @@ if (await page.locator(".lola-wrap").first().isVisible()) fail("print: Lola must
 await page.emulateMedia({ media: "screen" });
 ok("print: Lola hidden");
 
+// ---------- print: study sheet gets a classroom header (M5 tune-up) ----------
+await page.goto(`${BASE}/#/study/1/present`);
+await page.waitForSelector(".conj-table");
+if (await page.locator(".print-fields").isVisible()) fail("study: name/date header must be print-only");
+await page.emulateMedia({ media: "print" });
+if (!(await page.locator(".print-fields").isVisible())) fail("study print: name/date header missing");
+const printHeader = await page.locator(".print-fields").innerText();
+if (!/Grupo 1/.test(printHeader) || !/Nombre:/.test(printHeader) || !/Fecha:/.test(printHeader))
+  fail(`study print: header incomplete — "${printHeader}"`);
+const theadDisplay = await page.evaluate(() => getComputedStyle(document.querySelector(".conj-table thead")).display);
+if (theadDisplay !== "table-header-group") fail(`print: thead should repeat across pages, got "${theadDisplay}"`);
+await page.emulateMedia({ media: "screen" });
+ok("print: study sheet shows Grupo/Nombre/Fecha header, repeating table heads");
+
 // ---------- dark mode: Lola renders with dark palette ----------
 const darkPage = await browser.newPage({ colorScheme: "dark", viewport: { width: 900, height: 900 } });
 trackErrors(darkPage);
@@ -637,6 +651,184 @@ const afterStore = await page.evaluate(() => localStorage.getItem("conjuga.v1"))
 if (afterStore !== beforeStore) fail("practica: must not record any progress (stars, badges, or otherwise)");
 ok("practica: full table rebuild, corrective retry, celebration, nothing recorded");
 await page.screenshot({ path: `${SHOTS}/practica-done.png` });
+
+// ---------- 🪟 M9 F1-F3: footer on every screen, standards links, credits ----------
+{
+  const ROUTES = ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present",
+    "#/play/1/present/choice", "#/play/1/present/type", "#/play/1/present/match",
+    "#/play/1/contrast", "#/informe"];
+  for (const r of ROUTES) {
+    await page.goto(`${BASE}/${r}`);
+    await page.reload();
+    await page.waitForSelector(".site-footer", { timeout: 4000 }).catch(() => fail(`footer: missing on ${r}`));
+    const credits = await page.locator(".footer-credits").innerText().catch(() => "");
+    if (!credits.includes("Lucia Perales, EdD") || !credits.includes("Aaron Soto, MHCID"))
+      fail(`footer: creator credits missing on ${r}`);
+    if (!credits.includes("“A1”") || !credits.includes("“A2”")) fail(`footer: consultant credits missing on ${r}`);
+    if ((await page.locator(".footer-std").count()) !== 2) fail(`footer: expected 2 standards links on ${r}`);
+  }
+  const hrefs = await page.locator(".footer-std").evaluateAll((as) => as.map((a) => [a.href, a.rel]));
+  if (!hrefs.some(([h]) => h.includes("nj.gov/education/standards/worldlang"))) fail("footer: NJSLS-WL link missing");
+  if (!hrefs.some(([h]) => h.includes("nbpts.org") && h.includes("ECYA-WL"))) fail("footer: NBPTS ECYA-WL link missing");
+  if (hrefs.some(([, rel]) => !rel.includes("noopener"))) fail("footer: standards links need rel=noopener");
+  // results screen gets the footer too
+  await page.goto(`${BASE}/#/play/1/present/match`);
+  await page.reload();
+  await page.waitForSelector(".match-card");
+  await page.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    for (const l of document.querySelectorAll(".match-col.left .match-card")) {
+      const [personLabel, inf] = l.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+      l.click();
+      [...document.querySelectorAll(".match-col.right .match-card")].find((x) => x.textContent === form && !x.disabled).click();
+      await new Promise((res) => setTimeout(res, 30));
+    }
+  });
+  await page.waitForSelector(".results");
+  if (!(await page.locator(".site-footer").count())) fail("footer: missing on results screen");
+  ok("footer: every screen carries controls, standards links (noopener), and credits");
+}
+
+// ---------- ℹ️ M9 I1/I2: per-screen standards panels ----------
+{
+  const ROUTES = ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present",
+    "#/play/1/present/choice", "#/play/1/present/type", "#/play/1/present/match",
+    "#/play/1/contrast", "#/informe"];
+  for (const r of ROUTES) {
+    await page.goto(`${BASE}/${r}`);
+    await page.reload();
+    await page.waitForSelector(".info-btn", { timeout: 4000 }).catch(() => fail(`info: ℹ️ button missing on ${r}`));
+  }
+  // open on the study screen: dialog semantics, content, Esc closes, focus returns
+  await page.goto(`${BASE}/#/study/1/present`);
+  await page.reload();
+  await page.waitForSelector(".info-btn");
+  await page.locator(".info-btn").click();
+  await page.waitForSelector('.info-panel[role="dialog"]');
+  const kid = await page.locator(".info-kid").innerText();
+  if (!kid.includes("tabla")) fail(`info: study kid-line wrong — "${kid}"`);
+  const cites = await page.locator(".info-cites").innerText();
+  if (!/7\.1\./.test(cites)) fail(`info: study panel must cite NJSLS — "${cites}"`);
+  const focused = await page.evaluate(() => document.activeElement?.className);
+  if (focused !== "info-close") fail(`info: focus should land on close, got "${focused}"`);
+  await page.keyboard.press("Escape");
+  if (await page.locator(".info-panel").count()) fail("info: Esc must close the panel");
+  const focusBack = await page.evaluate(() => document.activeElement?.classList?.contains("info-btn"));
+  if (!focusBack) fail("info: focus must return to the ℹ️ button on close");
+  // per-screen content: the listen panel differs from the study panel
+  await page.goto(`${BASE}/#/play/1/present/choice`);
+  await page.reload();
+  await page.waitForSelector(".info-btn");
+  await page.locator(".info-btn").click();
+  const kidChoice = await page.locator(".info-kid").innerText();
+  if (kidChoice === kid) fail("info: panels must be per-screen, not shared copy");
+  await page.locator(".info-close").click();
+  if (await page.locator(".info-panel").count()) fail("info: ✕ must close the panel");
+  ok("info: ℹ️ on all screens; dialog focus/Esc behavior; per-screen cited content");
+}
+
+// ---------- M10 fix wave: titles, skip link, lang parts, contrast tokens ----------
+{
+  await page.goto(`${BASE}/#/study/2/preterite`);
+  await page.reload();
+  await page.waitForSelector(".conj-table");
+  const t1 = await page.title();
+  if (!/Grupo 2/.test(t1) || !/Pretérito/i.test(t1)) fail(`title: study route title wrong — "${t1}"`);
+  await page.goto(`${BASE}/#/`);
+  const t2 = await page.title();
+  if (t1 === t2) fail("title: routes must have distinct titles (WCAG 2.4.2)");
+  // skip link: first Tab reveals it; activating focuses main content
+  await page.keyboard.press("Tab");
+  const skipFocused = await page.evaluate(() => document.activeElement?.id === "skip");
+  if (!skipFocused) fail("skip: first Tab should land on the skip link");
+  await page.keyboard.press("Enter");
+  const mainFocused = await page.evaluate(() => document.activeElement?.id === "app");
+  if (!mainFocused) fail("skip: activating must focus #app");
+  const hashAfter = await page.evaluate(() => location.hash);
+  if (hashAfter === "#app") fail("skip: must not disturb the hash router");
+  // lang parts: English support copy is marked lang=en
+  await page.goto(`${BASE}/#/set/1`);
+  await page.waitForSelector(".mode-en");
+  for (const sel of [".mode-en", ".h-en", ".footer-credits"]) {
+    const lang = await page.locator(sel).first().getAttribute("lang");
+    if (lang !== "en") fail(`lang: ${sel} must carry lang="en" (WCAG 3.1.2), got "${lang}"`);
+  }
+  // contrast tokens: credits no longer translucent; light star is the AA-passing amber
+  const creditsOpacity = await page.evaluate(() => getComputedStyle(document.querySelector(".footer-credits")).opacity);
+  if (creditsOpacity !== "1") fail(`contrast: footer credits must not be translucent, opacity=${creditsOpacity}`);
+  const starTok = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--star").trim());
+  if (!starTok.startsWith("#d97706")) fail(`contrast: light --star should be #d97706, got "${starTok}"`);
+  const darkStar = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(darkStar);
+  await darkStar.goto(`${BASE}/#/`);
+  await darkStar.waitForSelector(".set-card");
+  const starDark = await darkStar.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--star").trim());
+  if (!starDark.startsWith("#f59e0b")) fail(`contrast: dark --star should stay #f59e0b, got "${starDark}"`);
+  await darkStar.close();
+  ok("fix wave: per-route titles, skip link, lang=en parts, contrast tokens");
+}
+
+// ---------- /docs public pages (M10 P+D) ----------
+{
+  const docs = await browser.newPage();
+  trackErrors(docs);
+  await docs.goto(`${BASE}/docs/`);
+  const dTitle = await docs.title();
+  if (!/Documentación/.test(dTitle)) fail(`docs hub: bad title "${dTitle}"`);
+  for (const frag of ["Cómo usar", "Estándares DLI", "Usabilidad y accesibilidad"]) {
+    if (!(await docs.getByRole("heading", { name: new RegExp(frag) }).count())) fail(`docs hub: missing section "${frag}"`);
+  }
+  // every relative link on the hub must resolve (app, about, reports, usability)
+  const rel = await docs.evaluate(() =>
+    [...document.querySelectorAll("a[href]")].map((a) => a.getAttribute("href")).filter((h) => !h.startsWith("http")));
+  for (const href of rel) {
+    const status = await docs.evaluate(async (u) => (await fetch(u)).status, href);
+    if (status !== 200) fail(`docs hub: relative link ${href} → HTTP ${status}`);
+  }
+  await docs.goto(`${BASE}/docs/usability.html`);
+  if (!(await docs.getByRole("heading", { name: /Usability & Accessibility/ }).count())) fail("usability page: h1 missing");
+  if ((await docs.locator("td.fixed").count()) < 5) fail("usability page: expected ≥5 FIXED findings");
+  if ((await docs.locator("td.pending").count()) !== 2) fail("usability page: expected exactly 2 owner-triage findings");
+  await docs.close();
+  ok("docs: hub + usability page render; all sections, statuses, and relative links OK");
+}
+
+// ---------- axe-core automated a11y gate (M10 V/RT): zero critical/serious ----------
+{
+  // axe-core is vendored (tests/e2e/vendor/, MPL-2.0 banner retained):
+  // deterministic + offline, and `npm i --no-save axe-core` mid-run would
+  // PRUNE playwright from node_modules (no-deps package.json). Test-only
+  // tooling — never an app dependency, never in the payload budget.
+  const { readFileSync } = await import("node:fs");
+  let axeSource = null;
+  try {
+    axeSource = readFileSync(join(ROOT, "tests/e2e/vendor/axe.min.js"), "utf8");
+  } catch (e) {
+    fail(`axe: vendored axe.min.js missing — ${e.message}`);
+  }
+  if (axeSource) {
+    const axePage = await browser.newPage();
+    trackErrors(axePage);
+    for (const r of ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present", "#/play/1/present/choice", "#/play/1/contrast", "#/informe"]) {
+      await axePage.goto(`${BASE}/${r}`);
+      await axePage.reload();
+      await axePage.waitForSelector(".site-footer");
+      await axePage.addScriptTag({ content: axeSource });
+      const bad = await axePage.evaluate(async () => {
+        const res = await window.axe.run(document, { resultTypes: ["violations"] });
+        return res.violations
+          .filter((v) => v.impact === "critical" || v.impact === "serious")
+          .map((v) => `${v.id}(${v.impact}) ×${v.nodes.length} e.g. ${v.nodes[0]?.target?.join(" ")}`);
+      });
+      if (bad.length) fail(`axe ${r}: ${bad.join(" | ")}`);
+    }
+    await axePage.close();
+    ok("axe-core: zero critical/serious violations across 7 representative routes");
+  }
+}
 
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
