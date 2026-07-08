@@ -48,7 +48,10 @@ See docs/STANDARDS.md for the alignment detail.
 - Step 1: pick a tense (Presente / Pretérito / Imperfecto) — each card shows
   icon, semantic hint, and an example sentence.
 - Step 2: pick an activity — Estudia, 🧱 Práctica (unscored), Elige,
-  Escribe, Empareja — stars shown for the scored games in the selected tense.
+  Escribe, Empareja (+ 🎧 Escucha when a voice exists) — stars shown for
+  the scored games in the selected tense. Layout: 3 columns on
+  tablet/desktop (2 rows of 3 when all six show), 2 columns under 560px
+  (3 rows of 2); the ⚔️ reto card keeps its own full-width row.
 
 ### 4.3 Activities
 - **Estudia (study):** one table — rows = persons, columns = the 5 verbs —

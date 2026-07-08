@@ -182,7 +182,14 @@ a { color: var(--brand); }
 
 .tense-row, .mode-row { display: grid; gap: 12px; }
 .tense-row { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
-.mode-row { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+/* activities: 2 rows × 3 on tablet/desktop, 3 rows × 2 on small phones
+   (owner layout decision 2026-07-08 — six cards no longer fit one row) */
+.mode-row { grid-template-columns: repeat(3, 1fr); }
+.mode-row.contrast-row { grid-template-columns: 1fr; } /* single reto card stays full-width */
+@media (max-width: 560px) {
+  .mode-row { grid-template-columns: repeat(2, 1fr); }
+  .mode-row.contrast-row { grid-template-columns: 1fr; }
+}
 
 .tense-card, .mode-card {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
