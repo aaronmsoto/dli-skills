@@ -14,37 +14,37 @@ export const STANDARDS_INFO = {
   study: {
     kid: "Mira la tabla y toca una palabra para escucharla.",
     en: "Reference tables with tap-to-hear forms support interpretive reading AND listening of memorized words; printed sheets extend practice offline.",
-    cites: ["7.1.NL.IPRET.1", "7.1.NM.IPRET.1", "NBPTS ECYA-WL Std IV"],
+    cites: ["NCSSFL-ACTFL Interpretive (Novice Low–Mid)", "NBPTS ECYA-WL Std IV"],
   },
   practica: {
     kid: "Reconstruye la tabla palabra por palabra. ¡Sin estrellas, solo práctica!",
     en: "Active recall inside the chart's visual scaffold — the bridge between studying and quizzing. Unscored on purpose: pressure-free retrieval practice (informative, never punitive).",
-    cites: ["NBPTS ECYA-WL Std IV (scaffolding)", "7.1.NL.IPRET.1"],
+    cites: ["NBPTS ECYA-WL Std IV (scaffolding)", "NCSSFL-ACTFL Interpretive (Novice Low)"],
   },
   choice: {
     kid: "Lee y elige la forma correcta.",
     en: "Interpretive recognition: learners identify the written form for a person + tense among linguistically-informed distractors (naive regularizations, cross-tense contrasts).",
-    cites: ["7.1.NL.IPRET.1", "7.1.NM.IPRET.1"],
+    cites: ["NCSSFL-ACTFL Interpretive Reading (Novice Low–Mid)"],
   },
   type: {
     kid: "Escribe la forma del verbo.",
     en: "Presentational writing at the word level: typed production with accent support and a penalty-free accent retry (corrective, never punitive feedback).",
-    cites: ["7.1.NM.PRSNT.4", "7.1.NH.PRSNT.2"],
+    cites: ["NCSSFL-ACTFL Presentational Writing (Novice Mid–High)"],
   },
   match: {
     kid: "Une cada persona con su forma.",
     en: "Interpretive recognition of form↔person links with strong visual support; scoring counts first-try matches to reward careful reading.",
-    cites: ["7.1.NL.IPRET.1 (recognition with visual support)"],
+    cites: ["NCSSFL-ACTFL Interpretive Reading (Novice Low, visual support)"],
   },
   listen: {
     kid: "Escucha y elige lo que oyes.",
     en: "Interpretive LISTENING: the target is heard, never shown — person endings and stress-as-tense (hablo/habló) by ear. Earns 🎧 badges, separate from stars, so devices without a Spanish voice are never penalized.",
-    cites: ["7.1.NM.IPRET.1 (spoken words and phrases)"],
+    cites: ["NCSSFL-ACTFL Interpretive Listening (Novice Low–Mid)"],
   },
   contrast: {
     kid: "La palabra del tiempo es tu pista: ¿pretérito o imperfecto?",
     en: "The storytelling tense contrast behind narration: conventional classroom time cues (una vez vs. muchas veces) scaffold the preterite/imperfect decision novices need for retelling.",
-    cites: ["7.1.NH.PRSNT.4 (tell/retell)", "NBPTS ECYA-WL Std IV"],
+    cites: ["NCSSFL-ACTFL: toward Novice High storytelling", "NBPTS ECYA-WL Std IV"],
   },
   report: {
     kid: "Tu progreso, listo para compartir.",

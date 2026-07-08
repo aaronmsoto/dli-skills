@@ -85,7 +85,7 @@ test("standards info: every screen has a bilingual, cited entry (M9 I2)", async 
     assert.ok(info.kid?.length > 5, `${key}: needs a Spanish-first kid line`);
     assert.ok(info.en?.length > 20, `${key}: needs an English standards mapping`);
     assert.ok(Array.isArray(info.cites) && info.cites.length >= 1, `${key}: needs citations`);
-    assert.ok(info.cites.every((c) => /NBPTS|7\.1\.|NJSLS|COPPA/.test(c)), `${key}: cites must reference real standards`);
+    assert.ok(info.cites.every((c) => /NBPTS|NCSSFL|ACTFL|Novice|COPPA/.test(c)), `${key}: cites must reference real standards`);
   }
   assert.deepEqual(Object.keys(STANDARDS_INFO).sort(), [...screens].sort(),
     "no orphan entries — module and router screens must match");

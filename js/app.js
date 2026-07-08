@@ -356,6 +356,7 @@ function renderHome() {
     el("header", { class: "hero" },
       menuButton(),
       el("h1", { class: "home-title" }, createLola(76).el, "Conjuga"),
+      el("p", { class: "brand-sub", lang: "en" }, "part of DLIskills.com"),
       el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
       el("p", { class: "tagline-en", lang: "en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
@@ -428,15 +429,18 @@ function renderFooter() {
       el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
       el("a", { class: "linklike footer-docs", href: "docs/" }, "📚 Documentación / Docs"),
     ),
+    // official site identity + national-only standards (owner, 2026-07-08):
+    // NBPTS (teaching standards) + NCSSFL-ACTFL (proficiency levels);
+    // never state-specific standards
+    el("p", { class: "footer-site" }, "Dual-Language Immersion (DLI) Skills"),
     el("p", { class: "footer-note" },
       "Gratis y sin registro · Free, no login · Aligned to ",
-      // NBPTS first — the foundational teaching standards (owner, 2026-07-08)
       el("a", { class: "footer-std", href: "https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf", target: "_blank", rel: "noopener" },
-        "NBPTS ECYA-WL"),
-      " & ",
-      el("a", { class: "footer-std", href: "https://www.nj.gov/education/standards/worldlang/", target: "_blank", rel: "noopener" },
-        "NJSLS-WL (2020)"),
-      " standards"),
+        "NBPTS"),
+      " and ",
+      el("a", { class: "footer-std", href: "https://www.actfl.org/uploads/files/general/Professional-Learning/Can-Do-Intro-Overview.pdf", target: "_blank", rel: "noopener" },
+        "NCSSFL-ACTFL"),
+      " World Language standards"),
     // owner-specified credits (M9 F3); kids appear ONLY as pseudonyms
     el("p", { class: "footer-credits", lang: "en" },
       "Created by Lucia Perales, EdD (wife/mother/educator) and Aaron Soto, MHCID (husband/father/technologist)",

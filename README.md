@@ -70,11 +70,11 @@ zero-setup, and usable from any browser without registration or data collection.
 The design is grounded in two frameworks (see [docs/STANDARDS.md](docs/STANDARDS.md)
 for the full alignment):
 
-- **[NJ Student Learning Standards — World Languages (2020)](https://www.nj.gov/education/standards/worldlang/):**
-  activities map to Novice-band performance expectations across the Interpretive
-  (7.1.NM.IPRET.1) and Presentational (7.1.NM.PRSNT.4, 7.1.NH.PRSNT.2) modes;
-  past-tense practice scaffolds toward Novice High story retelling
-  (7.1.NH.PRSNT.4).
+- **[NCSSFL-ACTFL Can-Do Statements](https://www.actfl.org/uploads/files/general/Professional-Learning/Can-Do-Intro-Overview.pdf):**
+  proficiency levels for the Novice band (Novice Low → Novice High) across
+  the Interpretive (Elige/Empareja/Escucha) and Presentational (Escribe)
+  modes; the preterite/imperfect contrast scaffolds toward Novice High
+  storytelling.
 - **[NBPTS World Languages Standards (ECYA-WL)](https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf):**
   recognition before production, errors treated as learning data, timely
   non-punitive feedback, sequential simple-to-sophisticated design, and equitable

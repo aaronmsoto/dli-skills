@@ -678,10 +678,25 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     if (!(await page.locator(".footer-docs").count())) fail(`footer: docs link missing on ${r}`);
   }
   const hrefs = await page.locator(".footer-std").evaluateAll((as) => as.map((a) => [a.href, a.rel]));
-  if (!hrefs.some(([h]) => h.includes("nj.gov/education/standards/worldlang"))) fail("footer: NJSLS-WL link missing");
-  if (!hrefs[0][0].includes("nbpts.org")) fail("footer: NBPTS must come first (owner order, 2026-07-08)");
-  if (!hrefs.some(([h]) => h.includes("nbpts.org") && h.includes("ECYA-WL"))) fail("footer: NBPTS ECYA-WL link missing");
+  // national-only standards (owner, 2026-07-08): NBPTS first, then NCSSFL-ACTFL
+  if (!hrefs[0][0].includes("nbpts.org")) fail("footer: NBPTS must come first");
+  if (!hrefs.some(([h]) => h.includes("actfl.org") && h.includes("Can-Do"))) fail("footer: NCSSFL-ACTFL Can-Do link missing");
+  if (hrefs.some(([h]) => h.includes("nj.gov"))) fail("footer: state-specific standards must not be linked");
   if (hrefs.some(([, rel]) => !rel.includes("noopener"))) fail("footer: standards links need rel=noopener");
+  const siteName = await page.locator(".footer-site").first().innerText();
+  if (siteName !== "Dual-Language Immersion (DLI) Skills") fail(`footer: site name wrong — "${siteName}"`);
+  // home shows the DLIskills.com brand line with exact capitalization
+  await page.goto(`${BASE}/#/`);
+  await page.reload();
+  await page.waitForSelector(".brand-sub");
+  const brand = await page.locator(".brand-sub").innerText();
+  if (brand !== "part of DLIskills.com") fail(`brand: expected "part of DLIskills.com", got "${brand}"`);
+  // about.html: national-only standards, no GitHub link (owner, 2026-07-08)
+  const aboutHtml = await page.evaluate(async () => (await fetch("about.html")).text());
+  if (/NJSLS|nj\.gov/.test(aboutHtml)) fail("about: state-specific standards must be gone");
+  if (/github\.com/.test(aboutHtml)) fail("about: GitHub link must be removed");
+  if (!aboutHtml.includes("National Council of State Supervisors for Languages")) fail("about: NCSSFL must be spelled out");
+  if (!aboutHtml.includes("American Council on the Teaching of Foreign Languages")) fail("about: ACTFL must be spelled out");
   // results screen gets the footer too
   await page.goto(`${BASE}/#/play/1/present/match`);
   await page.reload();
@@ -738,7 +753,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const kid = await page.locator(".info-kid").innerText();
   if (!kid.includes("tabla")) fail(`info: study kid-line wrong — "${kid}"`);
   const cites = await page.locator(".info-cites").innerText();
-  if (!/7\.1\./.test(cites)) fail(`info: study panel must cite NJSLS — "${cites}"`);
+  if (!/Novice|NBPTS/.test(cites)) fail(`info: study panel must cite NCSSFL-ACTFL levels or NBPTS — "${cites}"`);
   const focused = await page.evaluate(() => document.activeElement?.className);
   if (focused !== "info-close") fail(`info: focus should land on close, got "${focused}"`);
   await page.keyboard.press("Escape");

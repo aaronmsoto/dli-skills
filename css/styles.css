@@ -80,7 +80,8 @@ a { color: var(--brand); }
 
 /* -------- hero / home -------- */
 .hero { text-align: center; padding: 12px 0 4px; }
-.hero h1 { font-size: 2.6rem; margin-bottom: 0.1em; }
+.hero h1 { font-size: 2.6rem; margin-bottom: 0; }
+.brand-sub { color: var(--ink-soft); font-size: 0.82rem; margin: 0 0 4px; }
 .tagline { font-size: 1.15rem; margin: 0.2em 0; }
 .tagline-en { color: var(--ink-soft); font-size: 0.9rem; margin: 0.2em 0 0.6em; }
 .total-stars { font-size: 1.05rem; font-weight: bold; margin: 0.3em 0 0; }
@@ -111,6 +112,7 @@ a { color: var(--brand); }
 /* -------- footer -------- */
 .site-footer { margin-top: 36px; text-align: center; color: var(--ink-soft); font-size: 0.9rem; }
 .footer-controls { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+.footer-site { font-weight: 700; margin-bottom: 2px; }
 .footer-std { color: var(--brand); }
 .footer-credits { font-size: 0.8rem; margin-top: 6px; } /* no opacity: 4.5:1 at this size (WCAG-1) */
 .footer-applied { width: 100%; margin: 0; color: var(--good); font-weight: 600; }
