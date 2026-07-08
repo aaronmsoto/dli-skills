@@ -108,7 +108,8 @@ function menuButton() {
     el("a", { class: "menu-link", href: "#/" }, "🏠 Inicio / Home"),
     el("a", { class: "menu-link", href: "#/informe" }, "📄 Informe de progreso"),
     el("a", { class: "menu-link", href: "about.html" }, "🦉 Acerca de / Standards"),
-    el("a", { class: "menu-link", href: "docs/" }, "📚 Documentación / Docs"));
+    el("a", { class: "menu-link", href: "docs/" }, "📚 Documentación / Docs"),
+    soundToggle());
   const onDoc = (e) => { if (!wrap.contains(e.target)) close(); };
   const onKey = (e) => { if (e.key === "Escape") { close(); btn.focus(); } };
   const close = () => {
@@ -136,23 +137,25 @@ function menuButton() {
   return wrap;
 }
 
-/** 🔊/🔇 toggle — hidden entirely on devices with no Spanish voice. */
+/**
+ * 🔊/🔇 toggle — lives INSIDE the ☰ menu (owner, 2026-07-08: cleaner
+ * header). Hidden entirely when no audio backend exists.
+ */
 function soundToggle() {
   if (!audioAvailable()) return null;
+  const label = (on) => (on ? "🔊 Sonido: encendido / Sound on" : "🔇 Sonido: apagado / Sound off");
   const on = store.getSettings().sound;
   return el("button", {
-    class: "sound-toggle",
-    "aria-label": on ? "Silenciar audio" : "Activar audio",
+    class: "menu-link sound-toggle", type: "button",
     "aria-pressed": String(on),
-    title: on ? "Audio: encendido" : "Audio: apagado",
     onclick: (e) => {
       const next = !store.getSettings().sound;
       store.setSetting("sound", next);
-      e.currentTarget.textContent = next ? "🔊" : "🔇";
+      e.currentTarget.textContent = label(next);
       e.currentTarget.setAttribute("aria-pressed", String(next));
       if (next) say("Hola");
     },
-  }, on ? "🔊" : "🔇");
+  }, label(on));
 }
 
 const app = document.getElementById("app");
@@ -351,10 +354,9 @@ function renderHome() {
 
   mount(
     el("header", { class: "hero" },
-      infoButton("home"),
-      soundToggle(),
       menuButton(),
       el("h1", { class: "home-title" }, createLola(76).el, "Conjuga"),
+      el("p", { class: "brand-sub", lang: "en" }, "part of DLIskills.com"),
       el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
       el("p", { class: "tagline-en", lang: "en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
@@ -427,15 +429,18 @@ function renderFooter() {
       el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
       el("a", { class: "linklike footer-docs", href: "docs/" }, "📚 Documentación / Docs"),
     ),
+    // official site identity + national-only standards (owner, 2026-07-08):
+    // NBPTS (teaching standards) + NCSSFL-ACTFL (proficiency levels);
+    // never state-specific standards
+    el("p", { class: "footer-site" }, "Dual-Language Immersion (DLI) Skills"),
     el("p", { class: "footer-note" },
       "Gratis y sin registro · Free, no login · Aligned to ",
-      // NBPTS first — the foundational teaching standards (owner, 2026-07-08)
       el("a", { class: "footer-std", href: "https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf", target: "_blank", rel: "noopener" },
-        "NBPTS ECYA-WL"),
-      " & ",
-      el("a", { class: "footer-std", href: "https://www.nj.gov/education/standards/worldlang/", target: "_blank", rel: "noopener" },
-        "NJSLS-WL (2020)"),
-      " standards"),
+        "NBPTS"),
+      " and ",
+      el("a", { class: "footer-std", href: "https://www.actfl.org/uploads/files/general/Professional-Learning/Can-Do-Intro-Overview.pdf", target: "_blank", rel: "noopener" },
+        "NCSSFL-ACTFL"),
+      " World Language standards"),
     // owner-specified credits (M9 F3); kids appear ONLY as pseudonyms
     el("p", { class: "footer-credits", lang: "en" },
       "Created by Lucia Perales, EdD (wife/mother/educator) and Aaron Soto, MHCID (husband/father/technologist)",
@@ -453,7 +458,7 @@ function renderSet(setId) {
   const contrastBest = store.getBest(set.id, CONTRAST_KEY.tense, CONTRAST_KEY.mode);
 
   mount(
-    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), infoButton("set"), soundToggle(), menuButton()),
+    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), menuButton()),
     el("h1", {}, `Grupo ${set.id}`),
     el("ul", { class: "verb-chips" },
       set.verbs.map((v) => el("li", { class: "chip" },
@@ -529,8 +534,8 @@ function renderStudy(setId, tense) {
   const speakable = audioAvailable();
 
   mount(
-    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), infoButton("study"), soundToggle(), menuButton()),
-    el("h1", {}, `📖 Estudia — ${TENSE_LABELS[tense].es}`),
+    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), menuButton()),
+    el("h1", {}, `📖 Estudia — ${TENSE_LABELS[tense].es}`, infoButton("study")),
     // classroom print header: appears only on the printed study sheet
     el("p", { class: "print-fields print-only" },
       `Grupo ${setId} · Nombre: `, el("span", { class: "fill-line" }, ""),
@@ -614,8 +619,8 @@ function renderPractica(setId, tense) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
-      infoButton("practica"), soundToggle(), menuButton()),
-    el("h1", { class: "match-title" }, lola.el, `${PRACTICA_META.icon} Práctica — ${TENSE_LABELS[tense].es}`),
+      menuButton()),
+    el("h1", { class: "match-title" }, lola.el, `${PRACTICA_META.icon} Práctica — ${TENSE_LABELS[tense].es}`, infoButton("practica")),
     el("p", { class: "match-help" },
       "Reconstruye la tabla palabra por palabra. Rebuild the table word by word — no stars, just practice."),
     el("div", { class: "table-scroll" }, table),
@@ -734,7 +739,7 @@ function renderPlay(setId, tense, mode) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
-      infoButton(mode), soundToggle(), menuButton()),
+      menuButton()),
     el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
     renderFooter(),
@@ -771,6 +776,7 @@ function renderPlay(setId, tense, mode) {
   function listenPromptCard(t) {
     return el("div", { class: "prompt" },
       el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
+      infoButton(mode),
       el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en", lang: "en" }, "Which form do you hear?")),
       el("div", { class: "listen-controls" },
         el("button", { class: "btn primary", type: "button", onclick: () => speak(t.answer) }, "🔊 Escuchar"),
@@ -784,6 +790,7 @@ function renderPlay(setId, tense, mode) {
   function promptCard(t) {
     return el("div", { class: "prompt" },
       el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
+      infoButton(mode),
       el("div", { class: "prompt-main" },
         el("span", { class: "prompt-person" }, personDisplay(t.person)),
         el("span", { class: "prompt-blank" }, "____"),
@@ -919,8 +926,8 @@ function renderMatch(set, tense, vosotros) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${set.id}` }, "← Salir"),
       el("a", { href: `#/study/${set.id}/${tense}` }, "📖 Estudia"),
-      infoButton("match"), soundToggle(), menuButton()),
-    el("h1", { class: "match-title" }, lola.el, `🧩 Empareja — ${TENSE_LABELS[tense].es}`),
+      menuButton()),
+    el("h1", { class: "match-title" }, lola.el, `🧩 Empareja — ${TENSE_LABELS[tense].es}`, infoButton("match")),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
     board, feedback,
     renderFooter(),
@@ -1002,7 +1009,7 @@ function renderContrast(setId) {
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/preterite` }, "📖 Pretérito"),
       el("a", { href: `#/study/${setId}/imperfect` }, "📖 Imperfecto"),
-      infoButton("contrast"), soundToggle(), menuButton()),
+      menuButton()),
     el("h1", { class: "contrast-title" }, "⚔️ ¿Pretérito o imperfecto?"),
     el("p", { class: "match-help" },
       "La palabra del tiempo es la pista: ", el("strong", {}, "una vez ⭐"), " o ",
@@ -1081,6 +1088,7 @@ function renderContrast(setId) {
     const hint = store.getSettings().hints ? makeHint(q.verb, ["preterite", "imperfect"], lola) : null;
     const promptEl = el("div", { class: "prompt" },
       el("span", { class: "prompt-tense cue-chip" }, `🕐 ${q.cue}`),
+      infoButton("contrast"),
       el("div", { class: "prompt-main" },
         el("span", { class: "prompt-person" }, personDisplay(q.person)),
         el("span", { class: "prompt-blank" }, "____"),
@@ -1114,9 +1122,9 @@ function renderReport() {
   const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
 
   mount(
-    el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver"), infoButton("report"), menuButton()),
+    el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver"), menuButton()),
     el("div", { class: "report" },
-      el("h1", {}, "📄 Informe de progreso — Conjuga"),
+      el("h1", {}, "📄 Informe de progreso — Conjuga", infoButton("report")),
       el("p", { class: "report-fields" },
         "Nombre: ", el("span", { class: "fill-line" }, ""),
         "  Fecha: ", el("span", { class: "fill-line short" }, today)),

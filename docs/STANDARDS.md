@@ -1,66 +1,65 @@
 # Standards Alignment — Conjuga (DLI Skills Builder)
 
-This document grounds Conjuga's design in the two frameworks named in the
-project charter and records exactly how each feature maps to them.
+This document grounds Conjuga's design in two national frameworks — NBPTS
+(the teaching standards) and NCSSFL-ACTFL (the proficiency levels) — and
+records exactly how each feature maps to them.
 
-Sources (retrieved 2026-07):
+Sources (retrieved 2026-07; national-only per owner decision 2026-07-08 —
+state-specific standards such as NJSLS-WL are no longer referenced):
 - **NBPTS World Languages Standards, Second Edition (ECYA-WL)** — National Board
   for Professional Teaching Standards.
   https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf
-- **2020 New Jersey Student Learning Standards — World Languages (NJSLS-WL)** —
-  https://www.nj.gov/education/standards/worldlang/ and the full standards
-  document https://www.nj.gov/education/standards/worldlang/Docs/2020NJSLS-WL.pdf
+- **NCSSFL-ACTFL Can-Do Statements** — a joint framework of the National
+  Council of State Supervisors for Languages (NCSSFL) and the American
+  Council on the Teaching of Foreign Languages (ACTFL).
+  https://www.actfl.org/uploads/files/general/Professional-Learning/Can-Do-Intro-Overview.pdf
 
-## 1. NJSLS-WL: proficiency levels ("proficiency standards")
+## 1. NCSSFL-ACTFL Can-Do Statements: proficiency levels
 
-The 2020 NJSLS-WL benchmark seven ACTFL-aligned proficiency levels: **Novice
-Low, Novice Mid, Novice High, Intermediate Low, Intermediate Mid, Intermediate
-High, Advanced Low**. The Novice band — Conjuga's target — is defined as:
+The Can-Do Statements describe what learners can do at each ACTFL
+proficiency level across three modes of communication:
+- **Interpretive** — understanding spoken/written language (one-way).
+- **Interpersonal** — two-way exchange with negotiation of meaning.
+- **Presentational** — producing language for an audience (one-way).
 
-- **Novice Low** — "Students communicate using words and phrases that are
-  memorized and practiced when talking about very familiar topics related to
-  self, family, friends, school and home." *(NJ target: end of grade 2.)*
-- **Novice Mid** — "Students communicate using memorized words and some phrases
-  to talk about familiar topics related to school, home, and the community."
-  *(NJ target: end of grade 5.)*
-- **Novice High** — "Students communicate using words, lists, and simple
-  sentences to ask and answer questions, to handle simple transactions related
-  to everyday life, and to talk about subject matter studied in other classes."
+The Novice band — Conjuga's target — in Can-Do terms:
 
-The NJ grade-band targets assume ~90 minutes/week of instruction; DLI programs
-far exceed that, so K-5 DLI learners commonly work through Novice Mid/High
-earlier and push toward Intermediate Low. Conjuga therefore treats **Novice**
-as its floor and Novice High as its working ceiling.
+- **Novice Low** — can communicate using practiced, memorized words and
+  phrases on very familiar topics.
+- **Novice Mid** — can communicate using memorized words and some phrases
+  about familiar topics.
+- **Novice High** — can communicate using words, lists, and simple
+  sentences; can ask and answer simple questions.
 
-### Modes of communication (standard 7.1)
+DLI programs' contact hours far exceed typical world-language courses, so
+K-5 DLI learners commonly work through Novice Mid/High early and push
+toward Intermediate Low. Conjuga treats **Novice Low as its floor and
+Novice High as its working ceiling**.
 
-Performance expectations are coded `7.1.<Level>.<Mode>.<n>`:
-- **Interpretive (IPRET)** — understanding spoken/written language (one-way).
-- **Interpersonal (IPERS)** — two-way exchange with negotiation of meaning.
-- **Presentational (PRSNT)** — producing language for an audience (one-way).
+### Feature → Can-Do mapping
 
-### Feature → NJSLS-WL mapping
-
-| Conjuga feature | Performance expectations |
+| Conjuga feature | Mode & level |
 |---|---|
-| ✅ Elige (multiple-choice recognition) | 7.1.NL.IPRET.1 — "Identify a few memorized and practiced words…"; 7.1.NM.IPRET.1 — "Identify familiar spoken and written words, phrases, and simple sentences…" |
-| 🧱 Práctica (rebuild the table, unscored) | Interpretive-mode active recall inside the chart's visual scaffold — the NBPTS Std IV bridge between studying and quizzing; pressure-free by design |
-| 🧩 Empareja (form ↔ person matching) | Interpretive mode, Novice: recognition of familiar written chunks with strong visual scaffolding |
-| ✏️ Escribe (typed production) | 7.1.NM.PRSNT.4 — "Copy/write words, phrases, or simple guided texts on familiar topics"; 7.1.NH.PRSNT.2 — "Create and present brief messages using familiar vocabulary orally or in writing" |
-| ⭐/🌙 Preterite & imperfect practice | Scaffolding toward 7.1.NH.PRSNT.4 — "Tell or retell stories… orally or in writing" — and, beyond Novice, 7.1.IH.IPERS.3 ("accuracy in the present tense and often across time frames") |
-| ⚔️ ¿Pretérito o imperfecto? (time-cue contrast) | The storytelling contrast itself — the core grammatical distinction behind 7.1.NH.PRSNT.4 story retelling — practiced with the conventional novice cue-word scaffold (una vez vs. muchas veces) |
-| 🔊 Audio (TTS on forms) | Interpretive-oral support: 7.1.NL.IPRET.1 / 7.1.NM.IPRET.1 include *spoken* words and phrases; audio pairs each written form with its sound, essential for K-2 pre-readers |
-| 🔁 Repasa hoy (spaced review) | Operationalizes "extensive exposure over time" — practiced material resurfaces at expanding intervals rather than being left behind |
+| ✅ Elige (multiple-choice recognition) | Interpretive Reading, Novice Low–Mid — identify memorized/familiar written forms |
+| 🧱 Práctica (rebuild the table, unscored) | Interpretive active recall inside the chart's visual scaffold — the NBPTS Std IV bridge between studying and quizzing; pressure-free by design |
+| 🧩 Empareja (form ↔ person matching) | Interpretive Reading, Novice Low — recognition of familiar written chunks with strong visual scaffolding |
+| ✏️ Escribe (typed production) | Presentational Writing, Novice Mid–High — write memorized words and phrases accurately |
+| ⭐/🌙 Preterite & imperfect practice | Scaffolding toward Novice High storytelling and, beyond Novice, the Intermediate across-time-frames Can-Dos |
+| ⚔️ ¿Pretérito o imperfecto? (time-cue contrast) | The storytelling contrast behind Novice High narration, practiced with the conventional novice cue-word scaffold (una vez vs. muchas veces) |
+| 🔊 Audio (clips + TTS on forms) | Interpretive Listening, Novice Low–Mid — pairs each written form with its sound, essential for K-2 pre-readers |
+| 🎧 Escucha (listening mode) | Interpretive Listening, Novice Low–Mid — the target is heard, never shown |
+| 🔁 Repasa hoy (spaced review) | Operationalizes "extensive exposure over time" — practiced material resurfaces at expanding intervals |
 | 🖨️ Progress report (printable) | Student-mediated progress reporting to teachers/families without accounts or data collection |
-| 5-verbs-at-a-time groups, frequency-ordered | NJ design principle of "research-based, spiraling and recursive" curriculum; Novice definitions built on "memorized and practiced" material |
-| Star mastery tracking | Supports benchmarking progress along the named proficiency continuum (NM by end of grade 5) |
+| 5-verbs-at-a-time groups, frequency-ordered | Research-based, spiraling curriculum; Novice Can-Dos are built on "memorized and practiced" material |
+| Star mastery tracking | Supports benchmarking progress along the Novice → Novice High continuum |
 
 **Honest framing:** controlled accuracy *across time frames* is formally an
-Intermediate-High expectation in NJSLS-WL. Conjuga's preterite/imperfect
-practice is deliberately positioned as *stretch scaffolding* for DLI learners
-heading toward Novice High story retelling — not as a claim that conjugation
-drills alone constitute Novice-level communication. The app is a skills
-station meant to sit inside a communicative program, not replace one.
+Intermediate-and-above expectation. Conjuga's preterite/imperfect practice
+is deliberately positioned as *stretch scaffolding* for DLI learners
+heading toward Novice High story retelling — not as a claim that
+conjugation drills alone constitute Novice-level communication. The app is
+a skills station meant to sit inside a communicative program, not replace
+one.
 
 ## 2. NBPTS World Languages Standards (ECYA-WL)
 
@@ -83,30 +82,29 @@ Design-relevant principles and how Conjuga embodies them:
 ## 3. Teacher-facing claims (for classroom use)
 
 Appropriate claims: "standards-aligned novice practice for the interpretive and
-presentational modes"; "supports the NJSLS-WL Novice Mid target for end of
-grade 5"; "pedagogy consistent with NBPTS World Languages Standards IV-VII."
+presentational modes"; "targets the NCSSFL-ACTFL Novice band (Novice Low →
+Novice High)"; "pedagogy consistent with NBPTS World Languages Standards IV-VII."
 
 Claims we deliberately do **not** make: that the app teaches interpersonal
 communication (it has no two-way exchange), that it develops cultural
 competence (Std III is out of scope for v0.1), or that conjugation accuracy
 equals proficiency.
 
-## Per-screen standards panels (M9)
+## Per-screen standards panels (M9; placement per owner 2026-07-08)
 
-Every screen carries an ℹ️ button opening a bilingual panel that explains
-how that page supports the standards. The copy lives in
-`js/standards-info.js` (the single source of truth — this table mirrors
+The study, práctica, quiz, and informe screens carry an ℹ️ button next to
+their heading (prompt-card corner on quiz screens) opening a bilingual
+panel that explains how that page supports the standards. The copy lives
+in `js/standards-info.js` (the single source of truth — this table mirrors
 it; update both together, enforced by a unit test on the module's shape):
 
 | Screen | Kid line (es) | Standards mapping |
 |---|---|---|
-| Home | ¡Elige un grupo de verbos y empieza a practicar! | Small-set sequencing + visible progress — NBPTS Std IV |
-| Group | Primero el tiempo, después la actividad. | Meaning-before-form tense cards; recognition→production ladder — NBPTS Std IV, 7.1.NL.IPRET.1 |
-| Estudia | Mira la tabla y toca una palabra para escucharla. | Interpretive reading + listening of memorized words — 7.1.NL.IPRET.1, 7.1.NM.IPRET.1 |
+| Estudia | Mira la tabla y toca una palabra para escucharla. | Interpretive Reading + Listening, Novice Low–Mid |
 | 🧱 Práctica | Reconstruye la tabla palabra por palabra. | Active recall inside the chart's scaffold, unscored — NBPTS Std IV |
-| ✅ Elige | Lee y elige la forma correcta. | Interpretive recognition with informed distractors — 7.1.NL/NM.IPRET.1 |
-| ✏️ Escribe | Escribe la forma del verbo. | Presentational writing at word level — 7.1.NM.PRSNT.4, 7.1.NH.PRSNT.2 |
-| 🧩 Empareja | Une cada persona con su forma. | Recognition with visual support — 7.1.NL.IPRET.1 |
-| 🎧 Escucha | Escucha y elige lo que oyes. | Interpretive listening (badges, not stars) — 7.1.NM.IPRET.1 |
-| ⚔️ Contraste | La palabra del tiempo es tu pista. | Preterite/imperfect storytelling contrast — 7.1.NH.PRSNT.4 |
+| ✅ Elige | Lee y elige la forma correcta. | Interpretive Reading, Novice Low–Mid, with informed distractors |
+| ✏️ Escribe | Escribe la forma del verbo. | Presentational Writing, Novice Mid–High |
+| 🧩 Empareja | Une cada persona con su forma. | Interpretive Reading, Novice Low, visual support |
+| 🎧 Escucha | Escucha y elige lo que oyes. | Interpretive Listening, Novice Low–Mid (badges, not stars) |
+| ⚔️ Contraste | La palabra del tiempo es tu pista. | Toward Novice High storytelling — NBPTS Std IV |
 | 📄 Informe | Tu progreso, listo para compartir. | Paper progress sharing, no data collection — NBPTS Std IV |

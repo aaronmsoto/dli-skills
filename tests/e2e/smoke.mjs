@@ -461,9 +461,11 @@ const cellSpoken = await voiced.evaluate(() => window.__spoken.at(-1)?.text);
 if (cellSpoken !== `yo ${placeSpoken.yo}`) fail(`practica cell speak: expected "yo ${placeSpoken.yo}", got "${cellSpoken}"`);
 ok(`practica voiced: placement speaks "yo ${placeSpoken.yo}", filled cell replays it, Lola hops`);
 
-// mute stops speech
+// mute stops speech (🔊 toggle now lives inside the ☰ menu — owner 2026-07-08)
 await voiced.goto(`${BASE}/#/study/1/present`);
-await voiced.waitForSelector(".sound-toggle");
+await voiced.waitForSelector(".menu-btn");
+await voiced.locator(".menu-btn").click();
+await voiced.waitForSelector(".menu-panel:not([hidden]) .sound-toggle");
 await voiced.locator(".sound-toggle").click();
 await voiced.evaluate(() => { window.__spoken.length = 0; });
 await voiced.locator(".cell-speak").first().click();
@@ -676,10 +678,25 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     if (!(await page.locator(".footer-docs").count())) fail(`footer: docs link missing on ${r}`);
   }
   const hrefs = await page.locator(".footer-std").evaluateAll((as) => as.map((a) => [a.href, a.rel]));
-  if (!hrefs.some(([h]) => h.includes("nj.gov/education/standards/worldlang"))) fail("footer: NJSLS-WL link missing");
-  if (!hrefs[0][0].includes("nbpts.org")) fail("footer: NBPTS must come first (owner order, 2026-07-08)");
-  if (!hrefs.some(([h]) => h.includes("nbpts.org") && h.includes("ECYA-WL"))) fail("footer: NBPTS ECYA-WL link missing");
+  // national-only standards (owner, 2026-07-08): NBPTS first, then NCSSFL-ACTFL
+  if (!hrefs[0][0].includes("nbpts.org")) fail("footer: NBPTS must come first");
+  if (!hrefs.some(([h]) => h.includes("actfl.org") && h.includes("Can-Do"))) fail("footer: NCSSFL-ACTFL Can-Do link missing");
+  if (hrefs.some(([h]) => h.includes("nj.gov"))) fail("footer: state-specific standards must not be linked");
   if (hrefs.some(([, rel]) => !rel.includes("noopener"))) fail("footer: standards links need rel=noopener");
+  const siteName = await page.locator(".footer-site").first().innerText();
+  if (siteName !== "Dual-Language Immersion (DLI) Skills") fail(`footer: site name wrong — "${siteName}"`);
+  // home shows the DLIskills.com brand line with exact capitalization
+  await page.goto(`${BASE}/#/`);
+  await page.reload();
+  await page.waitForSelector(".brand-sub");
+  const brand = await page.locator(".brand-sub").innerText();
+  if (brand !== "part of DLIskills.com") fail(`brand: expected "part of DLIskills.com", got "${brand}"`);
+  // about.html: national-only standards, no GitHub link (owner, 2026-07-08)
+  const aboutHtml = await page.evaluate(async () => (await fetch("about.html")).text());
+  if (/NJSLS|nj\.gov/.test(aboutHtml)) fail("about: state-specific standards must be gone");
+  if (/github\.com/.test(aboutHtml)) fail("about: GitHub link must be removed");
+  if (!aboutHtml.includes("National Council of State Supervisors for Languages")) fail("about: NCSSFL must be spelled out");
+  if (!aboutHtml.includes("American Council on the Teaching of Foreign Languages")) fail("about: ACTFL must be spelled out");
   // results screen gets the footer too
   await page.goto(`${BASE}/#/play/1/present/match`);
   await page.reload();
@@ -703,7 +720,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- ℹ️ M9 I1/I2: per-screen standards panels ----------
 {
-  const ROUTES = ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present",
+  const ROUTES = ["#/study/1/present", "#/practica/1/present",
     "#/play/1/present/choice", "#/play/1/present/type", "#/play/1/present/match",
     "#/play/1/contrast", "#/informe"];
   for (const r of ROUTES) {
@@ -711,6 +728,22 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     await page.reload();
     await page.waitForSelector(".info-btn", { timeout: 4000 }).catch(() => fail(`info: ℹ️ button missing on ${r}`));
   }
+  // owner (2026-07-08): ℹ️ sits next to headings/quiz cards — and is GONE
+  // from the home and group screens
+  for (const r of ["#/", "#/set/1"]) {
+    await page.goto(`${BASE}/${r}`);
+    await page.reload();
+    await page.waitForSelector(".menu-btn");
+    if (await page.locator(".info-btn").count()) fail(`info: ℹ️ must not render on ${r}`);
+  }
+  // placement: inside the h1 on study, inside the prompt card on quizzes
+  await page.goto(`${BASE}/#/study/1/present`);
+  await page.reload();
+  if (!(await page.locator("h1 .info-btn").count())) fail("info: study ℹ️ should sit in the heading");
+  await page.goto(`${BASE}/#/play/1/present/choice`);
+  await page.reload();
+  await page.waitForSelector(".choice");
+  if (!(await page.locator(".prompt .info-btn").count())) fail("info: quiz ℹ️ should sit on the prompt card");
   // open on the study screen: dialog semantics, content, Esc closes, focus returns
   await page.goto(`${BASE}/#/study/1/present`);
   await page.reload();
@@ -720,7 +753,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const kid = await page.locator(".info-kid").innerText();
   if (!kid.includes("tabla")) fail(`info: study kid-line wrong — "${kid}"`);
   const cites = await page.locator(".info-cites").innerText();
-  if (!/7\.1\./.test(cites)) fail(`info: study panel must cite NJSLS — "${cites}"`);
+  if (!/Novice|NBPTS/.test(cites)) fail(`info: study panel must cite NCSSFL-ACTFL levels or NBPTS — "${cites}"`);
   const focused = await page.evaluate(() => document.activeElement?.className);
   if (focused !== "info-close") fail(`info: focus should land on close, got "${focused}"`);
   await page.keyboard.press("Escape");
@@ -945,7 +978,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   // click-outside closes
   await page.locator(".menu-btn").click();
   await page.waitForSelector(".menu-panel:not([hidden])");
-  await page.locator("h1").click();
+  await page.locator(".study-hint").first().click(); // neutral target (h1 now hosts the ℹ️ button)
   if (await page.locator(".menu-panel:not([hidden])").count()) fail("menu: click-outside must close");
   // the docs link actually reaches the public hub from a hash route
   await page.locator(".menu-btn").click();
@@ -993,9 +1026,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const slow = await clips.evaluate(() => window.__played.at(-1));
   if (!bare.some(([, v]) => slow.src.endsWith(v.s)))
     fail(`clips: 🐢 must play the dual-generated SLOW (0.70) clip, got ${JSON.stringify(slow)}`);
-  // mute silences the clip backend too
+  // mute silences the clip backend too (toggle lives in the ☰ menu)
   await clips.goto(`${BASE}/#/study/1/present`);
-  await clips.waitForSelector(".sound-toggle");
+  await clips.waitForSelector(".menu-btn");
+  await clips.locator(".menu-btn").click();
+  await clips.waitForSelector(".menu-panel:not([hidden]) .sound-toggle");
   await clips.locator(".sound-toggle").click();
   await clips.evaluate(() => { window.__played.length = 0; });
   await clips.locator(".cell-speak").first().click();

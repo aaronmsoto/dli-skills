@@ -1,4 +1,4 @@
-# CLAUDE.md — agent/contributor guide for Conjuga (dli-skills-builder)
+# CLAUDE.md — agent/contributor guide for Conjuga (dli-skills)
 
 ## What this is
 
@@ -46,13 +46,29 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
    any star denominator is an owner decision, never a loop's.
 4. **Kids' privacy.** The owner's children appear ONLY as the pseudonyms
    "A1" and "A2" — never real names — anywhere in the repo or on the site.
-5. **Standard chrome.** Every screen gets the crumbs row (contextual
-   back-nav, top-left) + ℹ️ info + sound toggle + the ☰ site menu
-   (top-right, unintrusive); `renderFooter()` is the single footer
+5. **Standard chrome (owner layout, 2026-07-08).** Screens get the crumbs
+   row (contextual back-nav, top-left) + the ☰ site menu (top-right,
+   unintrusive — it HOSTS the 🔊 sound toggle as a labeled row). The ℹ️
+   standards button sits NEXT TO the page/quiz heading (h1, or the
+   prompt-card corner on quiz screens) — never in the crumbs, never on
+   the home or group screens. `renderFooter()` is the single footer
    component and belongs on every screen. about.html and /docs are linked
-   from the footer and ☰ menu (owner, 2026-07-08); any FUTURE public page
-   stays unlinked until the owner links it.
-6. **Work the GOAL.md queue.** The queue line at the top of GOAL.md's
+   from the footer and ☰ menu; any FUTURE public page stays unlinked
+   until the owner links it.
+6. **Standards & branding (owner, 2026-07-08).** Public standards
+   references are NATIONAL-ONLY: NBPTS World Languages standards
+   (ECYA-WL, the teaching standards) + NCSSFL-ACTFL Can-Do Statements
+   (the proficiency levels, Novice Low → Novice High). Never cite
+   state-specific standards (all NJSLS-WL references were removed).
+   Footer links NBPTS first, then NCSSFL-ACTFL (the Can-Do overview PDF
+   on actfl.org). Site identity: footer site name "Dual-Language
+   Immersion (DLI) Skills"; domain "DLIskills.com" (EXACT capitalization);
+   home shows "part of DLIskills.com" under the Conjuga heading.
+   about.html carries no GitHub link (owner, 2026-07-08). NCSSFL = the
+   National Council of State Supervisors for Languages; ACTFL = the
+   American Council on the Teaching of Foreign Languages (spelled out on
+   about.html).
+7. **Work the GOAL.md queue.** The queue line at the top of GOAL.md's
    Milestones section — not milestone numbering — sets loop priority.
 
 ## Commands
@@ -127,8 +143,8 @@ never become an app dependency.
   test-gated, but run `npm test` before pushing anyway — a red test suite
   blocks the Pages publish, leaving production on the previous version.
 - Keep changes deployable: `main` should always represent the live site.
-- All asset URLs must remain relative (the app is served from
-  /dli-skills-builder/, not the domain root).
+- All asset URLs must remain relative (the app is served from the domain
+  root at dliskills.com via GitHub Pages custom domain).
 
 ## Semi-autonomous loops
 
@@ -150,7 +166,7 @@ workflows or settings, and never weaken tests to get green.
 - `docs/LOOP.md` — the loop protocol and its hard guardrails
 - `README.md` — user/teacher-facing overview
 - `docs/SPEC.md` — product + technical specification and design decisions
-- `docs/STANDARDS.md` — NBPTS ECYA-WL and NJSLS-WL alignment (cite it when
+- `docs/STANDARDS.md` — NBPTS ECYA-WL and NCSSFL-ACTFL alignment (cite it when
   making pedagogy-affecting changes)
 - `about.html` — learner/parent-facing standards & privacy page (keep in sync
   with docs/STANDARDS.md)

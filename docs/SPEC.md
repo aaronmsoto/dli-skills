@@ -10,13 +10,13 @@ in **K-5 Spanish Dual Language Immersion (DLI)** programs build accuracy with
 
 Grounded in:
 - NBPTS World Languages Standards (ECYA-WL) — teaching practice
-- 2020 NJSLS — World Languages — learner proficiency targets (ACTFL-aligned)
+- NCSSFL-ACTFL Can-Do Statements — learner proficiency levels (Novice band)
 
 See docs/STANDARDS.md for the alignment detail.
 
 ## 2. Audience & proficiency target
 
-- Primary: grade 2-5 students in Spanish DLI programs (NJSLS Novice Low →
+- Primary: grade 2-5 students in Spanish DLI programs (NCSSFL-ACTFL Novice Low →
   Novice High band; DLI contact hours push many toward Novice High early).
 - Secondary: teachers (practice station) and families (home support).
 - Reading level: short bilingual instructions; Spanish-forward UI.
@@ -177,7 +177,9 @@ verb columns scroll — same guarantee on Estudia and the informe.
 all game rounds, contrast, results, informe): settings toggles (vosotros,
 🔍 Pistas), progress reset, informe + about links, external links to the
 two standards documents we cite — NBPTS ECYA-WL (nbpts.org PDF) and the
-2020 NJSLS-WL (nj.gov) — with `rel="noopener"`, and the owner-specified
+NCSSFL-ACTFL Can-Do Statements (actfl.org PDF) — with `rel="noopener"`,
+plus the site-name line "Dual-Language Immersion (DLI) Skills" and the
+owner-specified
 credit lines (Lucia Perales, EdD · Aaron Soto, MHCID · DLI consultants
 "A1"/"A2" — pseudonyms only, a privacy invariant). Hidden in print.
 Settings toggles re-render the current screen — EXCEPT during an active
@@ -266,7 +268,7 @@ v0.2 (contrast mode, TTS, review queue, printables):
 
 ## 7. Out of scope (roadmap)
 
-Sentence-context items and story-retell (the bridge to 7.1.NH.PRSNT.4);
+Sentence-context items and story-retell (the bridge to Novice High storytelling);
 listening-comprehension mode (hear → pick/type); more tenses (perífrasis
 ir a + inf., present progressive); other program languages (the engine/data
 split was designed to generalize); cross-student teacher dashboards (requires
