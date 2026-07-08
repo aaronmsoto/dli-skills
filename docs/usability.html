@@ -20,6 +20,7 @@
     .tablewrap { overflow-x: auto; }
     table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
     th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid rgba(128,128,128,.25); vertical-align: top; }
+    td:nth-child(1), td:nth-child(2) { white-space: nowrap; }
     .fixed { color: var(--good); font-weight: 600; } .pending { color: var(--open); font-weight: 600; }
   </style>
 </head>
@@ -28,14 +29,13 @@
   <p><a href="./">← Documentación</a> · <a href="../">Conjuga</a></p>
   <h1>🦉 Usability &amp; Accessibility</h1>
   <p class="es" lang="es">Queremos que Conjuga sea fácil y justa para todos los niños.</p>
-  <p>Conjuga underwent four formal evaluations on <strong>2026-07-08</strong> (full reports linked per
-  section; methodology per the referenced skill for each). This page summarizes scope, findings, and
-  current status. It is regenerated whenever findings change.</p>
+  <p>Conjuga underwent four formal evaluations on <strong>2026-07-08</strong>. This page summarizes
+  scope, findings, and current status. It is regenerated whenever findings change.</p>
 
   <section>
     <h2>WCAG 2.2 Level AA audit</h2>
-    <p>Both themes, all 10 screens, 360-2560px. Measured token contrast (formula + numbers preserved in
-    <a href="audits/wcag.md">the report</a>), ARIA/keyboard/reflow review, reduced-motion and print passes.
+    <p>Both themes, all 10 screens, 360-2560px. Measured token contrast, ARIA/keyboard/reflow review,
+    reduced-motion and print passes.
     <strong>Result: 0 Critical · 3 Serious · 2 Moderate — all five fixed same-day.</strong></p>
     <div class="tablewrap"><table>
       <tr><th>ID</th><th>Criterion</th><th>Finding</th><th>Status</th></tr>
@@ -52,26 +52,37 @@
 
   <section>
     <h2>Heuristic evaluation (Nielsen 10) &amp; UX principles audit (Norman)</h2>
-    <p>Reports: <a href="audits/nielsen.md">Nielsen</a> · <a href="audits/norman.md">Norman</a>.
-    Post-fix-wave: 6/7 Norman principles at "strength"; no severity-4 findings; positives (ambient status,
-    never-punitive feedback, the single conjugation-table conceptual model) documented so they are preserved.</p>
+    <p>Post-fix-wave: 6/7 Norman principles rated "strength"; no severity-4 findings. Positives documented
+    and preserved: ambient status (star counts visible on home cards without navigating), never-punitive
+    feedback (wrong answers self-explain, Lola tilts her head but never scolds), and the single
+    conjugation-table conceptual model that Estudia, Práctica, and the quiz modes all share.</p>
     <div class="tablewrap"><table>
       <tr><th>ID</th><th>Severity</th><th>Finding</th><th>Status</th></tr>
       <tr><td>NN-1 / DN-4 / CW-3</td><td>3</td><td>Footer setting toggles on a game screen silently restart the round</td><td class="fixed">FIXED (2026-07-08) — mid-round toggles save and apply as play continues; no restart</td></tr>
       <tr><td>NN-3 / DN-1 / CW-1</td><td>2</td><td>No "start here" cue for first-time learners on the 20-group home</td><td class="fixed">FIXED (2026-07-08) — ¡Empieza aquí! ribbon on the first unstarted group</td></tr>
       <tr><td>NN-2 / DN-3</td><td>2</td><td>Static page titles</td><td class="fixed">FIXED (= WCAG-3)</td></tr>
       <tr><td>NN-4</td><td>1</td><td>Browser-native confirm() for progress reset</td><td>Accepted (noted)</td></tr>
-      <tr><td>NN-5</td><td>1</td><td>🎧 Escucha invisible on voiceless devices</td><td>Accepted by design (documented here)</td></tr>
+      <tr><td>NN-5</td><td>1</td><td>🎧 Escucha invisible on voiceless devices</td><td class="fixed">FIXED (M12) — pre-recorded clips make Escucha available on voiceless-but-online devices</td></tr>
     </table></div>
   </section>
 
   <section>
     <h2>Cognitive walkthrough</h2>
-    <p><a href="audits/walkthrough.md">Report</a>: four personas (a DLI 3rd grader on a tablet, a DLI K-5
-    graduate on a phone, a parent, a teacher) × five tasks including an adversarial "fidgets with the
-    footer toggles at question 7" task, each step rated against the four walkthrough questions.
-    First-round success: near-100% for all personas on all core tasks; the two ⚠️/❌ points are exactly the
-    two owner-triage findings above.</p>
+    <p>Four personas — a DLI 3rd grader on a shared tablet (emerging reader, taps big things first), a DLI
+    K-5 graduate on a phone (fluent app user, skims for the game), a parent checking progress in under a
+    minute, and a teacher printing study sheets and a progress report for folders. Each persona walked
+    through core tasks step by step, rated at every action against the four standard walkthrough questions:
+    (Q1) will the user form the right goal? (Q2) is the correct action findable? (Q3) will they connect
+    the action to their goal? (Q4) after acting, is progress visible?</p>
+    <p><strong>Five tasks evaluated:</strong> (1) first visit → finish a first Elige round, (2) find and
+    play 🎧 Escucha, (3) parent checks progress via the home cards and Informe, (4) teacher prints a study
+    sheet + progress report, and (5) an adversarial task where a learner fidgets with the footer setting
+    toggles mid-round at question 7.</p>
+    <p><strong>Result:</strong> near-100% first-round success for all personas on all core tasks. Tasks 3
+    and 4 scored perfectly after the M9 footer and M5 printables milestones. The only failure points were
+    the two findings in the table above (CW-1/CW-3, both now fixed): the unsignified start point on the
+    20-group home grid, and the mid-round toggle restart. CW-2 (badge-vs-star distinction is learnable
+    but unexplained in-app) was rated low severity and is covered by the ℹ️ standards panels.</p>
   </section>
 
   <p lang="es">Última actualización: 2026-07-08 · <a href="./">Documentación</a></p>
