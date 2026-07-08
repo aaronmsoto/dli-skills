@@ -849,6 +849,18 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if ((await freshHome.locator(".start-here").count()) !== 1) fail("ribbon: fresh home should show exactly one ribbon");
   const freshTarget = await freshHome.locator(".set-card:has(.start-here)").getAttribute("href");
   if (freshTarget !== "#/set/1") fail(`ribbon: fresh learner should start at Grupo 1, got ${freshTarget}`);
+  // placement: the pill must sit fully INSIDE its card at any viewport
+  // (regression: an absolute top:-10px overhang rendered differently per
+  // device — owner report 2026-07-08)
+  for (const vp of [{ width: 1100, height: 600 }, { width: 360, height: 640 }]) {
+    await freshHome.setViewportSize(vp);
+    await freshHome.waitForTimeout(60);
+    const card = await freshHome.locator(".set-card:has(.start-here)").boundingBox();
+    const pill = await freshHome.locator(".start-here").boundingBox();
+    if (!card || !pill || pill.x < card.x || pill.y < card.y ||
+        pill.x + pill.width > card.x + card.width + 1 || pill.y + pill.height > card.y + card.height + 1)
+      fail(`ribbon: pill outside its card at ${vp.width}px (card ${JSON.stringify(card)}, pill ${JSON.stringify(pill)})`);
+  }
   await freshHome.close();
   // this context has Grupo-1 progress → the ribbon moves to Grupo 2
   await page.goto(`${BASE}/#/`);
