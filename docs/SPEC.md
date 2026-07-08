@@ -196,7 +196,7 @@ Hidden in print.
 ### 4.5 Non-functional
 - **Accessibility:** WCAG-minded — ARIA live region for feedback, focus-visible
   styles, keyboard play, ≥44px targets, dark mode, prefers-reduced-motion.
-- **Performance:** no network calls after load; total payload < 120 KB raw (~30 KB gzipped; budget owner-raised from 100 KB on 2026-07-07).
+- **Performance:** no network calls after load; total payload < 100 KB GZIPPED — the wire-transfer measure (owner, 2026-07-08; ~37 KB at changeover).
 - **Privacy:** no cookies, no analytics, no external requests, no PII.
 - **Browser support:** evergreen browsers (ES2020 modules).
 
