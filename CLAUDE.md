@@ -111,6 +111,8 @@ never become an app dependency.
   ElevenLabs at runtime) then Web Speech TTS fallback (prefers a local
   es-MX/es-US voice). UI gates on `audioAvailable()` (either backend);
   Escucha works voiceless-but-online. `sound` setting mutes both.
+  ElevenLabs voice: `rixsIpPlTphvsJd2mI03` (model: `eleven_multilingual_v2`,
+  key: `sk_****...80f`). Regenerate clips: `node tools/generate-audio.mjs --sets all`.
 - `js/mascot.js` — Lola la Lechuza (inline SVG; states are single CSS
   classes; decorative/aria-hidden; silent — TTS is for Spanish forms only;
   binding design spec in docs/MASCOT.md; keep within the 15 KB budget and
