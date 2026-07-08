@@ -345,6 +345,10 @@ not milestone numbering — sets loop priority.
         **usability & accessibility adherence** (links docs/usability.html
         + the four audit reports). Relative URLs only; unlinked from app
         nav until the owner links it.
+  - [x] **Owner add-on (2026-07-08):** the group screen's activity grid
+        lays out 3-up on tablet/desktop (2 rows of 3 with all six
+        activities) and 2-up under 560px (3 rows of 2); ⚔️ reto keeps its
+        full-width row — with e2e grid-track + no-overflow coverage.
   - [x] **V/RT:** e2e coverage for docs/usability.html and docs/index.html
         (load, key content, relative links resolve); axe-core automated
         pass wired as a CI-friendly check with zero Critical/Serious

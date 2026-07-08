@@ -879,6 +879,27 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("triage fixes: mid-round toggles defer (no restart); start-here ribbon tracks progress");
 }
 
+// ---------- set screen activity grid: 3-up desktop, 2-up small phones ----------
+{
+  const tracks = async (p, sel) =>
+    (await p.evaluate((s) => getComputedStyle(document.querySelector(s)).gridTemplateColumns, sel))
+      .split(" ").filter(Boolean).length;
+  await page.goto(`${BASE}/#/set/1`);
+  await page.reload();
+  await page.waitForSelector(".mode-card");
+  if ((await tracks(page, ".mode-row")) !== 3) fail("grid: desktop activities should sit in 3 columns");
+  if ((await tracks(page, ".contrast-row")) !== 1) fail("grid: reto card should keep a full-width row");
+  const phone = await browser.newPage({ viewport: { width: 360, height: 640 } });
+  trackErrors(phone);
+  await phone.goto(`${BASE}/#/set/1`);
+  await phone.waitForSelector(".mode-card");
+  if ((await tracks(phone, ".mode-row")) !== 2) fail("grid: small phones should show 2 columns (3 rows of 2)");
+  const phoneOverflow = await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  if (phoneOverflow) fail("grid: 360px set screen must not overflow horizontally");
+  await phone.close();
+  ok("set grid: 3 columns on desktop, 2 on small phones, reto full-width");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();
