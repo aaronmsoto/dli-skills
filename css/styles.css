@@ -115,13 +115,14 @@ a { color: var(--brand); }
 .footer-credits { font-size: 0.8rem; margin-top: 6px; } /* no opacity: 4.5:1 at this size (WCAG-1) */
 .footer-applied { width: 100%; margin: 0; color: var(--good); font-weight: 600; }
 
-/* NN-3: "start here" ribbon on the first unstarted group */
-.set-card { position: relative; }
+/* NN-3: "start here" pill on the first unstarted group. In the card's
+   normal flow (owner fix 2026-07-08): the old absolutely-positioned
+   top:-10px overhang clipped/collided differently across devices. */
 .start-here {
-  position: absolute; top: -10px; left: 12px;
+  align-self: flex-start;
   background: var(--brand); color: #fff;
   font-size: 0.8rem; font-weight: 700;
-  padding: 3px 10px; border-radius: 999px; box-shadow: var(--shadow);
+  padding: 3px 10px; border-radius: 999px;
 }
 .start-here .h-en { color: #ede9fe; font-weight: 400; }
 
