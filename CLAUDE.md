@@ -138,10 +138,11 @@ never become an app dependency.
   the test suite and publishes the repo root to GitHub Pages only on push to
   `main` (a PR merge) or a manual `workflow_dispatch`. Pushes to dev branches
   never deploy.
-- Open a pull request from the dev branch into `main` when the work is
-  validated (tests passing, UI exercised in a browser). The deploy is
-  test-gated, but run `npm test` before pushing anyway — a red test suite
-  blocks the Pages publish, leaving production on the previous version.
+- **PR conventions.** All PRs target `dev` (never `main` directly). Use the
+  `.github/pull_request_template.md` body format (`## What` / `## Validation`).
+  Loop PRs title as `loop: <summary>` (see docs/LOOP.md); session PRs use a
+  descriptive title. Squash-merge into `dev`; merge-commit into `main`. See
+  `CONTRIBUTING.md` for the full branch model and PR conventions.
 - Keep changes deployable: `main` should always represent the live site.
 - All asset URLs must remain relative (the app is served from the domain
   root at dliskills.com via GitHub Pages custom domain).
