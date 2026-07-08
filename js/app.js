@@ -106,7 +106,7 @@ function menuButton() {
   let open = false;
   const panel = el("nav", { class: "menu-panel", hidden: true, "aria-label": "Páginas principales / Site menu" },
     el("a", { class: "menu-link", href: "#/" }, "🏠 Inicio / Home"),
-    el("a", { class: "menu-link", href: "#/informe" }, "📄 Informe de progreso"),
+    el("a", { class: "menu-link", href: "#/informe" }, "📄 Informe / Status"),
     el("a", { class: "menu-link", href: "about.html" }, "🦉 Acerca de / Standards"),
     el("a", { class: "menu-link", href: "docs/" }, "📚 Documentación / Docs"),
     soundToggle());
@@ -297,7 +297,7 @@ function routeTitle(r) {
     const label = r.mode === LISTEN ? LISTEN_META.es : MODE_META[r.mode].es;
     return `${label} ${TENSE_LABELS[r.tense].es} · Grupo ${r.setId} · Conjuga`;
   }
-  if (r.screen === "report") return "Informe de progreso · Conjuga";
+  if (r.screen === "report") return "Informe / Status · Conjuga";
   return "Conjuga — Spanish Verb Skills Builder (K-5 DLI)";
 }
 
@@ -371,14 +371,14 @@ function renderHome() {
         return SETS.map((s) => {
         const earned = earnedStars(s.id);
         return el("a", { class: "set-card", href: `#/set/${s.id}` },
-          s.id === firstFresh
-            ? el("span", { class: "start-here" }, "¡Empieza aquí! ", el("span", { class: "h-en", lang: "en" }, "Start here"))
-            : null,
           el("span", { class: "set-num" }, `Grupo ${s.id}`),
           el("span", { class: "set-verbs" }, s.verbs.map((v) => v.inf).join(" · ")),
           el("span", { class: "set-progress" },
             `⭐ ${earned}/${STARS_PER_SET}`,
             listenBadges(s.id) ? ` · 🎧 ${listenBadges(s.id)}/9` : ""),
+          s.id === firstFresh
+            ? el("span", { class: "start-here" }, "¡Empieza aquí! ", el("span", { class: "h-en", lang: "en" }, "Start here"))
+            : null,
         );
         });
       })(),
@@ -400,14 +400,8 @@ function renderFooter() {
     applied.hidden = false;
   };
   return el("footer", { class: "site-footer" },
-    el("div", { class: "footer-controls" },
-      el("label", { class: "toggle" },
-        el("input", {
-          type: "checkbox", checked: settings.vosotros,
-          onchange: (e) => applySetting("vosotros", e.target.checked),
-        }),
-        " Incluir vosotros/as",
-      ),
+    el("div", { class: "footer-top" },
+      el("span", { class: "footer-site" }, "Dual-Language Immersion (DLI) Skills"),
       el("label", { class: "toggle" },
         el("input", {
           class: "hints-toggle", type: "checkbox", checked: settings.hints,
@@ -415,7 +409,19 @@ function renderFooter() {
         }),
         " 🔍 Pistas / Hints",
       ),
+      el("label", { class: "toggle" },
+        el("input", {
+          type: "checkbox", checked: settings.vosotros,
+          onchange: (e) => applySetting("vosotros", e.target.checked),
+        }),
+        " Incluir vosotros/as",
+      ),
       applied,
+    ),
+    el("div", { class: "footer-links" },
+      el("a", { class: "linklike", href: "#/informe" }, "📄 Informe / Status"),
+      el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
+      el("a", { class: "linklike footer-docs", href: "docs/" }, "📚 Documentación / Docs"),
       el("button", {
         class: "linklike",
         onclick: () => {
@@ -425,14 +431,7 @@ function renderFooter() {
           }
         },
       }, "Borrar progreso"),
-      el("a", { class: "linklike", href: "#/informe" }, "📄 Informe de progreso"),
-      el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
-      el("a", { class: "linklike footer-docs", href: "docs/" }, "📚 Documentación / Docs"),
     ),
-    // official site identity + national-only standards (owner, 2026-07-08):
-    // NBPTS (teaching standards) + NCSSFL-ACTFL (proficiency levels);
-    // never state-specific standards
-    el("p", { class: "footer-site" }, "Dual-Language Immersion (DLI) Skills"),
     el("p", { class: "footer-note" },
       "Gratis y sin registro · Free, no login · Aligned to ",
       el("a", { class: "footer-std", href: "https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf", target: "_blank", rel: "noopener" },
@@ -1124,7 +1123,7 @@ function renderReport() {
   mount(
     el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver"), menuButton()),
     el("div", { class: "report" },
-      el("h1", {}, "📄 Informe de progreso — Conjuga", infoButton("report")),
+      el("h1", {}, "📄 Informe de progreso ", el("span", { class: "h-en", lang: "en" }, "/ Status"), " — Conjuga", infoButton("report")),
       el("p", { class: "report-fields" },
         "Nombre: ", el("span", { class: "fill-line" }, ""),
         "  Fecha: ", el("span", { class: "fill-line short" }, today)),
