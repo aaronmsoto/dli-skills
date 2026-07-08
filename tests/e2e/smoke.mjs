@@ -730,6 +730,47 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("info: ℹ️ on all screens; dialog focus/Esc behavior; per-screen cited content");
 }
 
+// ---------- M10 fix wave: titles, skip link, lang parts, contrast tokens ----------
+{
+  await page.goto(`${BASE}/#/study/2/preterite`);
+  await page.reload();
+  await page.waitForSelector(".conj-table");
+  const t1 = await page.title();
+  if (!/Grupo 2/.test(t1) || !/Pretérito/i.test(t1)) fail(`title: study route title wrong — "${t1}"`);
+  await page.goto(`${BASE}/#/`);
+  const t2 = await page.title();
+  if (t1 === t2) fail("title: routes must have distinct titles (WCAG 2.4.2)");
+  // skip link: first Tab reveals it; activating focuses main content
+  await page.keyboard.press("Tab");
+  const skipFocused = await page.evaluate(() => document.activeElement?.id === "skip");
+  if (!skipFocused) fail("skip: first Tab should land on the skip link");
+  await page.keyboard.press("Enter");
+  const mainFocused = await page.evaluate(() => document.activeElement?.id === "app");
+  if (!mainFocused) fail("skip: activating must focus #app");
+  const hashAfter = await page.evaluate(() => location.hash);
+  if (hashAfter === "#app") fail("skip: must not disturb the hash router");
+  // lang parts: English support copy is marked lang=en
+  await page.goto(`${BASE}/#/set/1`);
+  await page.waitForSelector(".mode-en");
+  for (const sel of [".mode-en", ".h-en", ".footer-credits"]) {
+    const lang = await page.locator(sel).first().getAttribute("lang");
+    if (lang !== "en") fail(`lang: ${sel} must carry lang="en" (WCAG 3.1.2), got "${lang}"`);
+  }
+  // contrast tokens: credits no longer translucent; light star is the AA-passing amber
+  const creditsOpacity = await page.evaluate(() => getComputedStyle(document.querySelector(".footer-credits")).opacity);
+  if (creditsOpacity !== "1") fail(`contrast: footer credits must not be translucent, opacity=${creditsOpacity}`);
+  const starTok = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--star").trim());
+  if (!starTok.startsWith("#d97706")) fail(`contrast: light --star should be #d97706, got "${starTok}"`);
+  const darkStar = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(darkStar);
+  await darkStar.goto(`${BASE}/#/`);
+  await darkStar.waitForSelector(".set-card");
+  const starDark = await darkStar.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--star").trim());
+  if (!starDark.startsWith("#f59e0b")) fail(`contrast: dark --star should stay #f59e0b, got "${starDark}"`);
+  await darkStar.close();
+  ok("fix wave: per-route titles, skip link, lang=en parts, contrast tokens");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();

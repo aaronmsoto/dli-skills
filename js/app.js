@@ -247,8 +247,23 @@ function go(hash) {
   location.hash = hash;
 }
 
+/** Per-route page titles (WCAG 2.4.2) — tabs/history distinguish screens. */
+function routeTitle(r) {
+  if (r.screen === "set") return `Grupo ${r.setId} · Conjuga`;
+  if (r.screen === "study") return `Estudia ${TENSE_LABELS[r.tense].es} · Grupo ${r.setId} · Conjuga`;
+  if (r.screen === "practica") return `Práctica · Grupo ${r.setId} · Conjuga`;
+  if (r.screen === "contrast") return `¿Pretérito o imperfecto? · Grupo ${r.setId} · Conjuga`;
+  if (r.screen === "play") {
+    const label = r.mode === LISTEN ? LISTEN_META.es : MODE_META[r.mode].es;
+    return `${label} ${TENSE_LABELS[r.tense].es} · Grupo ${r.setId} · Conjuga`;
+  }
+  if (r.screen === "report") return "Informe de progreso · Conjuga";
+  return "Conjuga — Spanish Verb Skills Builder (K-5 DLI)";
+}
+
 function render() {
   const route = parseRoute();
+  document.title = routeTitle(route);
   app.replaceChildren();
   window.scrollTo(0, 0);
   if (route.screen === "home") renderHome();
@@ -261,6 +276,12 @@ function render() {
 }
 
 window.addEventListener("hashchange", render);
+
+// skip link (WCAG 2.4.1): focus main content without disturbing the hash router
+document.getElementById("skip")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  app.focus();
+});
 
 // ---------------------------------------------------------------- home
 
@@ -279,7 +300,7 @@ function renderReviewQueue() {
   const due = store.dueForReview();
   if (!due.length) return null;
   return el("section", { class: "review-queue", "aria-label": "Repaso de hoy" },
-    el("h2", {}, "🔁 Repasa hoy ", el("span", { class: "h-en" }, "(today's review)")),
+    el("h2", {}, "🔁 Repasa hoy ", el("span", { class: "h-en", lang: "en" }, "(today's review)")),
     el("div", { class: "review-list" },
       due.map((item) =>
         el("a", { class: "review-item", href: reviewHref(item) },
@@ -298,7 +319,7 @@ function renderHome() {
       el("h1", { class: "home-title" }, createLola(76).el, "Conjuga"),
       el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
-      el("p", { class: "tagline-en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
+      el("p", { class: "tagline-en", lang: "en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
       el("p", { class: "total-stars" }, `⭐ ${totalEarned} / ${SETS.length * STARS_PER_SET} estrellas`),
     ),
     renderReviewQueue(),
@@ -357,7 +378,7 @@ function renderFooter() {
         "NBPTS ECYA-WL"),
       " standards"),
     // owner-specified credits (M9 F3); kids appear ONLY as pseudonyms
-    el("p", { class: "footer-credits" },
+    el("p", { class: "footer-credits", lang: "en" },
       "Created by Lucia Perales, EdD (wife/mother/educator) and Aaron Soto, MHCID (husband/father/technologist)",
       el("br"),
       "DLI K-5 Graduate “A1” (daughter/consultant) and DLI 3rd Grader “A2” (son/consultant)"),
@@ -377,9 +398,9 @@ function renderSet(setId) {
     el("h1", {}, `Grupo ${set.id}`),
     el("ul", { class: "verb-chips" },
       set.verbs.map((v) => el("li", { class: "chip" },
-        el("strong", {}, v.inf), el("span", { class: "gloss" }, ` ${v.en}`)))),
+        el("strong", {}, v.inf), el("span", { class: "gloss", lang: "en" }, ` ${v.en}`)))),
 
-    el("h2", {}, "1 · Elige un tiempo ", el("span", { class: "h-en" }, "(pick a tense)")),
+    el("h2", {}, "1 · Elige un tiempo ", el("span", { class: "h-en", lang: "en" }, "(pick a tense)")),
     el("div", { class: "tense-row", role: "radiogroup", "aria-label": "Tiempo verbal" },
       TENSES.map((t) =>
         el("button", {
@@ -393,18 +414,18 @@ function renderSet(setId) {
           el("span", { class: "tense-example" }, TENSE_META[t].example),
         ))),
 
-    el("h2", {}, "2 · Estudia y juega ", el("span", { class: "h-en" }, "(study, then play)")),
+    el("h2", {}, "2 · Estudia y juega ", el("span", { class: "h-en", lang: "en" }, "(study, then play)")),
     el("div", { class: "mode-row" },
       el("a", { class: "mode-card study", href: `#/study/${set.id}/${tense}` },
         el("span", { class: "mode-icon" }, "📖"),
         el("strong", {}, "Estudia"),
-        el("span", { class: "mode-en" }, "See the tables"),
+        el("span", { class: "mode-en", lang: "en" }, "See the tables"),
       ),
       // unscored on purpose: no starRow here, ever (M8 owner decision)
       el("a", { class: "mode-card practica-card", href: `#/practica/${set.id}/${tense}` },
         el("span", { class: "mode-icon" }, PRACTICA_META.icon),
         el("strong", {}, PRACTICA_META.es),
-        el("span", { class: "mode-en" }, PRACTICA_META.en),
+        el("span", { class: "mode-en", lang: "en" }, PRACTICA_META.en),
         el("span", { class: "mode-free" }, "práctica libre · free practice"),
       ),
       MODES.map((m) => {
@@ -412,7 +433,7 @@ function renderSet(setId) {
         return el("a", { class: "mode-card", href: `#/play/${set.id}/${tense}/${m}` },
           el("span", { class: "mode-icon" }, MODE_META[m].icon),
           el("strong", {}, MODE_META[m].es),
-          el("span", { class: "mode-en" }, MODE_META[m].en),
+          el("span", { class: "mode-en", lang: "en" }, MODE_META[m].en),
           starRow(best?.stars ?? 0),
         );
       }),
@@ -421,17 +442,17 @@ function renderSet(setId) {
         ? el("a", { class: "mode-card listen-card", href: `#/play/${set.id}/${tense}/${LISTEN}` },
           el("span", { class: "mode-icon" }, LISTEN_META.icon),
           el("strong", {}, LISTEN_META.es),
-          el("span", { class: "mode-en" }, LISTEN_META.en),
+          el("span", { class: "mode-en", lang: "en" }, LISTEN_META.en),
           badgeRow(store.getBest(set.id, tense, LISTEN)?.stars ?? 0))
         : null,
     ),
 
-    el("h2", {}, "3 · Reto ", el("span", { class: "h-en" }, "(challenge)")),
+    el("h2", {}, "3 · Reto ", el("span", { class: "h-en", lang: "en" }, "(challenge)")),
     el("div", { class: "mode-row contrast-row" },
       el("a", { class: "mode-card contrast-card", href: `#/play/${set.id}/contrast` },
         el("span", { class: "mode-icon" }, "⚔️"),
         el("strong", {}, "¿Pretérito o imperfecto?"),
-        el("span", { class: "mode-en" }, "Read the time clue, pick the past tense"),
+        el("span", { class: "mode-en", lang: "en" }, "Read the time clue, pick the past tense"),
         starRow(contrastBest?.stars ?? 0),
       ),
     ),
@@ -466,7 +487,7 @@ function renderStudy(setId, tense) {
           el("tr", {},
             el("th", { scope: "col" }, ""),
             set.verbs.map((v) => el("th", { scope: "col" },
-              el("span", { class: "th-inf" }, v.inf), el("span", { class: "th-gloss" }, v.en))))),
+              el("span", { class: "th-inf" }, v.inf), el("span", { class: "th-gloss", lang: "en" }, v.en))))),
         el("tbody", {},
           persons.map((p) =>
             el("tr", {},
@@ -521,7 +542,7 @@ function renderPractica(setId, tense) {
   const say2 = (cls, text) => { feedback.className = `feedback ${cls}`; feedback.textContent = text; announce(text); };
 
   const heads = set.verbs.map((v) => el("th", { scope: "col" },
-    el("span", { class: "th-inf" }, v.inf), el("span", { class: "th-gloss" }, v.en)));
+    el("span", { class: "th-inf" }, v.inf), el("span", { class: "th-gloss", lang: "en" }, v.en)));
   const cells = set.verbs.map(() => ({}));
   const table = el("table", { class: "conj-table practica-table" },
     el("thead", {}, el("tr", {}, el("th", { scope: "col" }, ""), heads)),
@@ -690,7 +711,7 @@ function renderPlay(setId, tense, mode) {
   function listenPromptCard(t) {
     return el("div", { class: "prompt" },
       el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
-      el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en" }, "Which form do you hear?")),
+      el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en", lang: "en" }, "Which form do you hear?")),
       el("div", { class: "listen-controls" },
         el("button", { class: "btn primary", type: "button", onclick: () => speak(t.answer) }, "🔊 Escuchar"),
         // 0.5, not ~0.65: iOS maps sub-1.0 rates non-linearly and many

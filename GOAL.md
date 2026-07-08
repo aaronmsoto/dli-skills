@@ -321,7 +321,7 @@ queue in this order regardless of milestone numbering below.
           (b) a "Continúa" card tracking the furthest-played group,
           (c) leave as is. Auditor recommendation: (a) — smallest, no
           new state.
-  - [ ] **F (fix wave):** per the autonomy decision above — auto-fix the
+  - [x] **F (fix wave):** per the autonomy decision above — auto-fix the
         mandated tiers with tests per fix; each fix cites its finding ID;
         design/pedagogy-changing findings appended here as decision-pending
         tasks with the auditor's recommendation. No fix may weaken an
