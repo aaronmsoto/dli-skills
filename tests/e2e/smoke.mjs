@@ -992,6 +992,28 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("clips: voiceless-but-online audio incl. Escucha; bare prompts; 🐢 = real 0.70 clip; mute works");
 }
 
+// ---------- 📌 M13: persons column stays frozen while tables scroll (360px) ----------
+{
+  const sticky = await browser.newPage({ viewport: { width: 360, height: 640 } });
+  trackErrors(sticky);
+  for (const route of ["#/practica/1/present", "#/study/1/present"]) {
+    await sticky.goto(`${BASE}/${route}`);
+    await sticky.waitForSelector(".conj-table tbody th");
+    const before = await sticky.evaluate(() => document.querySelector(".conj-table tbody th").getBoundingClientRect().x);
+    const scrolled = await sticky.evaluate(() => {
+      const sc = document.querySelector(".table-scroll");
+      sc.scrollLeft = 300;
+      return sc.scrollLeft;
+    });
+    if (scrolled < 100) fail(`sticky ${route}: table should overflow-scroll at 360px (scrollLeft=${scrolled})`);
+    await sticky.waitForTimeout(60);
+    const after = await sticky.evaluate(() => document.querySelector(".conj-table tbody th").getBoundingClientRect().x);
+    if (Math.abs(after - before) > 1) fail(`sticky ${route}: persons column moved (x ${before} → ${after})`);
+  }
+  await sticky.close();
+  ok("sticky: persons column frozen while Práctica/Estudia tables scroll on phones");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();

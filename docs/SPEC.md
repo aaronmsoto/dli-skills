@@ -168,7 +168,9 @@ kind (the ladder is Estudia → Práctica → Elige → Escribe → Empareja).
 Duplicate forms (imperfect yo/él) match by string equality, so either tile
 fits either matching row. No 🔍 hint button — the activity IS the chart.
 Entry points: first action link on the study screen; an unscored card on
-the group screen. Icon is 🧱 (Empareja already owns 🧩).
+the group screen. Icon is 🧱 (Empareja already owns 🧩). On narrow
+screens the persons column stays frozen (position: sticky) while the
+verb columns scroll — same guarantee on Estudia and the informe.
 
 ### 4.3j Footer — a component constant (M9 F1-F3)
 `renderFooter()` renders on EVERY screen (home, group, Estudia, Práctica,

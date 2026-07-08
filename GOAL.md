@@ -423,6 +423,16 @@ numbering — sets loop priority.
   the repo or CI, no server/proxy, Web Speech remains the offline
   fallback, and the payload budget still governs code (not clips).
 
+- [x] **M13 — 📌 Frozen persons column on scrolling tables (owner bug
+  report, complete on dev 2026-07-08)**
+  On phones, scrolling Práctica's table to reach later verb columns
+  scrolled the persons column out of view — the learner lost the row
+  labels mid-task. Fix: spreadsheet-style freeze (`position: sticky`,
+  solid backgrounds incl. even-row striping) on the first column of
+  every `.table-scroll` conjugation table — Práctica (critical),
+  Estudia, and the informe. E2e scrolls the table at 360px and asserts
+  the persons column's x-position does not move.
+
 ## Non-goals (do not build)
 
 
