@@ -13,7 +13,7 @@
   --bad-bg: #fee2e2;
   --almost: #a16207;
   --almost-bg: #fef9c3;
-  --star: #f59e0b;
+  --star: #d97706; /* 3.3:1 on white cards (WCAG-2 non-text contrast) */
   --lola-face: #fff7ec;
   --lola-face-line: #eadfc8;
   --lola-body: #c99a5b;
@@ -27,6 +27,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --star: #f59e0b; /* brighter amber passes easily on dark (6.29:1) */
     --bg: #1c2130;
     --card: #272e42;
     --ink: #eef1f7;
@@ -111,7 +112,15 @@ a { color: var(--brand); }
 .site-footer { margin-top: 36px; text-align: center; color: var(--ink-soft); font-size: 0.9rem; }
 .footer-controls { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
 .footer-std { color: var(--brand); }
-.footer-credits { font-size: 0.8rem; opacity: 0.85; margin-top: 6px; }
+.footer-credits { font-size: 0.8rem; margin-top: 6px; } /* no opacity: 4.5:1 at this size (WCAG-1) */
+
+/* skip link (WCAG-4): hidden until keyboard focus */
+.skip-link {
+  position: absolute; left: 10px; top: -60px; z-index: 50;
+  background: var(--brand); color: #fff; padding: 12px 16px;
+  border-radius: 0 0 var(--radius) var(--radius); transition: top 120ms;
+}
+.skip-link:focus { top: 0; }
 
 /* -------- ℹ️ per-screen standards panel (M9) -------- */
 .info-btn {
