@@ -44,6 +44,10 @@ const KEY = process.env.ELEVENLABS_API_KEY;
 const VOICE = process.env.ELEVENLABS_VOICE_ID || "rixsIpPlTphvsJd2mI03"; // owner-chosen, 2026-07-08
 const MODEL = process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2";
 const FORMAT = process.env.ELEVENLABS_FORMAT || "mp3_22050_32"; // compact; short phrases
+// Dual-generated speeds (owner decision 2026-07-08): the UI's 🔊 normal
+// and 🐢 despacio play REAL clips at different paces — no playbackRate
+// tricks. 0.70 is ElevenLabs' floor.
+const SPEEDS = { n: 0.85, s: 0.70 };
 if (!KEY) {
   console.error("ELEVENLABS_API_KEY missing (env or .env). Aborting — nothing generated.");
   process.exit(1);
@@ -73,6 +77,7 @@ function phrasesForSets(setIds) {
 const SAMPLES = [
   "yo hablo", "tú tenías", "él hizo", "nosotros fuimos",
   "ellos leyeron", "yo empecé", "habló", "oían",
+  "Hola", // the 🔊 toggle's unmute greeting
 ];
 
 // ---- filenames: diacritic-stripped slug + short hash (hablo vs habló) ----
@@ -85,18 +90,18 @@ function hash4(text) {
   for (const c of text) h = (h * 31 + c.codePointAt(0)) >>> 0;
   return h.toString(36).slice(0, 4).padStart(4, "0");
 }
-const fileFor = (text) => `clips/${slug(text)}-${hash4(text)}.mp3`;
+const fileFor = (text, v) => `clips/${slug(text)}-${hash4(text)}-${v}.mp3`;
 
 // ---- generation ----
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function tts(text) {
+async function tts(text, speed) {
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${VOICE}?output_format=${FORMAT}`;
   for (let attempt = 1; attempt <= 4; attempt++) {
     const res = await fetch(url, {
       method: "POST",
       headers: { "xi-api-key": KEY, "content-type": "application/json" },
-      body: JSON.stringify({ text, model_id: MODEL }),
+      body: JSON.stringify({ text, model_id: MODEL, voice_settings: { speed } }),
     });
     if (res.ok) return Buffer.from(await res.arrayBuffer());
     if (res.status === 429 || res.status >= 500) {
@@ -124,21 +129,37 @@ async function run() {
   }
 
   mkdirSync(CLIPS, { recursive: true });
+  // manifest: text → { n: path, s: path } (normal 0.85 / slow 0.70)
   const manifest = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, "utf8")) : {};
-  let made = 0, skipped = 0, chars = 0;
+  const todo = [];
   for (const text of texts) {
-    const rel = manifest[text] ?? fileFor(text);
-    if (manifest[text] && existsSync(join(OUT, rel))) { skipped++; continue; }
-    const audio = await tts(text);
-    if (audio.length < 500) throw new Error(`suspiciously small clip for "${text}" (${audio.length}B)`);
-    writeFileSync(join(OUT, rel), audio);
-    manifest[text] = rel;
-    made++;
-    chars += text.length;
-    writeFileSync(MANIFEST, JSON.stringify(manifest, null, 1) + "\n"); // checkpoint per clip (resumable)
-    await sleep(350); // stay friendly to free/starter concurrency limits
+    for (const v of Object.keys(SPEEDS)) {
+      if (!(manifest[text]?.[v] && existsSync(join(OUT, manifest[text][v])))) todo.push([text, v]);
+    }
   }
-  console.log(`done: ${made} generated (${chars} credits ≈ chars), ${skipped} already present, manifest ${Object.keys(manifest).length} entries`);
+  const skipped = texts.length * 2 - todo.length;
+  let made = 0, chars = 0;
+  // small worker pool (Creator tier supports concurrency); manifest
+  // checkpoints after every clip so an interrupted run resumes cleanly
+  const POOL = Number(process.env.ELEVEN_CONCURRENCY || 4);
+  let next = 0;
+  async function worker() {
+    while (next < todo.length) {
+      const [text, v] = todo[next++];
+      const audio = await tts(text, SPEEDS[v]);
+      if (audio.length < 500) throw new Error(`suspiciously small clip for "${text}" (${audio.length}B)`);
+      const rel = fileFor(text, v);
+      writeFileSync(join(OUT, rel), audio);
+      manifest[text] = { ...manifest[text], [v]: rel };
+      made++;
+      chars += text.length;
+      writeFileSync(MANIFEST, JSON.stringify(manifest, null, 1) + "\n");
+      if (made % 200 === 0) console.log(`…${made}/${todo.length}`);
+      await sleep(120);
+    }
+  }
+  await Promise.all(Array.from({ length: POOL }, worker));
+  console.log(`done: ${made} generated (${chars} credits ≈ chars), ${skipped} already present, manifest ${Object.keys(manifest).length} texts × 2 speeds`);
 }
 
 run().catch((e) => { console.error(e.message); process.exit(1); });

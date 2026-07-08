@@ -84,13 +84,25 @@ aspect-driven, not word-driven; cue words are the standard novice scaffold and
 the mode is framed as "una vez ⭐ o muchas veces 🌙". Sentence-context items
 (roadmap) will supersede this.
 
-### 4.3c Audio (TTS)
-Browser-native Web Speech API only — no network, nothing recorded or sent.
-Auto-speaks the correct form (person + form, e.g. "yo tengo") after each
-question resolves, on match success, and when a study-table form is tapped.
-🔊/🔇 toggle persists in settings; rate 0.85 for young learners; prefers a
-local es-MX/es-US/es-419 voice. On devices with no Spanish voice, every audio
-control is hidden (graceful fallback, verified in tests).
+### 4.3c Audio (clips + TTS fallback, M12)
+Two backends, tried in order (js/audio.js):
+1. **Pre-generated clips** — one mp3 per exact spoken text
+   (audio/manifest.json), recorded ONCE by the owner with ElevenLabs
+   (voice rixsIpPlTphvsJd2mI03; tools/generate-audio.mjs, key in a
+   git-ignored .env only). Served as static assets like images: **no
+   text ever leaves the device at runtime**, nothing is recorded or
+   sent. FOUR clips per form (owner decisions 2026-07-08): text variants
+   person-prefixed for say/sayForm and bare for 🎧 Escucha (the prompt
+   must not reveal the person), × dual-generated speeds — 🔊 normal 0.85
+   and 🐢 despacio 0.70, real recordings rather than playbackRate.
+2. **Web Speech API** — device-local voice, works offline; rate 0.85
+   (0.5 slow); prefers local es-MX/es-US/es-419.
+UI gates on `audioAvailable()` (either backend): 🎧 Escucha therefore
+works on voiceless-but-online devices (school Chromebooks). When neither
+backend exists (offline + no Spanish voice), every audio control hides.
+Auto-speaks the correct form after each question resolves, on match
+success, and on study/hint/práctica taps; 🔊/🔇 persists in settings and
+silences both backends.
 
 ### 4.3d Spaced repetition (🔁 Repasa hoy)
 Every recorded result stores a timestamp. An activity is due again after
