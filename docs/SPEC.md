@@ -163,8 +163,16 @@ two standards documents we cite — NBPTS ECYA-WL (nbpts.org PDF) and the
 2020 NJSLS-WL (nj.gov) — with `rel="noopener"`, and the owner-specified
 credit lines (Lucia Perales, EdD · Aaron Soto, MHCID · DLI consultants
 "A1"/"A2" — pseudonyms only, a privacy invariant). Hidden in print.
-Settings toggles re-render the current screen; on a game screen that
-restarts the round (vosotros changes require resampling anyway).
+Settings toggles re-render the current screen — EXCEPT during an active
+round (play/contrast/práctica), where the toggle saves, shows "✓ Guardado
+— se aplica al continuar", and applies as play continues (hints: next
+question; vosotros: next round) so a mid-round tap never discards
+progress (NN-1 fix, owner option b, 2026-07-08).
+
+### 4.1b Start-here cue (NN-3 fix, owner option a, 2026-07-08)
+The first group with zero stars AND zero badges wears a "¡Empieza aquí! /
+Start here" ribbon on the home grid; it advances as groups are started
+and disappears when none are fresh.
 
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message

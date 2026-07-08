@@ -324,16 +324,24 @@ function renderHome() {
     ),
     renderReviewQueue(),
     el("section", { class: "set-grid", "aria-label": "Grupos de verbos" },
-      SETS.map((s) => {
+      // NN-3 fix (owner decision 2026-07-08, option a): the first group with
+      // no stars AND no badges gets a "start here" ribbon for new learners
+      (() => {
+        const firstFresh = SETS.find((s) => earnedStars(s.id) === 0 && listenBadges(s.id) === 0)?.id;
+        return SETS.map((s) => {
         const earned = earnedStars(s.id);
         return el("a", { class: "set-card", href: `#/set/${s.id}` },
+          s.id === firstFresh
+            ? el("span", { class: "start-here" }, "¡Empieza aquí! ", el("span", { class: "h-en", lang: "en" }, "Start here"))
+            : null,
           el("span", { class: "set-num" }, `Grupo ${s.id}`),
           el("span", { class: "set-verbs" }, s.verbs.map((v) => v.inf).join(" · ")),
           el("span", { class: "set-progress" },
             `⭐ ${earned}/${STARS_PER_SET}`,
             listenBadges(s.id) ? ` · 🎧 ${listenBadges(s.id)}/9` : ""),
         );
-      }),
+        });
+      })(),
     ),
     renderFooter(),
   );
@@ -341,22 +349,35 @@ function renderHome() {
 
 function renderFooter() {
   const settings = store.getSettings();
+  // NN-1 fix (owner decision 2026-07-08, option b): on a screen with an
+  // active round, a toggle saves the setting but does NOT re-render —
+  // re-rendering would silently restart the round. The setting applies as
+  // play continues (hints: next question; vosotros: next round/table).
+  const inRound = ["play", "contrast", "practica"].includes(parseRoute().screen);
+  const applied = el("p", { class: "footer-applied", role: "status", hidden: true },
+    "✓ Guardado — se aplica al continuar. Saved — applies as you continue.");
+  const applySetting = (name, value) => {
+    store.setSetting(name, value);
+    if (!inRound) return render();
+    applied.hidden = false;
+  };
   return el("footer", { class: "site-footer" },
     el("div", { class: "footer-controls" },
       el("label", { class: "toggle" },
         el("input", {
           type: "checkbox", checked: settings.vosotros,
-          onchange: (e) => { store.setSetting("vosotros", e.target.checked); render(); },
+          onchange: (e) => applySetting("vosotros", e.target.checked),
         }),
         " Incluir vosotros/as",
       ),
       el("label", { class: "toggle" },
         el("input", {
           class: "hints-toggle", type: "checkbox", checked: settings.hints,
-          onchange: (e) => { store.setSetting("hints", e.target.checked); render(); },
+          onchange: (e) => applySetting("hints", e.target.checked),
         }),
         " 🔍 Pistas / Hints",
       ),
+      applied,
       el("button", {
         class: "linklike",
         onclick: () => {
