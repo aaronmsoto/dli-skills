@@ -1,4 +1,4 @@
-# 🦉 Conjuga — DLI Skills Builder
+# 🦉 Conjuga — DLI Skills
 
 **A free, no-login Spanish verb conjugation skills builder for K-5 Dual Language
 Immersion (DLI) programs.**
@@ -7,7 +7,7 @@ Learners practice the **100 most common Spanish verbs** — five at a time — a
 three tenses (**present, preterite, imperfect**) through study tables and three
 game modes, with star-based mastery tracking stored privately on the device.
 
-**Live app:** https://aaronmsoto.github.io/dli-skills-builder/
+**Live app:** https://dliskills.com/
 
 ## Why
 
@@ -116,7 +116,7 @@ dije, hice…*), stem changes (e→ie, o→ue, u→ue, e→i), third-person pret
 vowel changes (*pidió, murió*), orthographic changes (*busqué, llegué, empecé,
 sigo, dirijo, conozco*), and y-insertion (*leyó, cayó*). Expected forms were
 hand-verified against RAE conjugation tables. Found an error? Please
-[open an issue](https://github.com/aaronmsoto/dli-skills-builder/issues).
+[open an issue](https://github.com/aaronmsoto/dli-skills/issues).
 
 ## Roadmap ideas
 
