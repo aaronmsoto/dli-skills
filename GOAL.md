@@ -433,6 +433,17 @@ numbering — sets loop priority.
   Estudia, and the informe. E2e scrolls the table at 360px and asserts
   the persons column's x-position does not move.
 
+- [x] **M14 — 🧹 Chrome cleanup (owner-directed, complete on dev 2026-07-08)**
+  ℹ️ standards buttons now sit next to the page/quiz headings — inside
+  the h1 on Estudia/Práctica/Empareja/Informe, on the prompt-card corner
+  in Elige/Escribe/Escucha/Contraste — and are REMOVED from the home and
+  group screens (standards-info module + tests updated to match). The
+  🔊 sound toggle moved inside the ☰ site menu as a labeled row
+  ("Sonido: encendido/apagado"), cleaning the header chrome to just
+  crumbs (top-left) + ☰ (top-right). E2e: ℹ️ present on the 7 activity
+  routes and absent on home/group; placement asserted (h1 vs prompt
+  card); both mute tests exercise the menu-hosted toggle.
+
 ## Non-goals (do not build)
 
 

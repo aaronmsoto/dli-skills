@@ -1,6 +1,8 @@
 /**
  * Single source of truth for the per-screen ℹ️ standards panels (M9 I2).
- * Every screen key the router can render MUST have an entry (unit-tested).
+ * ℹ️ sits next to the page/quiz heading (owner, 2026-07-08) on the study,
+ * práctica, quiz, and informe screens — home and group screens have none.
+ * Every key here MUST have a matching button and vice versa (unit-tested).
  * The same mapping is mirrored as a table in docs/STANDARDS.md and
  * summarized on about.html — update all three together.
  *
@@ -9,16 +11,6 @@
  * cites = the specific standards references behind the claim.
  */
 export const STANDARDS_INFO = {
-  home: {
-    kid: "¡Elige un grupo de verbos y empieza a practicar!",
-    en: "Five-verb groups sequence high-frequency vocabulary in small sets, and stars/badges show progress at a glance — self-paced practice with predictable structure (NBPTS Std IV: language develops over time with extensive exposure).",
-    cites: ["NBPTS ECYA-WL Std IV", "NJSLS-WL Novice ladder"],
-  },
-  set: {
-    kid: "Primero el tiempo, después la actividad.",
-    en: "Tense cards pair each tense with a time cue and an example sentence (meaning before form); the activity ladder runs recognition before production: Estudia → Práctica → Elige → Escribe → Empareja.",
-    cites: ["NBPTS ECYA-WL Std IV (scaffolding)", "7.1.NL.IPRET.1"],
-  },
   study: {
     kid: "Mira la tabla y toca una palabra para escucharla.",
     en: "Reference tables with tap-to-hear forms support interpretive reading AND listening of memorized words; printed sheets extend practice offline.",

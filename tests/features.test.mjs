@@ -78,7 +78,7 @@ test("práctica bank: respects the vosotros setting via the persons argument", (
 
 test("standards info: every screen has a bilingual, cited entry (M9 I2)", async () => {
   const { STANDARDS_INFO } = await import("../js/standards-info.js");
-  const screens = ["home", "set", "study", "practica", "choice", "type", "match", "listen", "contrast", "report"];
+  const screens = ["study", "practica", "choice", "type", "match", "listen", "contrast", "report"]; // home/group have no ℹ️ (owner, 2026-07-08)
   for (const key of screens) {
     const info = STANDARDS_INFO[key];
     assert.ok(info, `missing entry for screen "${key}"`);

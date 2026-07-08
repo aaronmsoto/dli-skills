@@ -461,9 +461,11 @@ const cellSpoken = await voiced.evaluate(() => window.__spoken.at(-1)?.text);
 if (cellSpoken !== `yo ${placeSpoken.yo}`) fail(`practica cell speak: expected "yo ${placeSpoken.yo}", got "${cellSpoken}"`);
 ok(`practica voiced: placement speaks "yo ${placeSpoken.yo}", filled cell replays it, Lola hops`);
 
-// mute stops speech
+// mute stops speech (🔊 toggle now lives inside the ☰ menu — owner 2026-07-08)
 await voiced.goto(`${BASE}/#/study/1/present`);
-await voiced.waitForSelector(".sound-toggle");
+await voiced.waitForSelector(".menu-btn");
+await voiced.locator(".menu-btn").click();
+await voiced.waitForSelector(".menu-panel:not([hidden]) .sound-toggle");
 await voiced.locator(".sound-toggle").click();
 await voiced.evaluate(() => { window.__spoken.length = 0; });
 await voiced.locator(".cell-speak").first().click();
@@ -703,7 +705,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- ℹ️ M9 I1/I2: per-screen standards panels ----------
 {
-  const ROUTES = ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present",
+  const ROUTES = ["#/study/1/present", "#/practica/1/present",
     "#/play/1/present/choice", "#/play/1/present/type", "#/play/1/present/match",
     "#/play/1/contrast", "#/informe"];
   for (const r of ROUTES) {
@@ -711,6 +713,22 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     await page.reload();
     await page.waitForSelector(".info-btn", { timeout: 4000 }).catch(() => fail(`info: ℹ️ button missing on ${r}`));
   }
+  // owner (2026-07-08): ℹ️ sits next to headings/quiz cards — and is GONE
+  // from the home and group screens
+  for (const r of ["#/", "#/set/1"]) {
+    await page.goto(`${BASE}/${r}`);
+    await page.reload();
+    await page.waitForSelector(".menu-btn");
+    if (await page.locator(".info-btn").count()) fail(`info: ℹ️ must not render on ${r}`);
+  }
+  // placement: inside the h1 on study, inside the prompt card on quizzes
+  await page.goto(`${BASE}/#/study/1/present`);
+  await page.reload();
+  if (!(await page.locator("h1 .info-btn").count())) fail("info: study ℹ️ should sit in the heading");
+  await page.goto(`${BASE}/#/play/1/present/choice`);
+  await page.reload();
+  await page.waitForSelector(".choice");
+  if (!(await page.locator(".prompt .info-btn").count())) fail("info: quiz ℹ️ should sit on the prompt card");
   // open on the study screen: dialog semantics, content, Esc closes, focus returns
   await page.goto(`${BASE}/#/study/1/present`);
   await page.reload();
@@ -945,7 +963,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   // click-outside closes
   await page.locator(".menu-btn").click();
   await page.waitForSelector(".menu-panel:not([hidden])");
-  await page.locator("h1").click();
+  await page.locator(".study-hint").first().click(); // neutral target (h1 now hosts the ℹ️ button)
   if (await page.locator(".menu-panel:not([hidden])").count()) fail("menu: click-outside must close");
   // the docs link actually reaches the public hub from a hash route
   await page.locator(".menu-btn").click();
@@ -993,9 +1011,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const slow = await clips.evaluate(() => window.__played.at(-1));
   if (!bare.some(([, v]) => slow.src.endsWith(v.s)))
     fail(`clips: 🐢 must play the dual-generated SLOW (0.70) clip, got ${JSON.stringify(slow)}`);
-  // mute silences the clip backend too
+  // mute silences the clip backend too (toggle lives in the ☰ menu)
   await clips.goto(`${BASE}/#/study/1/present`);
-  await clips.waitForSelector(".sound-toggle");
+  await clips.waitForSelector(".menu-btn");
+  await clips.locator(".menu-btn").click();
+  await clips.waitForSelector(".menu-panel:not([hidden]) .sound-toggle");
   await clips.locator(".sound-toggle").click();
   await clips.evaluate(() => { window.__played.length = 0; });
   await clips.locator(".cell-speak").first().click();
