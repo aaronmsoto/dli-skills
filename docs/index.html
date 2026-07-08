@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Documentación · Conjuga</title>
+  <meta name="description" content="Public documentation for Conjuga: how to use the app, how it supports DLI teaching standards, and how it adheres to usability and accessibility best practices." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦉</text></svg>" />
+  <style>
+    :root { --bg:#fdf6ec; --card:#fff; --ink:#27303f; --soft:#5b6472; --brand:#7c3aed; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#1c2130; --card:#272e42; --ink:#eef1f7; --soft:#a8b0c0; --brand:#a78bfa; } }
+    * { box-sizing: border-box; }
+    body { margin:0; padding:24px 16px 48px; background:var(--bg); color:var(--ink);
+           font-family: "Segoe UI", system-ui, -apple-system, sans-serif; line-height:1.55; }
+    main { max-width: 760px; margin: 0 auto; }
+    h1 { font-size: 1.9rem; margin: 0.2em 0; } h2 { margin-top: 1.6em; color: var(--brand); }
+    section { background: var(--card); border-radius: 18px; padding: 18px 22px; margin: 14px 0; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    a { color: var(--brand); }
+    .en { color: var(--soft); font-size: 0.95em; }
+    ul { padding-left: 1.2em; }
+  </style>
+</head>
+<body>
+<main>
+  <p><a href="../">← Conjuga</a> · <a href="../about.html">Acerca de / Standards</a></p>
+  <h1>🦉 Conjuga — Documentación <span class="en" lang="en">/ Documentation</span></h1>
+  <p class="en" lang="en">Public documentation: how to use the app, how it supports DLI teaching
+  standards, and how it adheres to usability &amp; accessibility best practices.</p>
+
+  <section id="uso">
+    <h2>1 · Cómo usar la aplicación <span class="en" lang="en">/ How to use</span></h2>
+    <p><strong>Estudiantes:</strong> elige un grupo de verbos → un tiempo → y sigue la escalera:
+    📖 Estudia → 🧱 Práctica → ✅ Elige → ✏️ Escribe → 🧩 Empareja. El reto ⚔️ y 🎧 Escucha te esperan después.
+    Toca 🔍 Pista si necesitas ver la tabla; toca cualquier palabra para escucharla.</p>
+    <p lang="en"><strong>Parents:</strong> progress lives only in this browser's localStorage — no accounts,
+    no login, no analytics, nothing leaves the device (COPPA/FERPA-friendly by construction). Stars measure
+    the three quizzes + the ⚔️ challenge; 🎧 badges are a separate listening track so devices without a
+    Spanish voice are never penalized; 🧱 Práctica is deliberately unscored. The 🔁 review queue brings
+    skills back after 0-7 days depending on mastery.</p>
+    <p lang="en"><strong>Teachers:</strong> every study table prints as a classroom sheet (Grupo/Nombre/Fecha
+    header included), and 📄 Informe de progreso prints a one-page star/badge report for folders or
+    conferences. Audio uses the device's built-in Spanish voice when one exists — audio controls hide
+    automatically on devices without one (the 🎧 Escucha mode only appears when a voice is available).
+    The app works offline after first load on most browsers.</p>
+  </section>
+
+  <section id="estandares">
+    <h2>2 · Estándares DLI <span class="en" lang="en">/ Standards support</span></h2>
+    <p lang="en">Pedagogy is grounded in the
+    <a href="https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf" rel="noopener">NBPTS World Languages standards (ECYA-WL)</a>
+    and the <a href="https://www.nj.gov/education/standards/worldlang/" rel="noopener">2020 NJSLS-WL</a>:
+    recognition precedes production, feedback is corrective and never punitive, and every activity maps to
+    named indicators (interpretive 7.1.NL/NM.IPRET.1 for Elige/Empareja/Escucha; presentational
+    7.1.NM.PRSNT.4 and 7.1.NH.PRSNT.2 for Escribe; the preterite/imperfect contrast scaffolds the
+    storytelling expectation 7.1.NH.PRSNT.4).</p>
+    <p lang="en">Every screen in the app carries an ℹ️ button explaining, in Spanish-first kid language plus
+    adult English, exactly which standard that page serves. The full per-screen mapping lives in
+    <a href="STANDARDS.md">docs/STANDARDS.md</a> and on the
+    <a href="../about.html">Acerca de / Standards</a> page.</p>
+  </section>
+
+  <section id="usabilidad">
+    <h2>3 · Usabilidad y accesibilidad <span class="en" lang="en">/ Usability &amp; accessibility</span></h2>
+    <p lang="en">In July 2026 the app underwent four formal evaluations — a Don Norman design-principles
+    audit, a Nielsen 10-heuristics evaluation, a persona-based cognitive walkthrough, and a WCAG 2.2
+    Level AA accessibility audit. Findings, severities, measured contrast ratios, and fix status are
+    summarized on the <a href="usability.html">Usability &amp; Accessibility page</a>; the full reports are
+    public: <a href="audits/norman.md">Norman</a> · <a href="audits/nielsen.md">Nielsen</a> ·
+    <a href="audits/walkthrough.md">cognitive walkthrough</a> · <a href="audits/wcag.md">WCAG 2.2 AA</a>.</p>
+  </section>
+
+  <p class="en" lang="en">Created by Lucia Perales, EdD (wife/mother/educator) and Aaron Soto, MHCID
+  (husband/father/technologist)<br />DLI K-5 Graduate “A1” (daughter/consultant) and DLI 3rd Grader “A2”
+  (son/consultant) · <a href="https://github.com/aaronmsoto/dli-skills-builder" rel="noopener">Source on GitHub</a></p>
+</main>
+</body>
+</html>
