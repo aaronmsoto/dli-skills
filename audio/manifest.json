@@ -23,10 +23,6 @@
   "n": "clips/yo-empece-ulw1-n.mp3",
   "s": "clips/yo-empece-ulw1-s.mp3"
  },
- "habló": {
-  "s": "clips/hablo-1mym-s.mp3",
-  "n": "clips/hablo-1mym-n.mp3"
- },
  "oían": {
   "n": "clips/oian-23to-n.mp3",
   "s": "clips/oian-23to-s.mp3"
@@ -1519,10 +1515,6 @@
   "n": "clips/yo-llego-jf9p-n.mp3",
   "s": "clips/yo-llego-jf9p-s.mp3"
  },
- "llego": {
-  "n": "clips/llego-1pcw-n.mp3",
-  "s": "clips/llego-1pcw-s.mp3"
- },
  "tú llegas": {
   "n": "clips/tu-llegas-1xy9-n.mp3",
   "s": "clips/tu-llegas-1xy9-s.mp3"
@@ -1582,10 +1574,6 @@
  "él llegó": {
   "n": "clips/el-llego-75xh-n.mp3",
   "s": "clips/el-llego-75xh-s.mp3"
- },
- "llegó": {
-  "n": "clips/llego-1pcw-n.mp3",
-  "s": "clips/llego-1pcw-s.mp3"
  },
  "vosotros llegasteis": {
   "n": "clips/vosotros-llegasteis-sm2a-n.mp3",
@@ -2203,10 +2191,6 @@
   "n": "clips/yo-quedo-ji6f-n.mp3",
   "s": "clips/yo-quedo-ji6f-s.mp3"
  },
- "quedo": {
-  "n": "clips/quedo-1s9l-n.mp3",
-  "s": "clips/quedo-1s9l-s.mp3"
- },
  "tú quedas": {
   "n": "clips/tu-quedas-1fbk-n.mp3",
   "s": "clips/tu-quedas-1fbk-s.mp3"
@@ -2266,10 +2250,6 @@
  "él quedó": {
   "n": "clips/el-quedo-78u6-n.mp3",
   "s": "clips/el-quedo-78u6-s.mp3"
- },
- "quedó": {
-  "n": "clips/quedo-1s9l-n.mp3",
-  "s": "clips/quedo-1s9l-s.mp3"
  },
  "vosotros quedasteis": {
   "n": "clips/vosotros-quedasteis-1igf-n.mp3",
@@ -2471,10 +2451,6 @@
   "n": "clips/creian-1co2-n.mp3",
   "s": "clips/creian-1co2-s.mp3"
  },
- "hablo": {
-  "n": "clips/hablo-1mym-n.mp3",
-  "s": "clips/hablo-1mym-s.mp3"
- },
  "tú hablas": {
   "n": "clips/tu-hablas-1vvz-n.mp3",
   "s": "clips/tu-hablas-1vvz-s.mp3"
@@ -2599,10 +2575,6 @@
   "n": "clips/yo-llevo-jf9p-n.mp3",
   "s": "clips/yo-llevo-jf9p-s.mp3"
  },
- "llevo": {
-  "n": "clips/llevo-1pcw-n.mp3",
-  "s": "clips/llevo-1pcw-s.mp3"
- },
  "tú llevas": {
   "n": "clips/tu-llevas-1xy9-n.mp3",
   "s": "clips/tu-llevas-1xy9-s.mp3"
@@ -2662,10 +2634,6 @@
  "él llevó": {
   "n": "clips/el-llevo-75xh-n.mp3",
   "s": "clips/el-llevo-75xh-s.mp3"
- },
- "llevó": {
-  "n": "clips/llevo-1pcw-n.mp3",
-  "s": "clips/llevo-1pcw-s.mp3"
  },
  "vosotros llevasteis": {
   "n": "clips/vosotros-llevasteis-zooe-n.mp3",
@@ -3127,10 +3095,6 @@
   "n": "clips/yo-llamo-jf9m-n.mp3",
   "s": "clips/yo-llamo-jf9m-s.mp3"
  },
- "llamo": {
-  "n": "clips/llamo-1pct-n.mp3",
-  "s": "clips/llamo-1pct-s.mp3"
- },
  "tú llamas": {
   "n": "clips/tu-llamas-1xy6-n.mp3",
   "s": "clips/tu-llamas-1xy6-s.mp3"
@@ -3190,10 +3154,6 @@
  "él llamó": {
   "n": "clips/el-llamo-75xe-n.mp3",
   "s": "clips/el-llamo-75xe-s.mp3"
- },
- "llamó": {
-  "n": "clips/llamo-1pct-n.mp3",
-  "s": "clips/llamo-1pct-s.mp3"
  },
  "vosotros llamasteis": {
   "n": "clips/vosotros-llamasteis-1dy4-n.mp3",
@@ -4339,10 +4299,6 @@
   "n": "clips/yo-trato-jjrt-n.mp3",
   "s": "clips/yo-trato-jjrt-s.mp3"
  },
- "trato": {
-  "n": "clips/trato-1tv0-n.mp3",
-  "s": "clips/trato-1tv0-s.mp3"
- },
  "tú tratas": {
   "n": "clips/tu-tratas-2sqt-n.mp3",
   "s": "clips/tu-tratas-2sqt-s.mp3"
@@ -4402,10 +4358,6 @@
  "él trató": {
   "n": "clips/el-trato-7afl-n.mp3",
   "s": "clips/el-trato-7afl-s.mp3"
- },
- "trató": {
-  "n": "clips/trato-1tv0-n.mp3",
-  "s": "clips/trato-1tv0-s.mp3"
  },
  "vosotros tratasteis": {
   "n": "clips/vosotros-tratasteis-14ua-n.mp3",
@@ -4863,10 +4815,6 @@
   "n": "clips/yo-espero-up6t-n.mp3",
   "s": "clips/yo-espero-up6t-s.mp3"
  },
- "espero": {
-  "n": "clips/espero-1dmt-n.mp3",
-  "s": "clips/espero-1dmt-s.mp3"
- },
  "tú esperas": {
   "n": "clips/tu-esperas-9cet-n.mp3",
   "s": "clips/tu-esperas-9cet-s.mp3"
@@ -4926,10 +4874,6 @@
  "él esperó": {
   "n": "clips/el-espero-5t7l-n.mp3",
   "s": "clips/el-espero-5t7l-s.mp3"
- },
- "esperó": {
-  "n": "clips/espero-1dmt-n.mp3",
-  "s": "clips/espero-1dmt-s.mp3"
  },
  "vosotros esperasteis": {
   "n": "clips/vosotros-esperasteis-3epd-n.mp3",
@@ -4995,10 +4939,6 @@
   "n": "clips/yo-busco-j9xs-n.mp3",
   "s": "clips/yo-busco-j9xs-s.mp3"
  },
- "busco": {
-  "n": "clips/busco-1k0z-n.mp3",
-  "s": "clips/busco-1k0z-s.mp3"
- },
  "tú buscas": {
   "n": "clips/tu-buscas-1td0-n.mp3",
   "s": "clips/tu-buscas-1td0-s.mp3"
@@ -5058,10 +4998,6 @@
  "él buscó": {
   "n": "clips/el-busco-70lk-n.mp3",
   "s": "clips/el-busco-70lk-s.mp3"
- },
- "buscó": {
-  "n": "clips/busco-1k0z-n.mp3",
-  "s": "clips/busco-1k0z-s.mp3"
  },
  "vosotros buscasteis": {
   "n": "clips/vosotros-buscasteis-1tv3-n.mp3",
@@ -5259,10 +5195,6 @@
   "n": "clips/yo-entro-jbgq-n.mp3",
   "s": "clips/yo-entro-jbgq-s.mp3"
  },
- "entro": {
-  "n": "clips/entro-1ljx-n.mp3",
-  "s": "clips/entro-1ljx-s.mp3"
- },
  "tú entras": {
   "n": "clips/tu-entras-1uob-n.mp3",
   "s": "clips/tu-entras-1uob-s.mp3"
@@ -5322,10 +5254,6 @@
  "él entró": {
   "n": "clips/el-entro-724i-n.mp3",
   "s": "clips/el-entro-724i-s.mp3"
- },
- "entró": {
-  "n": "clips/entro-1ljx-n.mp3",
-  "s": "clips/entro-1ljx-s.mp3"
  },
  "vosotros entrasteis": {
   "n": "clips/vosotros-entrasteis-h4nt-n.mp3",
@@ -5391,10 +5319,6 @@
   "n": "clips/yo-trabajo-yno5-n.mp3",
   "s": "clips/yo-trabajo-yno5-s.mp3"
  },
- "trabajo": {
-  "n": "clips/trabajo-1hdl-n.mp3",
-  "s": "clips/trabajo-1hdl-s.mp3"
- },
  "tú trabajas": {
   "n": "clips/tu-trabajas-1ox3-n.mp3",
   "s": "clips/tu-trabajas-1ox3-s.mp3"
@@ -5454,10 +5378,6 @@
  "él trabajó": {
   "n": "clips/el-trabajo-18gk-n.mp3",
   "s": "clips/el-trabajo-18gk-s.mp3"
- },
- "trabajó": {
-  "n": "clips/trabajo-1hdl-n.mp3",
-  "s": "clips/trabajo-1hdl-s.mp3"
  },
  "vosotros trabajasteis": {
   "n": "clips/vosotros-trabajasteis-afso-n.mp3",
@@ -6603,10 +6523,6 @@
   "n": "clips/yo-termino-srmr-n.mp3",
   "s": "clips/yo-termino-srmr-s.mp3"
  },
- "termino": {
-  "n": "clips/termino-1bhj-n.mp3",
-  "s": "clips/termino-1bhj-s.mp3"
- },
  "tú terminas": {
   "n": "clips/tu-terminas-ke4m-n.mp3",
   "s": "clips/tu-terminas-ke4m-s.mp3"
@@ -6666,10 +6582,6 @@
  "él terminó": {
   "n": "clips/el-termino-12ki-n.mp3",
   "s": "clips/el-termino-12ki-s.mp3"
- },
- "terminó": {
-  "n": "clips/termino-1bhj-n.mp3",
-  "s": "clips/termino-1bhj-s.mp3"
  },
  "vosotros terminasteis": {
   "n": "clips/vosotros-terminasteis-hvvg-n.mp3",
@@ -7535,10 +7447,6 @@
   "n": "clips/yo-necesito-1bu3-n.mp3",
   "s": "clips/yo-necesito-1bu3-s.mp3"
  },
- "necesito": {
-  "n": "clips/necesito-deeo-n.mp3",
-  "s": "clips/necesito-deeo-s.mp3"
- },
  "tú necesitas": {
   "n": "clips/tu-necesitas-jgv7-n.mp3",
   "s": "clips/tu-necesitas-jgv7-s.mp3"
@@ -7598,10 +7506,6 @@
  "él necesitó": {
   "n": "clips/el-necesito-l2zc-n.mp3",
   "s": "clips/el-necesito-l2zc-s.mp3"
- },
- "necesitó": {
-  "n": "clips/necesito-deeo-n.mp3",
-  "s": "clips/necesito-deeo-s.mp3"
  },
  "vosotros necesitasteis": {
   "n": "clips/vosotros-necesitasteis-u9x2-n.mp3",
@@ -7807,10 +7711,6 @@
   "n": "clips/yo-resulto-1ygn-n.mp3",
   "s": "clips/yo-resulto-1ygn-s.mp3"
  },
- "resulto": {
-  "n": "clips/resulto-i5g8-n.mp3",
-  "s": "clips/resulto-i5g8-s.mp3"
- },
  "tú resultas": {
   "n": "clips/tu-resultas-ydhr-n.mp3",
   "s": "clips/tu-resultas-ydhr-s.mp3"
@@ -7870,10 +7770,6 @@
  "él resultó": {
   "n": "clips/el-resulto-98f7-n.mp3",
   "s": "clips/el-resulto-98f7-s.mp3"
- },
- "resultó": {
-  "n": "clips/resulto-i5g8-n.mp3",
-  "s": "clips/resulto-i5g8-s.mp3"
  },
  "vosotros resultasteis": {
   "n": "clips/vosotros-resultasteis-gsn4-n.mp3",
@@ -8215,10 +8111,6 @@
   "n": "clips/yo-cambio-th5a-n.mp3",
   "s": "clips/yo-cambio-th5a-s.mp3"
  },
- "cambio": {
-  "n": "clips/cambio-1ces-n.mp3",
-  "s": "clips/cambio-1ces-s.mp3"
- },
  "tú cambias": {
   "n": "clips/tu-cambias-16g7-n.mp3",
   "s": "clips/tu-cambias-16g7-s.mp3"
@@ -8278,10 +8170,6 @@
  "él cambió": {
   "n": "clips/el-cambio-4l62-n.mp3",
   "s": "clips/el-cambio-4l62-s.mp3"
- },
- "cambió": {
-  "n": "clips/cambio-1ces-n.mp3",
-  "s": "clips/cambio-1ces-s.mp3"
  },
  "vosotros cambiasteis": {
   "n": "clips/vosotros-cambiasteis-1rhe-n.mp3",
@@ -8347,10 +8235,6 @@
   "n": "clips/yo-presento-11ug-n.mp3",
   "s": "clips/yo-presento-11ug-s.mp3"
  },
- "presento": {
-  "n": "clips/presento-1dx0-n.mp3",
-  "s": "clips/presento-1dx0-s.mp3"
- },
  "tú presentas": {
   "n": "clips/tu-presentas-f00e-n.mp3",
   "s": "clips/tu-presentas-f00e-s.mp3"
@@ -8410,10 +8294,6 @@
  "él presentó": {
   "n": "clips/el-presento-1lll-n.mp3",
   "s": "clips/el-presento-1lll-s.mp3"
- },
- "presentó": {
-  "n": "clips/presento-1dx0-n.mp3",
-  "s": "clips/presento-1dx0-s.mp3"
  },
  "vosotros presentasteis": {
   "n": "clips/vosotros-presentasteis-8rtp-n.mp3",
@@ -8735,10 +8615,6 @@
   "n": "clips/yo-considero-18tj-n.mp3",
   "s": "clips/yo-considero-18tj-s.mp3"
  },
- "considero": {
-  "n": "clips/considero-1rvp-n.mp3",
-  "s": "clips/considero-1rvp-s.mp3"
- },
  "tú consideras": {
   "n": "clips/tu-consideras-5pd2-n.mp3",
   "s": "clips/tu-consideras-5pd2-s.mp3"
@@ -8798,10 +8674,6 @@
  "él consideró": {
   "s": "clips/el-considero-hx1p-s.mp3",
   "n": "clips/el-considero-hx1p-n.mp3"
- },
- "consideró": {
-  "n": "clips/considero-1rvp-n.mp3",
-  "s": "clips/considero-1rvp-s.mp3"
  },
  "vosotros considerasteis": {
   "s": "clips/vosotros-considerasteis-brw4-s.mp3",
@@ -8995,10 +8867,6 @@
   "n": "clips/yo-acabo-j925-n.mp3",
   "s": "clips/yo-acabo-j925-s.mp3"
  },
- "acabo": {
-  "n": "clips/acabo-1j5b-n.mp3",
-  "s": "clips/acabo-1j5b-s.mp3"
- },
  "tú acabas": {
   "n": "clips/tu-acabas-1slq-n.mp3",
   "s": "clips/tu-acabas-1slq-s.mp3"
@@ -9058,10 +8926,6 @@
  "él acabó": {
   "n": "clips/el-acabo-6zpw-n.mp3",
   "s": "clips/el-acabo-6zpw-s.mp3"
- },
- "acabó": {
-  "n": "clips/acabo-1j5b-n.mp3",
-  "s": "clips/acabo-1j5b-s.mp3"
  },
  "vosotros acabasteis": {
   "n": "clips/vosotros-acabasteis-2ncp-n.mp3",
@@ -9391,10 +9255,6 @@
   "n": "clips/yo-formo-jc14-n.mp3",
   "s": "clips/yo-formo-jc14-s.mp3"
  },
- "formo": {
-  "n": "clips/formo-1m4b-n.mp3",
-  "s": "clips/formo-1m4b-s.mp3"
- },
  "tú formas": {
   "n": "clips/tu-formas-1v5v-n.mp3",
   "s": "clips/tu-formas-1v5v-s.mp3"
@@ -9454,10 +9314,6 @@
  "él formó": {
   "n": "clips/el-formo-72ow-n.mp3",
   "s": "clips/el-formo-72ow-s.mp3"
- },
- "formó": {
-  "n": "clips/formo-1m4b-n.mp3",
-  "s": "clips/formo-1m4b-s.mp3"
  },
  "vosotros formasteis": {
   "n": "clips/vosotros-formasteis-1u1n-n.mp3",
@@ -9927,10 +9783,6 @@
   "n": "clips/yo-acepto-sk0t-n.mp3",
   "s": "clips/yo-acepto-sk0t-s.mp3"
  },
- "acepto": {
-  "n": "clips/acepto-1bhn-n.mp3",
-  "s": "clips/acepto-1bhn-s.mp3"
- },
  "tú aceptas": {
   "n": "clips/tu-aceptas-dxd4-n.mp3",
   "s": "clips/tu-aceptas-dxd4-s.mp3"
@@ -9990,10 +9842,6 @@
  "él aceptó": {
   "n": "clips/el-acepto-3o1l-n.mp3",
   "s": "clips/el-acepto-3o1l-s.mp3"
- },
- "aceptó": {
-  "n": "clips/acepto-1bhn-n.mp3",
-  "s": "clips/acepto-1bhn-s.mp3"
  },
  "vosotros aceptasteis": {
   "n": "clips/vosotros-aceptasteis-1w5r-n.mp3",
@@ -10059,10 +9907,6 @@
   "n": "clips/yo-realizo-1y6l-n.mp3",
   "s": "clips/yo-realizo-1y6l-s.mp3"
  },
- "realizo": {
-  "n": "clips/realizo-hve4-n.mp3",
-  "s": "clips/realizo-hve4-s.mp3"
- },
  "tú realizas": {
   "n": "clips/tu-realizas-ppom-n.mp3",
   "s": "clips/tu-realizas-ppom-s.mp3"
@@ -10122,10 +9966,6 @@
  "él realizó": {
   "n": "clips/el-realizo-8yd4-n.mp3",
   "s": "clips/el-realizo-8yd4-s.mp3"
- },
- "realizó": {
-  "n": "clips/realizo-hve4-n.mp3",
-  "s": "clips/realizo-hve4-s.mp3"
  },
  "vosotros realizasteis": {
   "n": "clips/vosotros-realizasteis-1pso-n.mp3",
@@ -10471,10 +10311,6 @@
   "n": "clips/yo-logro-jfbo-n.mp3",
   "s": "clips/yo-logro-jfbo-s.mp3"
  },
- "logro": {
-  "n": "clips/logro-1peu-n.mp3",
-  "s": "clips/logro-1peu-s.mp3"
- },
  "tú logras": {
   "n": "clips/tu-logras-1xzy-n.mp3",
   "s": "clips/tu-logras-1xzy-s.mp3"
@@ -10534,10 +10370,6 @@
  "él logró": {
   "n": "clips/el-logro-75zf-n.mp3",
   "s": "clips/el-logro-75zf-s.mp3"
- },
- "logró": {
-  "n": "clips/logro-1peu-n.mp3",
-  "s": "clips/logro-1peu-s.mp3"
  },
  "vosotros lograsteis": {
   "n": "clips/vosotros-lograsteis-fz47-n.mp3",
@@ -10603,10 +10435,6 @@
   "n": "clips/yo-explico-unr9-n.mp3",
   "s": "clips/yo-explico-unr9-s.mp3"
  },
- "explico": {
-  "n": "clips/explico-1ddo-n.mp3",
-  "s": "clips/explico-1ddo-s.mp3"
- },
  "tú explicas": {
   "n": "clips/tu-explicas-80vr-n.mp3",
   "s": "clips/tu-explicas-80vr-s.mp3"
@@ -10666,10 +10494,6 @@
  "él explicó": {
   "n": "clips/el-explico-14gn-n.mp3",
   "s": "clips/el-explico-14gn-s.mp3"
- },
- "explicó": {
-  "n": "clips/explico-1ddo-n.mp3",
-  "s": "clips/explico-1ddo-s.mp3"
  },
  "vosotros explicasteis": {
   "n": "clips/vosotros-explicasteis-6gna-n.mp3",
@@ -10735,10 +10559,6 @@
   "n": "clips/yo-pregunto-11o4-n.mp3",
   "s": "clips/yo-pregunto-11o4-s.mp3"
  },
- "pregunto": {
-  "n": "clips/pregunto-1dqp-n.mp3",
-  "s": "clips/pregunto-1dqp-s.mp3"
- },
  "tú preguntas": {
   "n": "clips/tu-preguntas-9k9n-n.mp3",
   "s": "clips/tu-preguntas-9k9n-s.mp3"
@@ -10798,10 +10618,6 @@
  "él preguntó": {
   "n": "clips/el-pregunto-1lfa-n.mp3",
   "s": "clips/el-pregunto-1lfa-s.mp3"
- },
- "preguntó": {
-  "n": "clips/pregunto-1dqp-n.mp3",
-  "s": "clips/pregunto-1dqp-s.mp3"
  },
  "vosotros preguntasteis": {
   "n": "clips/vosotros-preguntasteis-1upt-n.mp3",
@@ -11139,10 +10955,6 @@
   "n": "clips/yo-estudio-scvz-n.mp3",
   "s": "clips/yo-estudio-scvz-s.mp3"
  },
- "estudio": {
-  "n": "clips/estudio-1b2t-n.mp3",
-  "s": "clips/estudio-1b2t-s.mp3"
- },
  "tú estudias": {
   "n": "clips/tu-estudias-7p1y-n.mp3",
   "s": "clips/tu-estudias-7p1y-s.mp3"
@@ -11202,10 +11014,6 @@
  "él estudió": {
   "n": "clips/el-estudio-125s-n.mp3",
   "s": "clips/el-estudio-125s-s.mp3"
- },
- "estudió": {
-  "n": "clips/estudio-1b2t-n.mp3",
-  "s": "clips/estudio-1b2t-s.mp3"
  },
  "vosotros estudiasteis": {
   "n": "clips/vosotros-estudiasteis-u2j9-n.mp3",
@@ -11271,10 +11079,6 @@
   "n": "clips/yo-alcanzo-113e-n.mp3",
   "s": "clips/yo-alcanzo-113e-s.mp3"
  },
- "alcanzo": {
-  "n": "clips/alcanzo-1jtb-n.mp3",
-  "s": "clips/alcanzo-1jtb-s.mp3"
- },
  "tú alcanzas": {
   "n": "clips/tu-alcanzas-1tfn-n.mp3",
   "s": "clips/tu-alcanzas-1tfn-s.mp3"
@@ -11334,10 +11138,6 @@
  "él alcanzó": {
   "n": "clips/el-alcanzo-1awa-n.mp3",
   "s": "clips/el-alcanzo-1awa-s.mp3"
- },
- "alcanzó": {
-  "n": "clips/alcanzo-1jtb-n.mp3",
-  "s": "clips/alcanzo-1jtb-s.mp3"
  },
  "vosotros alcanzasteis": {
   "n": "clips/vosotros-alcanzasteis-1yt7-n.mp3",
@@ -11811,10 +11611,6 @@
   "n": "clips/corrian-fsra-n.mp3",
   "s": "clips/corrian-fsra-s.mp3"
  },
- "utilizo": {
-  "n": "clips/utilizo-1x4n-n.mp3",
-  "s": "clips/utilizo-1x4n-s.mp3"
- },
  "yo utilizo": {
   "n": "clips/yo-utilizo-1eeq-n.mp3",
   "s": "clips/yo-utilizo-1eeq-s.mp3"
@@ -11878,10 +11674,6 @@
  "él utilizó": {
   "n": "clips/el-utilizo-1o7m-n.mp3",
   "s": "clips/el-utilizo-1o7m-s.mp3"
- },
- "utilizó": {
-  "n": "clips/utilizo-1x4n-n.mp3",
-  "s": "clips/utilizo-1x4n-s.mp3"
  },
  "vosotros utilizasteis": {
   "n": "clips/vosotros-utilizasteis-mm1v-n.mp3",
@@ -12079,10 +11871,6 @@
   "n": "clips/yo-ayudo-j9gl-n.mp3",
   "s": "clips/yo-ayudo-j9gl-s.mp3"
  },
- "ayudo": {
-  "n": "clips/ayudo-1jjs-n.mp3",
-  "s": "clips/ayudo-1jjs-s.mp3"
- },
  "tú ayudas": {
   "n": "clips/tu-ayudas-1sy7-n.mp3",
   "s": "clips/tu-ayudas-1sy7-s.mp3"
@@ -12142,10 +11930,6 @@
  "él ayudó": {
   "n": "clips/el-ayudo-704d-n.mp3",
   "s": "clips/el-ayudo-704d-s.mp3"
- },
- "ayudó": {
-  "n": "clips/ayudo-1jjs-n.mp3",
-  "s": "clips/ayudo-1jjs-s.mp3"
  },
  "vosotros ayudasteis": {
   "n": "clips/vosotros-ayudasteis-lvab-n.mp3",
@@ -12483,10 +12267,6 @@
   "n": "clips/yo-escucho-s3jg-n.mp3",
   "s": "clips/yo-escucho-s3jg-s.mp3"
  },
- "escucho": {
-  "n": "clips/escucho-1atg-n.mp3",
-  "s": "clips/escucho-1atg-s.mp3"
- },
  "tú escuchas": {
   "n": "clips/tu-escuchas-1yod-n.mp3",
   "s": "clips/tu-escuchas-1yod-s.mp3"
@@ -12546,10 +12326,6 @@
  "él escuchó": {
   "n": "clips/el-escucho-11wf-n.mp3",
   "s": "clips/el-escucho-11wf-s.mp3"
- },
- "escuchó": {
-  "n": "clips/escucho-1atg-n.mp3",
-  "s": "clips/escucho-1atg-s.mp3"
  },
  "vosotros escuchasteis": {
   "n": "clips/vosotros-escuchasteis-15th-n.mp3",
@@ -13019,10 +12795,6 @@
   "n": "clips/yo-levanto-1hgo-n.mp3",
   "s": "clips/yo-levanto-1hgo-s.mp3"
  },
- "levanto": {
-  "n": "clips/levanto-15h8-n.mp3",
-  "s": "clips/levanto-15h8-s.mp3"
- },
  "tú levantas": {
   "n": "clips/tu-levantas-4m5a-n.mp3",
   "s": "clips/tu-levantas-4m5a-s.mp3"
@@ -13082,10 +12854,6 @@
  "él levantó": {
   "n": "clips/el-levanto-1r9k-n.mp3",
   "s": "clips/el-levanto-1r9k-s.mp3"
- },
- "levantó": {
-  "n": "clips/levanto-15h8-n.mp3",
-  "s": "clips/levanto-15h8-s.mp3"
  },
  "vosotros levantasteis": {
   "n": "clips/vosotros-levantasteis-afzy-n.mp3",
@@ -13151,10 +12919,6 @@
   "n": "clips/yo-intento-dnux-n.mp3",
   "s": "clips/yo-intento-dnux-s.mp3"
  },
- "intento": {
-  "n": "clips/intento-wds0-n.mp3",
-  "s": "clips/intento-wds0-s.mp3"
- },
  "tú intentas": {
   "n": "clips/tu-intentas-1dcy-n.mp3",
   "s": "clips/tu-intentas-1dcy-s.mp3"
@@ -13214,10 +12978,6 @@
  "él intentó": {
   "n": "clips/el-intento-ngqz-n.mp3",
   "s": "clips/el-intento-ngqz-s.mp3"
- },
- "intentó": {
-  "n": "clips/intento-wds0-n.mp3",
-  "s": "clips/intento-wds0-s.mp3"
  },
  "vosotros intentasteis": {
   "n": "clips/vosotros-intentasteis-1dox-n.mp3",
@@ -13410,5 +13170,245 @@
  "decidían": {
   "n": "clips/decidian-9cmg-n.mp3",
   "s": "clips/decidian-9cmg-s.mp3"
+ },
+ "llego": {
+  "s": "clips/llego-1pcw3x-s.mp3",
+  "n": "clips/llego-1pcw3x-n.mp3"
+ },
+ "llegó": {
+  "n": "clips/llego-1pcw7l-n.mp3",
+  "s": "clips/llego-1pcw7l-s.mp3"
+ },
+ "quedo": {
+  "s": "clips/quedo-1s9lvw-s.mp3",
+  "n": "clips/quedo-1s9lvw-n.mp3"
+ },
+ "quedó": {
+  "n": "clips/quedo-1s9lzk-n.mp3",
+  "s": "clips/quedo-1s9lzk-s.mp3"
+ },
+ "hablo": {
+  "n": "clips/hablo-1mymrw-n.mp3",
+  "s": "clips/hablo-1mymrw-s.mp3"
+ },
+ "habló": {
+  "n": "clips/hablo-1mymvk-n.mp3",
+  "s": "clips/hablo-1mymvk-s.mp3"
+ },
+ "llevo": {
+  "s": "clips/llevo-1pcwgu-s.mp3",
+  "n": "clips/llevo-1pcwgu-n.mp3"
+ },
+ "llevó": {
+  "n": "clips/llevo-1pcwki-n.mp3",
+  "s": "clips/llevo-1pcwki-s.mp3"
+ },
+ "llamo": {
+  "n": "clips/llamo-1pctab-n.mp3",
+  "s": "clips/llamo-1pctab-s.mp3"
+ },
+ "llamó": {
+  "n": "clips/llamo-1pctdz-n.mp3",
+  "s": "clips/llamo-1pctdz-s.mp3"
+ },
+ "trato": {
+  "n": "clips/trato-1tv04e-n.mp3",
+  "s": "clips/trato-1tv04e-s.mp3"
+ },
+ "trató": {
+  "n": "clips/trato-1tv082-n.mp3",
+  "s": "clips/trato-1tv082-s.mp3"
+ },
+ "espero": {
+  "n": "clips/espero-1dmtuao-n.mp3",
+  "s": "clips/espero-1dmtuao-s.mp3"
+ },
+ "esperó": {
+  "n": "clips/espero-1dmtuec-n.mp3",
+  "s": "clips/espero-1dmtuec-s.mp3"
+ },
+ "busco": {
+  "n": "clips/busco-1k0zcc-n.mp3",
+  "s": "clips/busco-1k0zcc-s.mp3"
+ },
+ "buscó": {
+  "n": "clips/busco-1k0zg0-n.mp3",
+  "s": "clips/busco-1k0zg0-s.mp3"
+ },
+ "entro": {
+  "n": "clips/entro-1ljxbc-n.mp3",
+  "s": "clips/entro-1ljxbc-s.mp3"
+ },
+ "entró": {
+  "s": "clips/entro-1ljxf0-s.mp3",
+  "n": "clips/entro-1ljxf0-n.mp3"
+ },
+ "trabajo": {
+  "n": "clips/trabajo-1hdl887-n.mp3",
+  "s": "clips/trabajo-1hdl887-s.mp3"
+ },
+ "trabajó": {
+  "n": "clips/trabajo-1hdl8bv-n.mp3",
+  "s": "clips/trabajo-1hdl8bv-s.mp3"
+ },
+ "termino": {
+  "n": "clips/termino-1bhju2m-n.mp3",
+  "s": "clips/termino-1bhju2m-s.mp3"
+ },
+ "terminó": {
+  "n": "clips/termino-1bhju6a-n.mp3",
+  "s": "clips/termino-1bhju6a-s.mp3"
+ },
+ "necesito": {
+  "n": "clips/necesito-deeo16-n.mp3",
+  "s": "clips/necesito-deeo16-s.mp3"
+ },
+ "necesitó": {
+  "n": "clips/necesito-deeo4u-n.mp3",
+  "s": "clips/necesito-deeo4u-s.mp3"
+ },
+ "resulto": {
+  "n": "clips/resulto-i5g8he-n.mp3",
+  "s": "clips/resulto-i5g8he-s.mp3"
+ },
+ "resultó": {
+  "n": "clips/resulto-i5g8l2-n.mp3",
+  "s": "clips/resulto-i5g8l2-s.mp3"
+ },
+ "cambio": {
+  "n": "clips/cambio-1cesbfd-n.mp3",
+  "s": "clips/cambio-1cesbfd-s.mp3"
+ },
+ "cambió": {
+  "n": "clips/cambio-1cesbj1-n.mp3",
+  "s": "clips/cambio-1cesbj1-s.mp3"
+ },
+ "presento": {
+  "n": "clips/presento-1dx0o44-n.mp3",
+  "s": "clips/presento-1dx0o44-s.mp3"
+ },
+ "presentó": {
+  "n": "clips/presento-1dx0o7s-n.mp3",
+  "s": "clips/presento-1dx0o7s-s.mp3"
+ },
+ "considero": {
+  "n": "clips/considero-1rvp6ty-n.mp3",
+  "s": "clips/considero-1rvp6ty-s.mp3"
+ },
+ "consideró": {
+  "n": "clips/considero-1rvp6xm-n.mp3",
+  "s": "clips/considero-1rvp6xm-s.mp3"
+ },
+ "acabo": {
+  "n": "clips/acabo-1j5bm4-n.mp3",
+  "s": "clips/acabo-1j5bm4-s.mp3"
+ },
+ "acabó": {
+  "n": "clips/acabo-1j5bps-n.mp3",
+  "s": "clips/acabo-1j5bps-s.mp3"
+ },
+ "formo": {
+  "n": "clips/formo-1m4baj-n.mp3",
+  "s": "clips/formo-1m4baj-s.mp3"
+ },
+ "formó": {
+  "n": "clips/formo-1m4be7-n.mp3",
+  "s": "clips/formo-1m4be7-s.mp3"
+ },
+ "acepto": {
+  "n": "clips/acepto-1bhnuko-n.mp3",
+  "s": "clips/acepto-1bhnuko-s.mp3"
+ },
+ "aceptó": {
+  "n": "clips/acepto-1bhnuoc-n.mp3",
+  "s": "clips/acepto-1bhnuoc-s.mp3"
+ },
+ "realizo": {
+  "n": "clips/realizo-hve4u8-n.mp3",
+  "s": "clips/realizo-hve4u8-s.mp3"
+ },
+ "realizó": {
+  "n": "clips/realizo-hve4xw-n.mp3",
+  "s": "clips/realizo-hve4xw-s.mp3"
+ },
+ "logro": {
+  "n": "clips/logro-1peutd-n.mp3",
+  "s": "clips/logro-1peutd-s.mp3"
+ },
+ "logró": {
+  "n": "clips/logro-1peux1-n.mp3",
+  "s": "clips/logro-1peux1-s.mp3"
+ },
+ "explico": {
+  "s": "clips/explico-1ddobpi-s.mp3",
+  "n": "clips/explico-1ddobpi-n.mp3"
+ },
+ "explicó": {
+  "n": "clips/explico-1ddobt6-n.mp3",
+  "s": "clips/explico-1ddobt6-s.mp3"
+ },
+ "pregunto": {
+  "n": "clips/pregunto-1dqpcs8-n.mp3",
+  "s": "clips/pregunto-1dqpcs8-s.mp3"
+ },
+ "preguntó": {
+  "n": "clips/pregunto-1dqpcvw-n.mp3",
+  "s": "clips/pregunto-1dqpcvw-s.mp3"
+ },
+ "estudio": {
+  "s": "clips/estudio-1b2t1ff-s.mp3",
+  "n": "clips/estudio-1b2t1ff-n.mp3"
+ },
+ "estudió": {
+  "n": "clips/estudio-1b2t1j3-n.mp3",
+  "s": "clips/estudio-1b2t1j3-s.mp3"
+ },
+ "alcanzo": {
+  "n": "clips/alcanzo-1jtbjqy-n.mp3",
+  "s": "clips/alcanzo-1jtbjqy-s.mp3"
+ },
+ "alcanzó": {
+  "n": "clips/alcanzo-1jtbjum-n.mp3",
+  "s": "clips/alcanzo-1jtbjum-s.mp3"
+ },
+ "utilizo": {
+  "n": "clips/utilizo-1x4no64-n.mp3",
+  "s": "clips/utilizo-1x4no64-s.mp3"
+ },
+ "utilizó": {
+  "n": "clips/utilizo-1x4no9s-n.mp3",
+  "s": "clips/utilizo-1x4no9s-s.mp3"
+ },
+ "ayudo": {
+  "n": "clips/ayudo-1jjs7c-n.mp3",
+  "s": "clips/ayudo-1jjs7c-s.mp3"
+ },
+ "ayudó": {
+  "n": "clips/ayudo-1jjsb0-n.mp3",
+  "s": "clips/ayudo-1jjsb0-s.mp3"
+ },
+ "escucho": {
+  "n": "clips/escucho-1atgikq-n.mp3",
+  "s": "clips/escucho-1atgikq-s.mp3"
+ },
+ "escuchó": {
+  "n": "clips/escucho-1atgioe-n.mp3",
+  "s": "clips/escucho-1atgioe-s.mp3"
+ },
+ "levanto": {
+  "n": "clips/levanto-15h8n9-n.mp3",
+  "s": "clips/levanto-15h8n9-s.mp3"
+ },
+ "levantó": {
+  "n": "clips/levanto-15h8qx-n.mp3",
+  "s": "clips/levanto-15h8qx-s.mp3"
+ },
+ "intento": {
+  "n": "clips/intento-wds09f-n.mp3",
+  "s": "clips/intento-wds09f-s.mp3"
+ },
+ "intentó": {
+  "n": "clips/intento-wds0d3-n.mp3",
+  "s": "clips/intento-wds0d3-s.mp3"
  }
 }

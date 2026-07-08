@@ -39,7 +39,7 @@ test("audio manifest: full dataset coverage, no dead entries", () => {
   }
 });
 
-test("audio manifest: no two texts share the same clip file", { todo: "regenerate clips: node tools/generate-audio.mjs --sets all" }, () => {
+test("audio manifest: no two texts share the same clip file", () => {
   const manifest = JSON.parse(readFileSync(join(ROOT, "audio/manifest.json"), "utf8"));
   const byFile = {};
   for (const [text, variants] of Object.entries(manifest)) {
