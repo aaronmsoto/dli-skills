@@ -1,4 +1,4 @@
-# CLAUDE.md — agent/contributor guide for Conjuga (dli-skills-builder)
+# CLAUDE.md — agent/contributor guide for Conjuga (dli-skills)
 
 ## What this is
 
@@ -143,8 +143,8 @@ never become an app dependency.
   test-gated, but run `npm test` before pushing anyway — a red test suite
   blocks the Pages publish, leaving production on the previous version.
 - Keep changes deployable: `main` should always represent the live site.
-- All asset URLs must remain relative (the app is served from
-  /dli-skills-builder/, not the domain root).
+- All asset URLs must remain relative (the app is served from the domain
+  root at dliskills.com via GitHub Pages custom domain).
 
 ## Semi-autonomous loops
 
