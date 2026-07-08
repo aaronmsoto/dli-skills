@@ -652,6 +652,46 @@ if (afterStore !== beforeStore) fail("practica: must not record any progress (st
 ok("practica: full table rebuild, corrective retry, celebration, nothing recorded");
 await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
+// ---------- 🪟 M9 F1-F3: footer on every screen, standards links, credits ----------
+{
+  const ROUTES = ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present",
+    "#/play/1/present/choice", "#/play/1/present/type", "#/play/1/present/match",
+    "#/play/1/contrast", "#/informe"];
+  for (const r of ROUTES) {
+    await page.goto(`${BASE}/${r}`);
+    await page.reload();
+    await page.waitForSelector(".site-footer", { timeout: 4000 }).catch(() => fail(`footer: missing on ${r}`));
+    const credits = await page.locator(".footer-credits").innerText().catch(() => "");
+    if (!credits.includes("Lucia Perales, EdD") || !credits.includes("Aaron Soto, MHCID"))
+      fail(`footer: creator credits missing on ${r}`);
+    if (!credits.includes("“A1”") || !credits.includes("“A2”")) fail(`footer: consultant credits missing on ${r}`);
+    if ((await page.locator(".footer-std").count()) !== 2) fail(`footer: expected 2 standards links on ${r}`);
+  }
+  const hrefs = await page.locator(".footer-std").evaluateAll((as) => as.map((a) => [a.href, a.rel]));
+  if (!hrefs.some(([h]) => h.includes("nj.gov/education/standards/worldlang"))) fail("footer: NJSLS-WL link missing");
+  if (!hrefs.some(([h]) => h.includes("nbpts.org") && h.includes("ECYA-WL"))) fail("footer: NBPTS ECYA-WL link missing");
+  if (hrefs.some(([, rel]) => !rel.includes("noopener"))) fail("footer: standards links need rel=noopener");
+  // results screen gets the footer too
+  await page.goto(`${BASE}/#/play/1/present/match`);
+  await page.reload();
+  await page.waitForSelector(".match-card");
+  await page.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    for (const l of document.querySelectorAll(".match-col.left .match-card")) {
+      const [personLabel, inf] = l.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+      l.click();
+      [...document.querySelectorAll(".match-col.right .match-card")].find((x) => x.textContent === form && !x.disabled).click();
+      await new Promise((res) => setTimeout(res, 30));
+    }
+  });
+  await page.waitForSelector(".results");
+  if (!(await page.locator(".site-footer").count())) fail("footer: missing on results screen");
+  ok("footer: every screen carries controls, standards links (noopener), and credits");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();

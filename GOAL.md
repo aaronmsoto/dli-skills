@@ -231,16 +231,16 @@ queue in this order regardless of milestone numbering below.
   are **bilingual, adult-focused** (one short Spanish-first line a learner
   can read, then concise English standards mapping with citations).
   Acceptance criteria, in order:
-  - [ ] **F1 (footer everywhere):** `renderFooter()` becomes a shared
+  - [x] **F1 (footer everywhere):** `renderFooter()` becomes a shared
         component rendered on EVERY screen (home, group, Estudia, Elige,
         Escribe, Empareja, 🎧 Escucha, ⚔️ Contrast, informe) — today it
         renders only on home. Same toggles/links everywhere; footer keeps
         `.no-print`.
-  - [ ] **F2 (standards links):** the footer links to the official NBPTS
+  - [x] **F2 (standards links):** the footer links to the official NBPTS
         ECYA-WL standards document and the official 2020 NJSLS-WL document
         (external links, `rel="noopener"`); about.html and docs/STANDARDS.md
         use the same canonical URLs.
-  - [ ] **F3 (credits):** two lines at the bottom of the footer, exactly:
+  - [x] **F3 (credits):** two lines at the bottom of the footer, exactly:
         `Created by Lucia Perales, EdD (wife/mother/educator) and Aaron
         Soto, MHCID (husband/father/technologist)` `<br />` `DLI K-5
         Graduate “A1” (daughter/consultant) and DLI 3rd Grader “A2”
