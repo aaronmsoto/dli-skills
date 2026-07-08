@@ -87,8 +87,9 @@ numbering — sets loop priority.
 - [ ] **M5 — Polish pass (reduced 2026-07-07: accessibility-audit items
   moved into M10's formal WCAG/heuristic work — only what M10 does NOT
   cover remains here; loop items complete 2026-07-08, awaiting SME item)**
-  - [x] Performance budget check: <120 KB raw (raised from 100 KB by owner
-        decision 2026-07-07; further raises are owner-only), enforced by
+  - [x] Performance budget check: <100 KB GZIPPED (owner decision
+        2026-07-08, replacing the earlier 100→120 KB raw budgets; ~37 KB
+        at changeover; changes are owner-only), enforced by
         tests/payload.test.mjs on every CI run.
   - [x] Printable study-sheet layout tune-up (2026-07-08): print-only
         Grupo/Nombre/Fecha header on study sheets, @page margins,
@@ -129,7 +130,7 @@ numbering — sets loop priority.
   - [x] **V (validation):** e2e coverage — mascot states assert on
         correct/incorrect/completion; reduced-motion emulation shows static
         poses; mobile (360×640) and dark-mode screenshots; payload check
-        stays under the payload budget (100 KB then; 120 KB since 2026-07-07).
+        stays under the payload budget (raw then; 100 KB gzipped since 2026-07-08).
   - [x] **RT (regression):** full unit + e2e suites green with zero
         weakened assertions; answer-flow timing unchanged (existing e2e
         timings still pass); localStorage schema untouched; print styles

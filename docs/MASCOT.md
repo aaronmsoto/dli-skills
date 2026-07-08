@@ -54,7 +54,7 @@ visual imitation.
 
 - Static site, **zero dependencies**: mascot = inline SVG + CSS animations
   (no Lottie, no GIFs, no sprite sheets from CDNs). Budget: ≤ 15 KB for all
-  mascot SVG/CSS, total app payload stays < 120 KB (owner-raised 2026-07-07).
+  mascot SVG/CSS, total app payload stays < 100 KB gzipped (owner, 2026-07-08).
 - **Mobile-first**: designed at 360×640 first; touch targets unaffected;
   the mascot never overlaps interactive controls or the feedback area.
 - **Accessibility**: `aria-hidden="true"` on the mascot (purely decorative —
@@ -208,7 +208,7 @@ screen) is noted as a future idea, explicitly OUT of M6 scope.
 - All motion in styles.css under a `/* -------- lola -------- */` section
   guarded by `@media (prefers-reduced-motion: reduce)` overrides.
 - Root carries `aria-hidden="true"`; no semantics, ever.
-- Budget: mascot JS+CSS+SVG ≤ 15 KB; app total stays < 120 KB (owner-raised 2026-07-07).
+- Budget: mascot JS+CSS+SVG ≤ 15 KB; app total stays < 100 KB gzipped (owner, 2026-07-08).
 - Print: `.lola` display:none inside `@media print`.
 - e2e hooks: state classes are the observable contract (asserted in
   tests/e2e/smoke.mjs).
