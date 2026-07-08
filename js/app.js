@@ -12,7 +12,7 @@ import { SETS } from "./verbs.js";
 import { conjugate, PERSONS, TENSES, TENSE_LABELS, normalizeAnswer, stripAccents } from "./conjugator.js";
 import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
 import * as store from "./storage.js";
-import { speak, ttsAvailable } from "./audio.js";
+import { speak, ttsAvailable, audioAvailable, initClips } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
 import { STANDARDS_INFO } from "./standards-info.js";
 
@@ -44,7 +44,7 @@ const SPEECH_PERSONS = ["yo", "tú", "él", "nosotros", "vosotros", "ellos"];
 
 /** Speak Spanish if audio is on and the device has a Spanish voice. */
 function say(text) {
-  if (ttsAvailable() && store.getSettings().sound) speak(text);
+  if (audioAvailable() && store.getSettings().sound) speak(text);
 }
 
 function sayForm(person, form) {
@@ -138,7 +138,7 @@ function menuButton() {
 
 /** 🔊/🔇 toggle — hidden entirely on devices with no Spanish voice. */
 function soundToggle() {
-  if (!ttsAvailable()) return null;
+  if (!audioAvailable()) return null;
   const on = store.getSettings().sound;
   return el("button", {
     class: "sound-toggle",
@@ -215,7 +215,7 @@ function makeHint(verb, tenses, lola) {
             const form = conjugate(verb, tn)[pp];
             return el("tr", {},
               el("th", { scope: "row" }, personDisplay(pp)),
-              el("td", {}, ttsAvailable()
+              el("td", {}, audioAvailable()
                 // same tap-to-hear affordance as the Estudia table
                 ? el("button", { class: "cell-speak", onclick: () => sayForm(pp, form) }, form)
                 : form));
@@ -497,7 +497,7 @@ function renderSet(setId) {
         );
       }),
       // Escucha exists only where a Spanish voice does; badges, not stars.
-      ttsAvailable()
+      audioAvailable()
         ? el("a", { class: "mode-card listen-card", href: `#/play/${set.id}/${tense}/${LISTEN}` },
           el("span", { class: "mode-icon" }, LISTEN_META.icon),
           el("strong", {}, LISTEN_META.es),
@@ -526,7 +526,7 @@ function renderStudy(setId, tense) {
   const { vosotros } = store.getSettings();
   const persons = [0, 1, 2, 3, 4, 5].filter((p) => vosotros || p !== 4);
 
-  const speakable = ttsAvailable();
+  const speakable = audioAvailable();
 
   mount(
     el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), infoButton("study"), soundToggle(), menuButton()),
@@ -566,7 +566,7 @@ function renderStudy(setId, tense) {
       MODES.map((m) => el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/${m}` },
         `${MODE_META[m].icon} ${MODE_META[m].es}`)),
       // every current activity is reachable from Estudia (M7 owner add-on)
-      ttsAvailable()
+      audioAvailable()
         ? el("a", { class: "btn primary listen-link", href: `#/play/${setId}/${tense}/${LISTEN}` },
           `${LISTEN_META.icon} ${LISTEN_META.es}`)
         : null,
@@ -592,7 +592,7 @@ function renderPractica(setId, tense) {
   const set = SETS[setId - 1];
   const { vosotros } = store.getSettings();
   const persons = [0, 1, 2, 3, 4, 5].filter((p) => vosotros || p !== 4);
-  const speakable = ttsAvailable();
+  const speakable = audioAvailable();
   const lola = createLola(52);
   const state = { verbIdx: 0, selected: null, remaining: 0 };
 
@@ -718,7 +718,7 @@ function renderPlay(setId, tense, mode) {
   const { vosotros } = store.getSettings();
 
   if (mode === "match") return renderMatch(set, tense, vosotros);
-  if (mode === LISTEN && !ttsAvailable()) {
+  if (mode === LISTEN && !audioAvailable()) {
     // shared/bookmarked link on a voiceless device — send to the group screen
     go(`#/set/${setId}`);
     return;
@@ -1200,4 +1200,5 @@ function showResults(set, tense, mode, score, total, misses) {
   announce(`Resultados: ${score} de ${total}`);
 }
 
-render();
+// boot: learn whether clips exist, then paint (offline → instant fallback)
+initClips().finally(render);

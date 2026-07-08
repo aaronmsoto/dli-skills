@@ -197,7 +197,7 @@ a { color: var(--brand); }
 }
 
 /* -------- set screen -------- */
-.crumbs { display: flex; gap: 16px; margin: 4px 0 8px; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 4px 0 8px; }
 .verb-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 8px 0; }
 .chip {
   background: var(--card); border-radius: 999px; padding: 7px 14px;
