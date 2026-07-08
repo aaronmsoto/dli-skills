@@ -80,17 +80,17 @@ const SAMPLES = [
   "Hola", // the 🔊 toggle's unmute greeting
 ];
 
-// ---- filenames: diacritic-stripped slug + short hash (hablo vs habló) ----
+// ---- filenames: diacritic-stripped slug + hash (hablo vs habló) ----
 function slug(text) {
   return text.normalize("NFD").replace(/[̀-ͯ]/g, "")
     .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
-function hash4(text) {
+function hashTag(text) {
   let h = 0;
   for (const c of text) h = (h * 31 + c.codePointAt(0)) >>> 0;
-  return h.toString(36).slice(0, 4).padStart(4, "0");
+  return h.toString(36);
 }
-const fileFor = (text, v) => `clips/${slug(text)}-${hash4(text)}-${v}.mp3`;
+const fileFor = (text, v) => `clips/${slug(text)}-${hashTag(text)}-${v}.mp3`;
 
 // ---- generation ----
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

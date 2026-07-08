@@ -335,10 +335,17 @@ await voiced.addInitScript(() => {
       getVoices: () => [fakeVoice],
       addEventListener: () => {},
       cancel: () => {},
-      speak: (u) => window.__spoken.push({ text: u.text, rate: u.rate }),
+      speak: (u) => {
+        window.__spoken.push({ text: u.text, rate: u.rate });
+        setTimeout(() => u._cbs?.end?.(), 0);
+      },
     },
   });
-  window.SpeechSynthesisUtterance = function (text) { this.text = text; };
+  window.SpeechSynthesisUtterance = function (text) {
+    this.text = text;
+    this._cbs = {};
+    this.addEventListener = (ev, fn) => { this._cbs[ev] = fn; };
+  };
 });
 await voiced.goto(`${BASE}/#/study/1/present`);
 await voiced.waitForSelector(".cell-speak");
@@ -998,8 +1005,9 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await clips.addInitScript(() => {
     window.__played = [];
     class FakeAudio {
-      constructor(src) { this.src = src; this.playbackRate = 1; this.preservesPitch = false; }
-      play() { window.__played.push({ src: this.src, rate: this.playbackRate }); return Promise.resolve(); }
+      constructor(src) { this.src = src; this.playbackRate = 1; this.preservesPitch = false; this._cbs = {}; }
+      addEventListener(ev, fn) { this._cbs[ev] = fn; }
+      play() { window.__played.push({ src: this.src, rate: this.playbackRate }); setTimeout(() => this._cbs?.ended?.(), 0); return Promise.resolve(); }
       pause() {}
     }
     Object.defineProperty(window, "Audio", { configurable: true, value: FakeAudio });
