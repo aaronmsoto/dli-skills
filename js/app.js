@@ -21,9 +21,8 @@ const MODES = ["choice", "type", "match"];
 // star denominator, sampling, or next-mode logic ever counts it.
 const LISTEN = "listen";
 const LISTEN_META = { icon: "🎧", es: "Escucha", en: "Listen & pick" };
-// Práctica is UNSCORED by owner decision (M8): no stars, no badges, no
-// recordResult — a pressure-free bridge between Estudia and the quizzes.
-// 🧱, not 🧩: Empareja already owns 🧩 and icons must stay distinct.
+// Práctica is UNSCORED by owner decision (M8): no stars/badges/recordResult.
+// Icon is 🧱 — Empareja owns 🧩 and icons stay distinct.
 const PRACTICA_META = { icon: "🧱", es: "Práctica", en: "Rebuild the table" };
 const MODE_META = {
   choice: { icon: "✅", es: "Elige", en: "Pick it" },
@@ -97,6 +96,44 @@ function infoButton(key) {
     },
   }, "ℹ️");
   return btn;
+}
+
+/**
+ * ☰ site menu (M11): top-right disclosure with the main pages — global nav
+ * collapses here because contextual back-nav lives top-left in the crumbs.
+ */
+function menuButton() {
+  let open = false;
+  const panel = el("nav", { class: "menu-panel", hidden: true, "aria-label": "Páginas principales / Site menu" },
+    el("a", { class: "menu-link", href: "#/" }, "🏠 Inicio / Home"),
+    el("a", { class: "menu-link", href: "#/informe" }, "📄 Informe de progreso"),
+    el("a", { class: "menu-link", href: "about.html" }, "🦉 Acerca de / Standards"),
+    el("a", { class: "menu-link", href: "docs/" }, "📚 Documentación / Docs"));
+  const onDoc = (e) => { if (!wrap.contains(e.target)) close(); };
+  const onKey = (e) => { if (e.key === "Escape") { close(); btn.focus(); } };
+  const close = () => {
+    if (!open) return;
+    open = false;
+    panel.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+    document.removeEventListener("click", onDoc);
+    document.removeEventListener("keydown", onKey);
+  };
+  const btn = el("button", {
+    class: "menu-btn", type: "button",
+    "aria-expanded": "false", "aria-label": "Menú del sitio / Site menu",
+    onclick: () => {
+      if (open) return close();
+      open = true;
+      panel.hidden = false;
+      btn.setAttribute("aria-expanded", "true");
+      setTimeout(() => document.addEventListener("click", onDoc), 0); // skip the opening click
+      document.addEventListener("keydown", onKey);
+      panel.querySelector("a").focus();
+    },
+  }, "☰");
+  const wrap = el("span", { class: "menu-wrap no-print" }, btn, panel);
+  return wrap;
 }
 
 /** 🔊/🔇 toggle — hidden entirely on devices with no Spanish voice. */
@@ -316,6 +353,7 @@ function renderHome() {
     el("header", { class: "hero" },
       infoButton("home"),
       soundToggle(),
+      menuButton(),
       el("h1", { class: "home-title" }, createLola(76).el, "Conjuga"),
       el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
@@ -349,10 +387,8 @@ function renderHome() {
 
 function renderFooter() {
   const settings = store.getSettings();
-  // NN-1 fix (owner decision 2026-07-08, option b): on a screen with an
-  // active round, a toggle saves the setting but does NOT re-render —
-  // re-rendering would silently restart the round. The setting applies as
-  // play continues (hints: next question; vosotros: next round/table).
+  // NN-1 (option b): mid-round, toggles save WITHOUT re-rendering — a
+  // re-render would silently restart the round; applies as play continues.
   const inRound = ["play", "contrast", "practica"].includes(parseRoute().screen);
   const applied = el("p", { class: "footer-applied", role: "status", hidden: true },
     "✓ Guardado — se aplica al continuar. Saved — applies as you continue.");
@@ -389,14 +425,16 @@ function renderFooter() {
       }, "Borrar progreso"),
       el("a", { class: "linklike", href: "#/informe" }, "📄 Informe de progreso"),
       el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
+      el("a", { class: "linklike footer-docs", href: "docs/" }, "📚 Documentación / Docs"),
     ),
     el("p", { class: "footer-note" },
       "Gratis y sin registro · Free, no login · Aligned to ",
-      el("a", { class: "footer-std", href: "https://www.nj.gov/education/standards/worldlang/", target: "_blank", rel: "noopener" },
-        "NJSLS-WL (2020)"),
-      " & ",
+      // NBPTS first — the foundational teaching standards (owner, 2026-07-08)
       el("a", { class: "footer-std", href: "https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf", target: "_blank", rel: "noopener" },
         "NBPTS ECYA-WL"),
+      " & ",
+      el("a", { class: "footer-std", href: "https://www.nj.gov/education/standards/worldlang/", target: "_blank", rel: "noopener" },
+        "NJSLS-WL (2020)"),
       " standards"),
     // owner-specified credits (M9 F3); kids appear ONLY as pseudonyms
     el("p", { class: "footer-credits", lang: "en" },
@@ -415,7 +453,7 @@ function renderSet(setId) {
   const contrastBest = store.getBest(set.id, CONTRAST_KEY.tense, CONTRAST_KEY.mode);
 
   mount(
-    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), infoButton("set"), soundToggle()),
+    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), infoButton("set"), soundToggle(), menuButton()),
     el("h1", {}, `Grupo ${set.id}`),
     el("ul", { class: "verb-chips" },
       set.verbs.map((v) => el("li", { class: "chip" },
@@ -491,7 +529,7 @@ function renderStudy(setId, tense) {
   const speakable = ttsAvailable();
 
   mount(
-    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), infoButton("study"), soundToggle()),
+    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), infoButton("study"), soundToggle(), menuButton()),
     el("h1", {}, `📖 Estudia — ${TENSE_LABELS[tense].es}`),
     // classroom print header: appears only on the printed study sheet
     el("p", { class: "print-fields print-only" },
@@ -576,7 +614,7 @@ function renderPractica(setId, tense) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
-      infoButton("practica"), soundToggle()),
+      infoButton("practica"), soundToggle(), menuButton()),
     el("h1", { class: "match-title" }, lola.el, `${PRACTICA_META.icon} Práctica — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "match-help" },
       "Reconstruye la tabla palabra por palabra. Rebuild the table word by word — no stars, just practice."),
@@ -696,7 +734,7 @@ function renderPlay(setId, tense, mode) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
-      infoButton(mode), soundToggle()),
+      infoButton(mode), soundToggle(), menuButton()),
     el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
     renderFooter(),
@@ -881,7 +919,7 @@ function renderMatch(set, tense, vosotros) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${set.id}` }, "← Salir"),
       el("a", { href: `#/study/${set.id}/${tense}` }, "📖 Estudia"),
-      infoButton("match"), soundToggle()),
+      infoButton("match"), soundToggle(), menuButton()),
     el("h1", { class: "match-title" }, lola.el, `🧩 Empareja — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
     board, feedback,
@@ -964,7 +1002,7 @@ function renderContrast(setId) {
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/preterite` }, "📖 Pretérito"),
       el("a", { href: `#/study/${setId}/imperfect` }, "📖 Imperfecto"),
-      infoButton("contrast"), soundToggle()),
+      infoButton("contrast"), soundToggle(), menuButton()),
     el("h1", { class: "contrast-title" }, "⚔️ ¿Pretérito o imperfecto?"),
     el("p", { class: "match-help" },
       "La palabra del tiempo es la pista: ", el("strong", {}, "una vez ⭐"), " o ",
@@ -1076,7 +1114,7 @@ function renderReport() {
   const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
 
   mount(
-    el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver"), infoButton("report")),
+    el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver"), infoButton("report"), menuButton()),
     el("div", { class: "report" },
       el("h1", {}, "📄 Informe de progreso — Conjuga"),
       el("p", { class: "report-fields" },
