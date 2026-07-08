@@ -177,6 +177,16 @@ The first group with zero stars AND zero badges wears a "¡Empieza aquí! /
 Start here" ribbon on the home grid; it advances as groups are started
 and disappears when none are fresh.
 
+### 4.3k Site menu (☰, M11 — owner-directed 2026-07-08)
+A collapsed hamburger in the top-right of every screen's chrome (hero
+corner on home) opening a compact disclosure with the main pages: Inicio,
+Informe de progreso, Acerca de / Standards, Documentación (/docs). Kept
+deliberately unintrusive: contextual back-navigation stays top-left in
+the crumbs. Not a modal — links are normal tab stops; the first link is
+focused on open; Esc and click-outside close and focus returns to ☰.
+The footer also links /docs, and its standards links read NBPTS-first.
+Hidden in print.
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +

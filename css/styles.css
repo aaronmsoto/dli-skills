@@ -133,6 +133,31 @@ a { color: var(--brand); }
 }
 .skip-link:focus { top: 0; }
 
+/* -------- ☰ site menu (top-right, unintrusive; crumbs stay contextual) */
+.menu-wrap { position: relative; }
+.crumbs .menu-wrap { margin-left: 0; }
+.menu-btn {
+  font: inherit; font-size: 1.15rem; line-height: 1;
+  width: 46px; height: 46px;
+  border: none; border-radius: 50%; cursor: pointer;
+  background: var(--card); color: var(--ink); box-shadow: var(--shadow);
+}
+.menu-btn:hover, .menu-btn:focus-visible { background: var(--brand-soft); }
+.menu-panel {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 45;
+  min-width: 250px; padding: 8px;
+  display: flex; flex-direction: column; text-align: left;
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+}
+.menu-panel[hidden] { display: none; }
+.menu-link {
+  display: block; padding: 12px 14px; border-radius: 10px;
+  text-decoration: none; color: var(--ink); font-size: 1rem;
+}
+.menu-link:hover, .menu-link:focus-visible { background: var(--brand-soft); }
+.hero .menu-wrap { position: absolute; top: 4px; right: 4px; }
+
 /* -------- ℹ️ per-screen standards panel (M9) -------- */
 .info-btn {
   font: inherit; font-size: 1.1rem; line-height: 1;
@@ -383,7 +408,7 @@ a { color: var(--brand); }
 }
 .sound-toggle:hover, .sound-toggle:focus-visible { border-color: var(--brand); }
 .hero { position: relative; }
-.hero .sound-toggle { position: absolute; top: 4px; right: 4px; }
+.hero .sound-toggle { position: absolute; top: 4px; right: 56px; } /* hamburger owns the corner */
 
 /* -------- speakable study cells -------- */
 .cell-speak {

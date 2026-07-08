@@ -44,10 +44,12 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
    any star denominator is an owner decision, never a loop's.
 4. **Kids' privacy.** The owner's children appear ONLY as the pseudonyms
    "A1" and "A2" — never real names — anywhere in the repo or on the site.
-5. **Standard chrome.** Every screen gets the crumbs row + sound toggle;
-   `renderFooter()` is the single footer component and (per M9) belongs on
-   every screen. Public info pages (about.html, /docs) stay unlinked from
-   app navigation until the owner links them.
+5. **Standard chrome.** Every screen gets the crumbs row (contextual
+   back-nav, top-left) + ℹ️ info + sound toggle + the ☰ site menu
+   (top-right, unintrusive); `renderFooter()` is the single footer
+   component and belongs on every screen. about.html and /docs are linked
+   from the footer and ☰ menu (owner, 2026-07-08); any FUTURE public page
+   stays unlinked until the owner links it.
 6. **Work the GOAL.md queue.** The queue line at the top of GOAL.md's
    Milestones section — not milestone numbering — sets loop priority.
 
