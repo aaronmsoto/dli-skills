@@ -25,8 +25,8 @@ is grounded in NBPTS ECYA-WL and the 2020 NJSLS-WL (docs/STANDARDS.md).
 
 ## Milestones
 
-**Queue (owner-set, 2026-07-07): M9 (CURRENT) → M10.**
-M5's loop items done 2026-07-08 (SME copy review still open); M8 shipped
+**Queue (owner-set, 2026-07-07): M10 (CURRENT).**
+M9 complete on dev 2026-07-08; M5's loop items done 2026-07-08 (SME copy review still open); M8 shipped
 to dev 2026-07-07. M2 stays on hold (SME input); M4 is paused
 indefinitely. Loops work the
 queue in this order regardless of milestone numbering below.
@@ -223,7 +223,7 @@ queue in this order regardless of milestone numbering below.
         STANDARDS if pedagogy-affecting, README/about as needed); full
         regression green.
 
-- [ ] **M9 — 🪟 Transparency & attribution epic**
+- [x] **M9 — 🪟 Transparency & attribution epic** · complete on dev 2026-07-08
   Make the app's standards grounding visible IN the product, and give every
   page the same footer, credits, and a per-page "why this page" explainer.
   Owner decisions (2026-07-07): footer links to the two standards documents
@@ -246,7 +246,7 @@ queue in this order regardless of milestone numbering below.
         Graduate “A1” (daughter/consultant) and DLI 3rd Grader “A2”
         (son/consultant)`. Kids appear ONLY as the pseudonyms A1/A2 —
         never add real names (privacy invariant).
-  - [ ] **I1 (info panels):** an ℹ️ info icon on every screen opens an
+  - [x] **I1 (info panels):** an ℹ️ info icon on every screen opens an
         accessible pop-up/slide-out panel explaining how THAT page supports
         the standards: which NBPTS ECYA-WL standard(s) and NJSLS-WL
         indicator(s) the activity serves and how (e.g., Elige →
@@ -255,13 +255,13 @@ queue in this order regardless of milestone numbering below.
         Dialog semantics: focus moves in on open and returns on close,
         Esc + explicit close button, ≥44px targets, dark mode, static
         under reduced motion, hidden in print.
-  - [ ] **I2 (single source of truth):** panel copy lives in one data
+  - [x] **I2 (single source of truth):** panel copy lives in one data
         module (e.g., `js/standards-info.js`) keyed by screen; a unit test
         asserts every screen key has an entry with citations. The same
         mapping is added to docs/STANDARDS.md as a per-screen table and
         summarized on about.html — repo docs and in-app panels must not
         drift (mirror the mapping, cite the module).
-  - [ ] **V/RT:** e2e — footer (toggles, standards links, credits) present
+  - [x] **V/RT:** e2e — footer (toggles, standards links, credits) present
         on every route; info panel opens/closes on every screen with
         correct per-screen citations; payload budget test still green
         (keep panel copy lean); full unit + e2e regression, zero weakened

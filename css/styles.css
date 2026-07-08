@@ -112,6 +112,39 @@ a { color: var(--brand); }
 .footer-controls { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
 .footer-std { color: var(--brand); }
 .footer-credits { font-size: 0.8rem; opacity: 0.85; margin-top: 6px; }
+
+/* -------- ℹ️ per-screen standards panel (M9) -------- */
+.info-btn {
+  font: inherit; font-size: 1.1rem; line-height: 1;
+  width: 46px; height: 46px; margin-left: auto;
+  border: none; border-radius: 50%; cursor: pointer;
+  background: var(--card); color: var(--ink); box-shadow: var(--shadow);
+}
+.crumbs .info-btn + .sound-toggle { margin-left: 0; }
+.hero .info-btn { position: absolute; top: 4px; left: 4px; }
+.info-btn:hover, .info-btn:focus-visible { background: var(--brand-soft); }
+.info-overlay {
+  position: fixed; inset: 0; z-index: 40;
+  background: rgba(20, 24, 38, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+}
+.info-panel {
+  position: relative; max-width: 480px; width: 100%;
+  background: var(--card); color: var(--ink);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 20px 22px; text-align: left;
+}
+.info-close {
+  position: absolute; top: 8px; right: 8px;
+  font: inherit; width: 44px; height: 44px;
+  border: none; border-radius: 50%; cursor: pointer;
+  background: transparent; color: var(--ink);
+}
+.info-close:hover, .info-close:focus-visible { background: var(--brand-soft); }
+.info-kid { font-size: 1.1rem; font-weight: 600; margin: 0 24px 0.5em 0; }
+.info-en { color: var(--ink-soft); font-size: 0.95rem; }
+.info-cites { color: var(--brand); font-size: 0.85rem; }
+.info-more { color: var(--ink-soft); font-size: 0.85rem; margin-bottom: 0; }
 .toggle { cursor: pointer; }
 .linklike {
   background: none; border: none; padding: 0; cursor: pointer;
