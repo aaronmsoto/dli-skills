@@ -90,3 +90,23 @@ Claims we deliberately do **not** make: that the app teaches interpersonal
 communication (it has no two-way exchange), that it develops cultural
 competence (Std III is out of scope for v0.1), or that conjugation accuracy
 equals proficiency.
+
+## Per-screen standards panels (M9)
+
+Every screen carries an ℹ️ button opening a bilingual panel that explains
+how that page supports the standards. The copy lives in
+`js/standards-info.js` (the single source of truth — this table mirrors
+it; update both together, enforced by a unit test on the module's shape):
+
+| Screen | Kid line (es) | Standards mapping |
+|---|---|---|
+| Home | ¡Elige un grupo de verbos y empieza a practicar! | Small-set sequencing + visible progress — NBPTS Std IV |
+| Group | Primero el tiempo, después la actividad. | Meaning-before-form tense cards; recognition→production ladder — NBPTS Std IV, 7.1.NL.IPRET.1 |
+| Estudia | Mira la tabla y toca una palabra para escucharla. | Interpretive reading + listening of memorized words — 7.1.NL.IPRET.1, 7.1.NM.IPRET.1 |
+| 🧱 Práctica | Reconstruye la tabla palabra por palabra. | Active recall inside the chart's scaffold, unscored — NBPTS Std IV |
+| ✅ Elige | Lee y elige la forma correcta. | Interpretive recognition with informed distractors — 7.1.NL/NM.IPRET.1 |
+| ✏️ Escribe | Escribe la forma del verbo. | Presentational writing at word level — 7.1.NM.PRSNT.4, 7.1.NH.PRSNT.2 |
+| 🧩 Empareja | Une cada persona con su forma. | Recognition with visual support — 7.1.NL.IPRET.1 |
+| 🎧 Escucha | Escucha y elige lo que oyes. | Interpretive listening (badges, not stars) — 7.1.NM.IPRET.1 |
+| ⚔️ Contraste | La palabra del tiempo es tu pista. | Preterite/imperfect storytelling contrast — 7.1.NH.PRSNT.4 |
+| 📄 Informe | Tu progreso, listo para compartir. | Paper progress sharing, no data collection — NBPTS Std IV |

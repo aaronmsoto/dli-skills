@@ -14,6 +14,7 @@ import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildC
 import * as store from "./storage.js";
 import { speak, ttsAvailable } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
+import { STANDARDS_INFO } from "./standards-info.js";
 
 const MODES = ["choice", "type", "match"];
 // Escucha is a parallel track: badges, not stars — never in MODES, so no
@@ -49,6 +50,53 @@ function say(text) {
 
 function sayForm(person, form) {
   say(`${SPEECH_PERSONS[person]} ${form}`);
+}
+
+/**
+ * ℹ️ per-screen standards panel (M9 I1): a small dialog explaining how the
+ * current page supports the cited standards. Bilingual, adult-focused —
+ * one Spanish-first line for learners, concise English for adults.
+ * Content lives in js/standards-info.js (single source of truth).
+ */
+function infoButton(key) {
+  const info = STANDARDS_INFO[key];
+  if (!info) return null;
+  let overlay = null;
+  const onKey = (e) => {
+    if (e.key === "Escape") return close();
+    if (e.key === "Tab" && overlay) {
+      // the close button is the panel's only focusable — keep focus there
+      e.preventDefault();
+      overlay.querySelector(".info-close").focus();
+    }
+  };
+  const close = () => {
+    overlay?.remove();
+    overlay = null;
+    document.removeEventListener("keydown", onKey);
+    btn.setAttribute("aria-expanded", "false");
+    btn.focus();
+  };
+  const btn = el("button", {
+    class: "info-btn no-print", type: "button", "aria-expanded": "false",
+    "aria-label": "Cómo apoya esta página los estándares / How this page supports the standards",
+    onclick: () => {
+      if (overlay) return close();
+      overlay = el("div", { class: "info-overlay", onclick: (e) => { if (e.target === overlay) close(); } },
+        el("div", { class: "info-panel", role: "dialog", "aria-modal": "true", "aria-label": "Estándares de esta página" },
+          el("button", { class: "info-close", "aria-label": "Cerrar / Close", onclick: close }, "✕"),
+          el("p", { class: "info-kid" }, info.kid),
+          el("p", { class: "info-en" }, info.en),
+          el("p", { class: "info-cites" }, info.cites.join(" · ")),
+          el("p", { class: "info-more" }, "Más en el pie de página y en ",
+            el("a", { href: "about.html" }, "Acerca de / Standards"), ".")));
+      document.body.append(overlay);
+      btn.setAttribute("aria-expanded", "true");
+      overlay.querySelector(".info-close").focus();
+      document.addEventListener("keydown", onKey);
+    },
+  }, "ℹ️");
+  return btn;
 }
 
 /** 🔊/🔇 toggle — hidden entirely on devices with no Spanish voice. */
@@ -245,6 +293,7 @@ function renderHome() {
 
   mount(
     el("header", { class: "hero" },
+      infoButton("home"),
       soundToggle(),
       el("h1", { class: "home-title" }, createLola(76).el, "Conjuga"),
       el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
@@ -324,7 +373,7 @@ function renderSet(setId) {
   const contrastBest = store.getBest(set.id, CONTRAST_KEY.tense, CONTRAST_KEY.mode);
 
   mount(
-    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), soundToggle()),
+    el("nav", { class: "crumbs" }, el("a", { href: "#/" }, "← Todos los grupos"), infoButton("set"), soundToggle()),
     el("h1", {}, `Grupo ${set.id}`),
     el("ul", { class: "verb-chips" },
       set.verbs.map((v) => el("li", { class: "chip" },
@@ -400,7 +449,7 @@ function renderStudy(setId, tense) {
   const speakable = ttsAvailable();
 
   mount(
-    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), soundToggle()),
+    el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), infoButton("study"), soundToggle()),
     el("h1", {}, `📖 Estudia — ${TENSE_LABELS[tense].es}`),
     // classroom print header: appears only on the printed study sheet
     el("p", { class: "print-fields print-only" },
@@ -485,7 +534,7 @@ function renderPractica(setId, tense) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
-      soundToggle()),
+      infoButton("practica"), soundToggle()),
     el("h1", { class: "match-title" }, lola.el, `${PRACTICA_META.icon} Práctica — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "match-help" },
       "Reconstruye la tabla palabra por palabra. Rebuild the table word by word — no stars, just practice."),
@@ -605,7 +654,7 @@ function renderPlay(setId, tense, mode) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
-      soundToggle()),
+      infoButton(mode), soundToggle()),
     el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
     renderFooter(),
@@ -789,7 +838,7 @@ function renderMatch(set, tense, vosotros) {
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${set.id}` }, "← Salir"),
       el("a", { href: `#/study/${set.id}/${tense}` }, "📖 Estudia"),
-      soundToggle()),
+      infoButton("match"), soundToggle()),
     el("h1", { class: "match-title" }, lola.el, `🧩 Empareja — ${TENSE_LABELS[tense].es}`),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
     board, feedback,
@@ -872,7 +921,7 @@ function renderContrast(setId) {
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/preterite` }, "📖 Pretérito"),
       el("a", { href: `#/study/${setId}/imperfect` }, "📖 Imperfecto"),
-      soundToggle()),
+      infoButton("contrast"), soundToggle()),
     el("h1", { class: "contrast-title" }, "⚔️ ¿Pretérito o imperfecto?"),
     el("p", { class: "match-help" },
       "La palabra del tiempo es la pista: ", el("strong", {}, "una vez ⭐"), " o ",
@@ -983,7 +1032,7 @@ function renderReport() {
   const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
 
   mount(
-    el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver")),
+    el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver"), infoButton("report")),
     el("div", { class: "report" },
       el("h1", {}, "📄 Informe de progreso — Conjuga"),
       el("p", { class: "report-fields" },

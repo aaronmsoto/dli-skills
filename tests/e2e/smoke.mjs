@@ -692,6 +692,44 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("footer: every screen carries controls, standards links (noopener), and credits");
 }
 
+// ---------- ℹ️ M9 I1/I2: per-screen standards panels ----------
+{
+  const ROUTES = ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present",
+    "#/play/1/present/choice", "#/play/1/present/type", "#/play/1/present/match",
+    "#/play/1/contrast", "#/informe"];
+  for (const r of ROUTES) {
+    await page.goto(`${BASE}/${r}`);
+    await page.reload();
+    await page.waitForSelector(".info-btn", { timeout: 4000 }).catch(() => fail(`info: ℹ️ button missing on ${r}`));
+  }
+  // open on the study screen: dialog semantics, content, Esc closes, focus returns
+  await page.goto(`${BASE}/#/study/1/present`);
+  await page.reload();
+  await page.waitForSelector(".info-btn");
+  await page.locator(".info-btn").click();
+  await page.waitForSelector('.info-panel[role="dialog"]');
+  const kid = await page.locator(".info-kid").innerText();
+  if (!kid.includes("tabla")) fail(`info: study kid-line wrong — "${kid}"`);
+  const cites = await page.locator(".info-cites").innerText();
+  if (!/7\.1\./.test(cites)) fail(`info: study panel must cite NJSLS — "${cites}"`);
+  const focused = await page.evaluate(() => document.activeElement?.className);
+  if (focused !== "info-close") fail(`info: focus should land on close, got "${focused}"`);
+  await page.keyboard.press("Escape");
+  if (await page.locator(".info-panel").count()) fail("info: Esc must close the panel");
+  const focusBack = await page.evaluate(() => document.activeElement?.classList?.contains("info-btn"));
+  if (!focusBack) fail("info: focus must return to the ℹ️ button on close");
+  // per-screen content: the listen panel differs from the study panel
+  await page.goto(`${BASE}/#/play/1/present/choice`);
+  await page.reload();
+  await page.waitForSelector(".info-btn");
+  await page.locator(".info-btn").click();
+  const kidChoice = await page.locator(".info-kid").innerText();
+  if (kidChoice === kid) fail("info: panels must be per-screen, not shared copy");
+  await page.locator(".info-close").click();
+  if (await page.locator(".info-panel").count()) fail("info: ✕ must close the panel");
+  ok("info: ℹ️ on all screens; dialog focus/Esc behavior; per-screen cited content");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();
