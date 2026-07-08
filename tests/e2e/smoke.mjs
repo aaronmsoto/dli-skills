@@ -61,7 +61,9 @@ const page = await browser.newPage({ viewport: { width: 900, height: 900 } });
 trackErrors(page);
 // M12: this context simulates NO AUDIO AT ALL (no local voice, clips
 // unreachable) so every "voiceless" assertion below keeps its meaning.
-await page.route("**/audio/manifest.json", (r) => r.abort());
+// 204 (not abort): the empty body fails res.json() → clip backend stays
+// off, and nothing is logged to the console-error tracker.
+await page.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
 
 async function assertNoStrayNull(name) {
   const text = await page.locator("#app").innerText();
@@ -323,7 +325,7 @@ ok(`tts availability honest (available=${available}, toggles=${toggles})`);
 const voiced = await browser.newPage();
 trackErrors(voiced);
 // M12: block clips here too — this context exercises the Web Speech path.
-await voiced.route("**/audio/manifest.json", (r) => r.abort());
+await voiced.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
 await voiced.addInitScript(() => {
   const fakeVoice = { lang: "es-MX", localService: true, name: "Fake ES" };
   window.__spoken = [];
