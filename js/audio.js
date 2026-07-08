@@ -64,26 +64,40 @@ export function audioAvailable() {
   return clipsAvailable() || ttsAvailable();
 }
 
-/** Speak Spanish text: clip first, Web Speech fallback. */
+let pendingResolve = null;
+
+/** Speak Spanish text: clip first, Web Speech fallback. Returns a Promise
+ *  that resolves when playback finishes (or immediately if no audio). */
 export function speak(text, rate = 0.85) {
-  if (!text) return;
+  if (pendingResolve) { pendingResolve(); pendingResolve = null; }
+  currentClip?.pause();
+  window.speechSynthesis?.cancel?.();
+
+  if (!text) return Promise.resolve();
   // dual-generated speeds (owner, 2026-07-08): 🐢 plays a REAL slower
   // recording (0.70) rather than a playbackRate trick; normal is 0.85
   const rel = clipIndex?.map[text]?.[rate <= 0.5 ? "s" : "n"];
   if (rel) {
-    currentClip?.pause();
-    window.speechSynthesis?.cancel?.();
     const clip = new Audio(clipIndex.base + rel);
     currentClip = clip;
-    clip.play().catch(() => { /* autoplay edge — user gestures re-enable */ });
-    return;
+    return new Promise(resolve => {
+      pendingResolve = resolve;
+      const done = () => { if (pendingResolve === resolve) pendingResolve = null; resolve(); };
+      clip.addEventListener("ended", done, { once: true });
+      clip.addEventListener("error", done, { once: true });
+      clip.play().catch(done);
+    });
   }
-  if (!ttsAvailable()) return;
+  if (!ttsAvailable()) return Promise.resolve();
   const u = new SpeechSynthesisUtterance(text);
   u.voice = cachedVoice;
   u.lang = cachedVoice.lang;
-  u.rate = rate; // 0.85 default for young learners; 0.5 = 🐢 slow replay
-  // (keep slow at 0.5: several engines flatten smaller rate differences)
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(u);
+  u.rate = rate;
+  return new Promise(resolve => {
+    pendingResolve = resolve;
+    const done = () => { if (pendingResolve === resolve) pendingResolve = null; resolve(); };
+    u.addEventListener("end", done, { once: true });
+    u.addEventListener("error", done, { once: true });
+    window.speechSynthesis.speak(u);
+  });
 }
