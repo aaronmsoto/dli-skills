@@ -78,8 +78,8 @@
   --bg: #fbf6ea;
   --card: #ffffff;
   --ink: #243026;
-  --ink-soft: #6c7568;
-  --brand: #3f9256;        /* leaf green */
+  --ink-soft: #5c6558;     /* darkened from artifact #6c7568 to pass 4.5:1 vs #fbf6ea (5.35); axe-verified */
+  --brand: #2f6b4f;        /* leaf green — darkened from artifact #3f9256 to pass 4.5:1 vs #fff (6.14) + #fbf6ea (5.7); axe-verified in I* */
   --brand-tint: #e3f2df;   /* soft green fill (design --brand-2) */
   --accent: #e37a4f;       /* persimmon */
   --good: #2f8a52;

@@ -1169,12 +1169,88 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     brand: getComputedStyle(document.documentElement).getPropertyValue("--brand").trim(),
   }));
   if (!onState.hasGate) fail("gate preview: ?redesign=1 must set data-redesign on <html>");
-  // tokens.css light --brand is #3f9256; getComputedStyle normalises to rgb form.
-  if (!/^#3f9256$/i.test(onState.brand) && onState.brand !== "#3f9256") {
-    fail(`gate preview: --brand should resolve to Prado #3f9256, got "${onState.brand}"`);
+  // tokens.css light --brand is #2f6b4f (darkened from the artifact's
+  // #3f9256 during I* to pass WCAG AA 4.5:1 — see docs/DESIGN.md contrast note).
+  if (!/^#2f6b4f$/i.test(onState.brand) && onState.brand !== "#2f6b4f") {
+    fail(`gate preview: --brand should resolve to Prado #2f6b4f, got "${onState.brand}"`);
   }
   await on.close();
   ok(`gate: ?redesign=1 activates data-redesign; --brand = ${onState.brand}`);
+}
+
+// ---------- M16 I*: redesign-preview screenshots + preview axe gate ----------
+{
+  // One screenshot per redesigned screen for morning review. Also validates
+  // key tokens landed as computed styles (fonts, backgrounds), so a broken
+  // redesign selector loudly fails here instead of quietly shipping.
+  const previewRoutes = [
+    ["home", `?redesign=1#/`],
+    ["group", `?redesign=1#/set/1`],
+    ["study", `?redesign=1#/study/1/present`],
+    ["practica", `?redesign=1#/practica/1/present`],
+    ["choice", `?redesign=1#/play/1/present/choice`],
+    ["type", `?redesign=1#/play/1/present/type`],
+    ["match", `?redesign=1#/play/1/present/match`],
+    ["contrast", `?redesign=1#/play/1/contrast`],
+    ["informe", `?redesign=1#/informe`],
+  ];
+  const prev = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(prev);
+  for (const [name, path] of previewRoutes) {
+    await prev.goto(`${BASE}/${path}`);
+    await prev.waitForSelector(".site-footer");
+    await prev.screenshot({ path: `${SHOTS}/redesign-${name}.png` });
+    // Every preview page uses the redesign body font (Nunito stack) and
+    // the Prado ground (var(--bg) = #fbf6ea in light).
+    const state = await prev.evaluate(() => ({
+      hasGate: document.documentElement.hasAttribute("data-redesign"),
+      fontFamily: getComputedStyle(document.body).fontFamily,
+      bg: getComputedStyle(document.documentElement).getPropertyValue("--bg").trim().toLowerCase(),
+    }));
+    if (!state.hasGate) fail(`redesign preview ${name}: gate lost`);
+    if (!/nunito|ui-rounded|system-ui/i.test(state.fontFamily)) fail(`redesign preview ${name}: body font not the Prado stack — got "${state.fontFamily}"`);
+    if (state.bg !== "#fbf6ea") fail(`redesign preview ${name}: --bg should be Prado #fbf6ea, got "${state.bg}"`);
+  }
+  await prev.goto(`${BASE}/?redesign=1&redesign=1#/set/1`); // path param survives real-world usage
+  await prev.close();
+
+  // Also screenshot about + docs in redesign.
+  const prevStatic = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(prevStatic);
+  await prevStatic.goto(`${BASE}/about.html?redesign=1`);
+  await prevStatic.waitForSelector("main");
+  await prevStatic.screenshot({ path: `${SHOTS}/redesign-about.png` });
+  await prevStatic.goto(`${BASE}/docs/?redesign=1`);
+  await prevStatic.waitForSelector("main");
+  await prevStatic.screenshot({ path: `${SHOTS}/redesign-docs.png` });
+  await prevStatic.goto(`${BASE}/docs/usability.html?redesign=1`);
+  await prevStatic.waitForSelector("main");
+  await prevStatic.screenshot({ path: `${SHOTS}/redesign-usability.png` });
+  await prevStatic.close();
+
+  ok(`redesign preview: screenshots captured for 13 screens (${previewRoutes.length} app + 3 static)`);
+
+  // Preview axe gate — the M16 spec: no new critical/serious violations
+  // under ?redesign=1 either. Uses the vendored axe.min.js loaded earlier.
+  const { readFileSync } = await import("node:fs");
+  const axeSource = readFileSync(join(ROOT, "tests/e2e/vendor/axe.min.js"), "utf8");
+  const axePrev = await browser.newPage();
+  trackErrors(axePrev);
+  for (const [, path] of previewRoutes) {
+    await axePrev.goto(`${BASE}/${path}`);
+    await axePrev.reload();
+    await axePrev.waitForSelector(".site-footer");
+    await axePrev.addScriptTag({ content: axeSource });
+    const bad = await axePrev.evaluate(async () => {
+      const res = await window.axe.run(document, { resultTypes: ["violations"] });
+      return res.violations
+        .filter((v) => v.impact === "critical" || v.impact === "serious")
+        .map((v) => `${v.id}(${v.impact}) ×${v.nodes.length} e.g. ${v.nodes[0]?.target?.join(" ")}`);
+    });
+    if (bad.length) fail(`redesign axe ${path}: ${bad.join(" | ")}`);
+  }
+  await axePrev.close();
+  ok(`redesign axe: zero critical/serious violations across ${previewRoutes.length} redesigned routes`);
 }
 
 // ---------- wrap up ----------
