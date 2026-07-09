@@ -158,6 +158,30 @@ await page.waitForSelector(".choice");
   await page.waitForTimeout(60);
   if (await page.locator(".choices.no-hover").count()) fail("hover-regression: no-hover must clear on pointer move");
   ok("sticky-hover regression: fresh grid renders untouched, hover restored on move");
+}
+
+// Same guard must hold in the REDESIGN look, whose [data-redesign] .choice:hover
+// rule outspecifies styles.css's .no-hover unless redesign.css mirrors it.
+await page.goto(`${BASE}/?redesign=1#/play/1/present/choice`);
+await page.waitForSelector(".choice");
+{
+  const box = await page.locator(".choice").first().boundingBox();
+  const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+  await page.mouse.move(cx, cy); // park the pointer over option 1
+  const correct = await currentAnswer("present");
+  const texts = await page.locator(".choice").allInnerTexts();
+  const idx = texts.findIndex((t) => t.replace(/^\d/, "").trim() === correct);
+  if (idx === -1) fail("redesign hover-regression: correct option not located");
+  await page.keyboard.press(String(idx + 1)); // answer WITHOUT moving the pointer
+  await page.waitForTimeout(1150); // auto-advance to question 2
+  if (!(await page.locator(".choices.no-hover").count())) fail("redesign hover-regression: fresh grid missing no-hover");
+  const border = await page.evaluate(([x, y]) => {
+    const c = document.elementFromPoint(x, y)?.closest(".choice");
+    return c ? getComputedStyle(c).borderTopColor : "none";
+  }, [cx, cy]);
+  if (border !== "none" && border !== "rgba(0, 0, 0, 0)")
+    fail(`redesign hover-regression: option under parked pointer shows border ${border}`);
+  ok("sticky-hover regression (redesign look): no lingering selection border after advancing");
   await page.reload(); // leave a fresh round for the full-round section (same-hash goto won't reload)
 }
 
@@ -507,6 +531,13 @@ const darkPage = await browser.newPage({ colorScheme: "dark", viewport: { width:
 trackErrors(darkPage);
 await darkPage.goto(`${BASE}/#/`);
 await darkPage.waitForSelector(".home-title .lola");
+// Light is the default now, so opt into Auto to let OS-dark drive the dark palette.
+await darkPage.click(".menu-btn");
+await darkPage.waitForSelector(".theme-selector");
+await darkPage.click('.theme-option[data-theme-value="auto"]');
+await darkPage.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
+await darkPage.keyboard.press("Escape");
+await darkPage.waitForSelector(".menu-panel", { state: "hidden" });
 const darkBody = await darkPage.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--lola-body").trim());
 if (darkBody.toLowerCase() !== "#a8834e") fail(`dark mode: expected dark Lola body token, got "${darkBody}"`);
 await darkPage.screenshot({ path: `${SHOTS}/home-dark.png` });
@@ -517,13 +548,27 @@ ok("dark mode: Lola dark palette active");
 {
   const themeBg = (page) => page.evaluate(() =>
     getComputedStyle(document.documentElement).getPropertyValue("--bg").trim().toLowerCase());
-  // Auto follows the OS: colorScheme:"dark" + no data-theme → dark bg.
+  // Light is the DEFAULT (owner 2026-07-09): a fresh visitor on an OS-dark
+  // device still gets data-theme="light" + the light bg, not the OS scheme.
+  const def = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(def);
+  await def.goto(`${BASE}/#/`);
+  await def.waitForSelector(".set-card");
+  const defAttr = await def.evaluate(() => document.documentElement.getAttribute("data-theme"));
+  if (defAttr !== "light") fail(`theme default: data-theme should be "light" by default, got "${defAttr}"`);
+  const defBg = await themeBg(def);
+  if (defBg !== "#fdf6ec") fail(`theme default Light: OS-dark should still show light --bg #fdf6ec, got "${defBg}"`);
+  await def.close();
+
+  // Auto is opt-in: selecting it clears data-theme so the OS scheme wins.
   const auto = await browser.newPage({ colorScheme: "dark" });
   trackErrors(auto);
   await auto.goto(`${BASE}/#/`);
   await auto.waitForSelector(".set-card");
-  const autoHasAttr = await auto.evaluate(() => document.documentElement.hasAttribute("data-theme"));
-  if (autoHasAttr) fail("theme Auto: data-theme must NOT be set by default");
+  await auto.click(".menu-btn");
+  await auto.waitForSelector(".theme-selector");
+  await auto.click('.theme-option[data-theme-value="auto"]');
+  await auto.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
   const autoBg = await themeBg(auto);
   if (autoBg !== "#1c2130") fail(`theme Auto: OS-dark should apply dark --bg #1c2130, got "${autoBg}"`);
   await auto.close();
@@ -563,17 +608,30 @@ ok("dark mode: Lola dark palette active");
   if (darkBg !== "#1c2130") fail(`theme Dark: should override OS-light to #1c2130, got "${darkBg}"`);
   await dark.close();
 
-  // Auto reset: go back to Auto (clears data-theme) — applies in the REDESIGN look too.
+  // Redesign look also defaults to Light: fresh ?redesign=1 on OS-dark →
+  // Prado day bg #fbf6ea (not forest-night), since Light is the default.
+  const redDef = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(redDef);
+  await redDef.goto(`${BASE}/?redesign=1#/`);
+  await redDef.waitForSelector(".set-card");
+  const redDefBg = await themeBg(redDef);
+  if (redDefBg !== "#fbf6ea") fail(`theme redesign default Light: expected Prado day #fbf6ea, got "${redDefBg}"`);
+  await redDef.close();
+
+  // Auto in the redesign look still follows the OS: select Auto, OS-dark → Prado forest-night.
   const redAuto = await browser.newPage({ colorScheme: "dark" });
   trackErrors(redAuto);
   await redAuto.goto(`${BASE}/?redesign=1#/`);
   await redAuto.waitForSelector(".set-card");
+  await redAuto.click(".menu-btn");
+  await redAuto.click('.theme-option[data-theme-value="auto"]');
+  await redAuto.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
   const redBg = await themeBg(redAuto);
   // Prado dark bg is #191e17.
   if (redBg !== "#191e17") fail(`theme in redesign+Auto+OS-dark: expected #191e17 (Prado forest-night), got "${redBg}"`);
   await redAuto.close();
 
-  ok("theme: Auto follows OS (dark #1c2130); Light beats OS-dark to #fdf6ec (persists); Dark beats OS-light; redesign+Auto+OS-dark = Prado #191e17");
+  ok("theme: Light is default (OS-dark → #fdf6ec; redesign → Prado day #fbf6ea); Auto opt-in follows OS (#1c2130 / Prado #191e17); Dark beats OS-light; Light persists");
 }
 
 // ---------- mobile 360×640: no overflow, perch inside viewport ----------
@@ -877,6 +935,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   trackErrors(darkStar);
   await darkStar.goto(`${BASE}/#/`);
   await darkStar.waitForSelector(".set-card");
+  // Light is the default now — opt into Auto so OS-dark yields the dark --star.
+  await darkStar.click(".menu-btn");
+  await darkStar.waitForSelector(".theme-selector");
+  await darkStar.click('.theme-option[data-theme-value="auto"]');
+  await darkStar.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
   const starDark = await darkStar.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--star").trim());
   if (!starDark.startsWith("#f59e0b")) fail(`contrast: dark --star should stay #f59e0b, got "${starDark}"`);
   await darkStar.close();
@@ -1260,6 +1323,12 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await axeDark.goto(`${BASE}/?redesign=1#/`);
   await axeDark.reload();
   await axeDark.waitForSelector(".site-footer");
+  // Light is the default now — opt into Auto so OS-dark yields the forest-night palette.
+  await axeDark.click(".menu-btn");
+  await axeDark.waitForSelector(".theme-selector");
+  await axeDark.click('.theme-option[data-theme-value="auto"]');
+  await axeDark.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
+  await axeDark.keyboard.press("Escape");
   await axeDark.addScriptTag({ content: axeSource });
   const badDark = await axeDark.evaluate(async () => {
     const res = await window.axe.run(document, { resultTypes: ["violations"] });

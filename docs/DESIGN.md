@@ -370,5 +370,6 @@ Public docs index + usability report; same tokens as About, editorial layout.
   owner/SME and axe before applying.
 - **Speaker icon** — optional; the sound toggle may remain a labeled ☰ row.
 - **Theme selector contract** — `tokens.css` already exposes the
-  `[data-theme="light"|"dark"]` hooks task **T** needs (default Auto follows
-  the OS).
+  `[data-theme="light"|"dark"]` hooks task **T** needs. Light is the default
+  (owner, 2026-07-09): an unset theme applies `data-theme="light"`; Auto is
+  opt-in and follows the OS.
