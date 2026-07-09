@@ -513,6 +513,69 @@ await darkPage.screenshot({ path: `${SHOTS}/home-dark.png` });
 await darkPage.close();
 ok("dark mode: Lola dark palette active");
 
+// ---------- M16 T: theme selector (Auto / Light / Dark) ----------
+{
+  const themeBg = (page) => page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--bg").trim().toLowerCase());
+  // Auto follows the OS: colorScheme:"dark" + no data-theme → dark bg.
+  const auto = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(auto);
+  await auto.goto(`${BASE}/#/`);
+  await auto.waitForSelector(".set-card");
+  const autoHasAttr = await auto.evaluate(() => document.documentElement.hasAttribute("data-theme"));
+  if (autoHasAttr) fail("theme Auto: data-theme must NOT be set by default");
+  const autoBg = await themeBg(auto);
+  if (autoBg !== "#1c2130") fail(`theme Auto: OS-dark should apply dark --bg #1c2130, got "${autoBg}"`);
+  await auto.close();
+
+  // Light beats OS dark: pick Light in the menu, then confirm bg + persistence.
+  const light = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(light);
+  await light.goto(`${BASE}/#/`);
+  await light.waitForSelector(".set-card");
+  await light.click(".menu-btn");
+  await light.waitForSelector(".theme-selector");
+  await light.click('.theme-option[data-theme-value="light"]');
+  await light.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "light");
+  const lightBg = await themeBg(light);
+  if (lightBg !== "#fdf6ec") fail(`theme Light: should override OS-dark to #fdf6ec, got "${lightBg}"`);
+  const pressedLight = await light.evaluate(() =>
+    document.querySelector('.theme-option[data-theme-value="light"]').getAttribute("aria-pressed"));
+  if (pressedLight !== "true") fail(`theme Light: aria-pressed should be "true", got "${pressedLight}"`);
+  // Persist across reload — Esc closes the menu first (menu wiring intact).
+  await light.keyboard.press("Escape");
+  await light.waitForSelector(".menu-panel", { state: "hidden" });
+  await light.reload();
+  await light.waitForSelector(".set-card");
+  const lightBgReload = await themeBg(light);
+  if (lightBgReload !== "#fdf6ec") fail(`theme Light: choice did not persist across reload, got "${lightBgReload}"`);
+  await light.close();
+
+  // Dark beats OS light: pick Dark, then confirm bg.
+  const dark = await browser.newPage({ colorScheme: "light" });
+  trackErrors(dark);
+  await dark.goto(`${BASE}/#/`);
+  await dark.waitForSelector(".set-card");
+  await dark.click(".menu-btn");
+  await dark.click('.theme-option[data-theme-value="dark"]');
+  await dark.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "dark");
+  const darkBg = await themeBg(dark);
+  if (darkBg !== "#1c2130") fail(`theme Dark: should override OS-light to #1c2130, got "${darkBg}"`);
+  await dark.close();
+
+  // Auto reset: go back to Auto (clears data-theme) — applies in the REDESIGN look too.
+  const redAuto = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(redAuto);
+  await redAuto.goto(`${BASE}/?redesign=1#/`);
+  await redAuto.waitForSelector(".set-card");
+  const redBg = await themeBg(redAuto);
+  // Prado dark bg is #191e17.
+  if (redBg !== "#191e17") fail(`theme in redesign+Auto+OS-dark: expected #191e17 (Prado forest-night), got "${redBg}"`);
+  await redAuto.close();
+
+  ok("theme: Auto follows OS (dark #1c2130); Light beats OS-dark to #fdf6ec (persists); Dark beats OS-light; redesign+Auto+OS-dark = Prado #191e17");
+}
+
 // ---------- mobile 360×640: no overflow, perch inside viewport ----------
 const mob = await browser.newPage({ viewport: { width: 360, height: 640 } });
 trackErrors(mob);

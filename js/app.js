@@ -110,7 +110,8 @@ function menuButton() {
     el("a", { class: "menu-link", href: "#/informe" }, "📄 Informe / Status"),
     el("a", { class: "menu-link", href: "about.html" }, "🦉 Acerca de / Standards"),
     el("a", { class: "menu-link", href: "docs/" }, "📚 Documentación / Docs"),
-    soundToggle());
+    soundToggle(),
+    themeSelector());
   const onDoc = (e) => { if (!wrap.contains(e.target)) close(); };
   const onKey = (e) => { if (e.key === "Escape") { close(); btn.focus(); } };
   const close = () => {
@@ -136,6 +137,45 @@ function menuButton() {
   }, "☰");
   const wrap = el("span", { class: "menu-wrap no-print" }, btn, panel);
   return wrap;
+}
+
+/**
+ * M16 T: 🎨 theme selector — Auto / Light / Dark, inside the ☰ menu below
+ * the 🔊 Sonido row. Auto (default) follows `prefers-color-scheme`; Light
+ * and Dark set `data-theme` on <html> and win over the OS in both the
+ * current and the redesign looks. Persisted in settings.theme; the inline
+ * loader in each HTML head re-applies it before paint so there is no FOUC.
+ */
+function applyTheme(t) {
+  const html = document.documentElement;
+  if (t === "light" || t === "dark") html.setAttribute("data-theme", t);
+  else html.removeAttribute("data-theme");
+}
+function themeSelector() {
+  const options = [
+    { value: "auto", label: "Auto" },
+    { value: "light", label: "Claro / Light" },
+    { value: "dark", label: "Oscuro / Dark" },
+  ];
+  const current = () => store.getSettings().theme || "auto";
+  const buttons = options.map((o) =>
+    el("button", {
+      class: "theme-option", type: "button",
+      "aria-pressed": String(current() === o.value),
+      "data-theme-value": o.value,
+      onclick: (e) => {
+        store.setSetting("theme", o.value);
+        applyTheme(o.value);
+        for (const b of buttons) {
+          const active = b.getAttribute("data-theme-value") === o.value;
+          b.setAttribute("aria-pressed", String(active));
+        }
+        announce(`Tema: ${o.label}`);
+      },
+    }, o.label));
+  return el("div", { class: "menu-link theme-selector", role: "group", "aria-label": "Tema / Theme" },
+    el("span", { class: "theme-label" }, "🎨 Tema / Theme"),
+    el("div", { class: "theme-options" }, ...buttons));
 }
 
 /**
