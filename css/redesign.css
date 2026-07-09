@@ -1,0 +1,14 @@
+/* =====================================================================
+   Conjuga redesign layer — M16 "Prado"
+   Consumes css/tokens.css. Loaded on every page but INERT until the gate
+   is on: every selector below sits under :root[data-redesign] …, so with
+   no attribute set the file contributes nothing to the cascade.
+
+   The gate is set by the inline loader script in each HTML file when the
+   URL carries ?redesign=1 (preview/screenshot trigger for e2e). The FLIP
+   milestone will change the loader to default the attribute ON.
+
+   Task G ships this file EMPTY (this comment only). Per-screen rules land
+   in task I* — see docs/DESIGN.md for tokens and the screen-by-screen
+   route map that drives the sections below.
+   ===================================================================== */

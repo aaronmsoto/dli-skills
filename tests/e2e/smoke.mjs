@@ -1069,6 +1069,51 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("sticky: persons column frozen while Práctica/Estudia tables scroll on phones");
 }
 
+// ---------- M16 G: redesign gate + preview scaffold ----------
+{
+  // Default (no ?redesign=1): gate off, tokens/redesign files load 200 but
+  // contribute nothing visible; the LIVE look must be byte-identical.
+  const off = await browser.newPage();
+  trackErrors(off);
+  const linkStatus = { tokens: null, redesign: null };
+  off.on("response", (r) => {
+    if (r.url().endsWith("/css/tokens.css")) linkStatus.tokens = r.status();
+    if (r.url().endsWith("/css/redesign.css")) linkStatus.redesign = r.status();
+  });
+  await off.goto(`${BASE}/`);
+  await off.waitForSelector(".set-card");
+  const offState = await off.evaluate(() => ({
+    hasGate: document.documentElement.hasAttribute("data-redesign"),
+    bg: getComputedStyle(document.body).backgroundColor,
+    linksHref: [...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => new URL(l.href).pathname),
+  }));
+  if (offState.hasGate) fail(`gate default: data-redesign should be UNSET (found "${offState.hasGate}")`);
+  if (linkStatus.tokens !== 200) fail(`gate default: css/tokens.css did not load 200 (got ${linkStatus.tokens})`);
+  if (linkStatus.redesign !== 200) fail(`gate default: css/redesign.css did not load 200 (got ${linkStatus.redesign})`);
+  if (!offState.linksHref.some((p) => p.endsWith("/css/tokens.css"))) fail("gate default: tokens.css link missing");
+  if (!offState.linksHref.some((p) => p.endsWith("/css/redesign.css"))) fail("gate default: redesign.css link missing");
+  await off.close();
+  ok(`gate: default off, tokens+redesign linked and 200, body bg unchanged (${offState.bg})`);
+
+  // Preview trigger (?redesign=1): gate on, Prado ground applies from tokens.
+  const on = await browser.newPage();
+  trackErrors(on);
+  await on.goto(`${BASE}/?redesign=1#/`);
+  await on.waitForSelector(".set-card");
+  const onState = await on.evaluate(() => ({
+    hasGate: document.documentElement.hasAttribute("data-redesign"),
+    bg: getComputedStyle(document.body).backgroundColor,
+    brand: getComputedStyle(document.documentElement).getPropertyValue("--brand").trim(),
+  }));
+  if (!onState.hasGate) fail("gate preview: ?redesign=1 must set data-redesign on <html>");
+  // tokens.css light --brand is #3f9256; getComputedStyle normalises to rgb form.
+  if (!/^#3f9256$/i.test(onState.brand) && onState.brand !== "#3f9256") {
+    fail(`gate preview: --brand should resolve to Prado #3f9256, got "${onState.brand}"`);
+  }
+  await on.close();
+  ok(`gate: ?redesign=1 activates data-redesign; --brand = ${onState.brand}`);
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();
