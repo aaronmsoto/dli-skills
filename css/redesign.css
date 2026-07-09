@@ -64,7 +64,9 @@
   align-items: center;
   gap: 6px;
   background: var(--star);
-  color: var(--ink);
+  /* both amber shades stay light in dark mode — text is always dark.
+     #243026 = the light --ink; passes 5.81:1 on light amber, 7.63:1 on dark. */
+  color: #243026;
   font-family: var(--font-display);
   font-weight: var(--fw-bold);
   padding: 4px 14px;
@@ -90,12 +92,14 @@
 :root[data-redesign] .set-progress { color: var(--ink-soft); }
 :root[data-redesign] .start-here {
   background: var(--accent);
-  color: var(--ink); /* passes 4.81:1 on persimmon; white failed 2.93 */
+  /* persimmon stays warm in both palettes — dark text always.
+     #243026 passes 4.81:1 on light persimmon and 6.09:1 on dark persimmon. */
+  color: #243026;
   border-radius: var(--radius-pill);
   font-family: var(--font-display);
   font-weight: var(--fw-bold);
 }
-:root[data-redesign] .start-here .h-en { color: var(--ink); }
+:root[data-redesign] .start-here .h-en { color: #243026; }
 
 /* Review queue box */
 :root[data-redesign] .review-queue {
@@ -299,7 +303,7 @@
   color: #fff;
 }
 :root[data-redesign] .prompt-tense {
-  color: var(--ink); /* dark text on all tense hues — highest reliable contrast */
+  color: #243026; /* tense hues stay warm in both palettes — dark text always */
 }
 :root[data-redesign] .prompt-tense[data-tense="present"] { background: var(--tense-present); }
 :root[data-redesign] .prompt-tense[data-tense="preterite"] { background: var(--tense-preterite); }
