@@ -492,8 +492,9 @@ The queue line here — not milestone numbering — sets loop priority.
   within budget or substitute a system-font stack), relative URLs only,
   A1/A2 pseudonyms, national-standards branding (rule 6).
   Acceptance criteria, in order:
-  - [ ] **R (design extraction — REQUIRES the seeded design; run in the
-        design-seeded/owner session, NOT a fresh loop):** commit the raw
+  - [x] **R (design extraction — REQUIRES the seeded design; run in the
+        design-seeded/owner session, NOT a fresh loop) — done on dev
+        2026-07-09:** commit the raw
         Claude Design export under `design/` (repo source, unlinked, not
         app nav) and distill it into `docs/DESIGN.md` — color tokens
         (light + dark), type scale, spacing, radii, shadows/elevation, and a
