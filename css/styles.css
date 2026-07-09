@@ -25,8 +25,13 @@
   --shadow: 0 2px 8px rgba(39, 48, 63, 0.10);
 }
 
+/* M16 T: the theme selector adds data-theme on <html> (unset = Auto).
+   Gate the OS media query so an explicit choice always wins:
+     - unset   → Auto: media query decides.
+     - "light" → media query ignored (defaults are the light palette).
+     - "dark"  → :root[data-theme="dark"] block below wins on any OS. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --star: #f59e0b; /* brighter amber passes easily on dark (6.29:1) */
     --bg: #1c2130;
     --card: #272e42;
@@ -49,6 +54,29 @@
     --lola-beak: #c98f45;
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   }
+}
+:root[data-theme="dark"] {
+  --star: #f59e0b;
+  --bg: #1c2130;
+  --card: #272e42;
+  --ink: #eef1f7;
+  --ink-soft: #a8b0c0;
+  --brand: #a78bfa;
+  --brand-soft: #3b3360;
+  --good: #4ade80;
+  --good-bg: #14532d;
+  --bad: #fca5a5;
+  --bad-bg: #7f1d1d;
+  --almost: #fde047;
+  --almost-bg: #713f12;
+  --lola-face: #f2ead9;
+  --lola-face-line: #d9cbae;
+  --lola-body: #a8834e;
+  --lola-wing: #8f6e3e;
+  --lola-chest: #d9c6a0;
+  --lola-eye: #1e1b18;
+  --lola-beak: #c98f45;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 * { box-sizing: border-box; }
@@ -163,6 +191,29 @@ a { color: var(--brand); }
 button.menu-link { font: inherit; text-align: left; border: none; background: transparent; cursor: pointer; width: 100%; }
 button.menu-link:hover, button.menu-link:focus-visible { background: var(--brand-soft); }
 .hero .menu-wrap { position: absolute; top: 4px; right: 4px; }
+
+/* -------- M16 T: theme selector (Auto / Light / Dark) -------- */
+.theme-selector { display: block; padding: 8px 14px 10px; color: var(--ink); }
+.theme-selector .theme-label { display: block; font-size: 0.95rem; margin-bottom: 6px; }
+.theme-selector .theme-options {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  padding: 3px; border-radius: 10px; background: var(--brand-soft);
+}
+.theme-option {
+  font: inherit; font-size: 0.85rem;
+  padding: 8px 6px; min-height: 34px;
+  border: none; border-radius: 8px; cursor: pointer;
+  background: transparent; color: var(--ink);
+}
+.theme-option[aria-pressed="true"] {
+  background: var(--card); color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+}
+.theme-option:hover:not([aria-pressed="true"]),
+.theme-option:focus-visible:not([aria-pressed="true"]) {
+  background: color-mix(in srgb, var(--card) 50%, transparent);
+}
 
 /* -------- ℹ️ per-screen standards panel (M9) -------- */
 .info-btn {
