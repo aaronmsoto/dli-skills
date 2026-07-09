@@ -141,8 +141,9 @@ function menuButton() {
 
 /**
  * M16 T: 🎨 theme selector — Auto / Light / Dark, inside the ☰ menu below
- * the 🔊 Sonido row. Auto (default) follows `prefers-color-scheme`; Light
- * and Dark set `data-theme` on <html> and win over the OS in both the
+ * the 🔊 Sonido row. Light is the DEFAULT (owner, 2026-07-09): an unset
+ * theme sets `data-theme="light"`. Auto follows `prefers-color-scheme`;
+ * Light and Dark set `data-theme` on <html> and win over the OS in both the
  * current and the redesign looks. Persisted in settings.theme; the inline
  * loader in each HTML head re-applies it before paint so there is no FOUC.
  */
@@ -157,7 +158,7 @@ function themeSelector() {
     { value: "light", label: "Claro / Light" },
     { value: "dark", label: "Oscuro / Dark" },
   ];
-  const current = () => store.getSettings().theme || "auto";
+  const current = () => store.getSettings().theme || "light";
   const buttons = options.map((o) =>
     el("button", {
       class: "theme-option", type: "button",

@@ -479,8 +479,8 @@ The queue line here — not milestone numbering — sets loop priority.
     look; the SINGLE human PR to `main` flips the gate ON (the one clean
     redesign redeploy).
   • **Theme selector** — the ☰ menu gains an Auto / Light / Dark selector
-    (localStorage-persisted, default **Auto** = follow the OS), working in
-    both the old and new looks.
+    (localStorage-persisted, default **Light** per owner 2026-07-09; Auto is
+    opt-in and follows the OS), working in both the old and new looks.
   • Design artifacts DRIVE visuals ONLY; routes, question sampling,
     scoring, localStorage schema, TTS/clip lookup, 🔍 hint logic,
     🧱 Práctica-unscored, every star denominator (STARS_PER_SET = 30), and
@@ -513,7 +513,8 @@ The queue line here — not milestone numbering — sets loop priority.
         the new tokens; payload budget green.
   - [x] **T (theme selector — Auto / Light / Dark) — done on dev 2026-07-09:** a ☰-menu segmented
         control below the existing 🔊 Sonido row; localStorage (versioned
-        key; backward-compatible default **Auto** follows
+        key; default **Light** per owner 2026-07-09 — an unset theme applies
+        `data-theme="light"`; Auto is opt-in and follows
         `prefers-color-scheme`); Light/Dark override the OS; reduced-motion
         respected; applies in BOTH looks. Independently releasable. E2e:
         override beats the OS stub, Auto follows it, choice persists across

@@ -345,6 +345,16 @@
   background: var(--good-bg);
 }
 :root[data-redesign] .choice.bad { border-color: var(--bad); background: var(--bad-bg); }
+/* Sticky-hover guard — mirror styles.css .no-hover, but with the
+   [data-redesign] prefix so it outspecifies the :hover rules above.
+   Without it a freshly rendered answer grid repaints the :hover border
+   under a still-parked pointer (touch: the virtual pointer stays on the
+   last tap), so the previous pick looks "still selected". Covers Elige,
+   ⚔️ contrast (.choice) and Empareja (.match-card); picked tiles keep
+   their brand border. */
+:root[data-redesign] .no-hover .choice:hover:not(:disabled),
+:root[data-redesign] .no-hover .match-card:hover:not(:disabled) { border-color: transparent; }
+:root[data-redesign] .no-hover .match-card.picked:hover { border-color: var(--brand); }
 
 /* Escribe input */
 :root[data-redesign] .type-input {
