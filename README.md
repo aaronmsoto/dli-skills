@@ -94,7 +94,9 @@ npm test           # accuracy + feature-logic + budget tests (Node ≥ 18)
 ```
 index.html            App shell (single-page, hash-routed)
 about.html            Standards & privacy page
-css/styles.css        Kid-friendly theme, dark mode, a11y
+css/styles.css        Structural base — layout, a11y, print, dark mode
+css/tokens.css        M16 "Prado" design tokens (Auto/Light/Dark, Light default)
+css/redesign.css      M16 Prado visual layer (the default look; gate always on)
 js/conjugator.js      Conjugation engine (regular paradigms + irregularity flags)
 js/verbs.js           The 100-verb dataset with irregularity flags
 js/game.js            Question sampling, distractors, match pairs, contrast cues
