@@ -509,6 +509,7 @@ function renderSet(setId) {
       TENSES.map((t) =>
         el("button", {
           class: `tense-card ${t === tense ? "selected" : ""}`,
+          "data-tense": t,
           role: "radio", "aria-checked": String(t === tense),
           onclick: () => { sessionStorage.setItem("conjuga.tense", t); render(); },
         },
@@ -520,13 +521,13 @@ function renderSet(setId) {
 
     el("h2", {}, "2 · Estudia y juega ", el("span", { class: "h-en", lang: "en" }, "(study, then play)")),
     el("div", { class: "mode-row" },
-      el("a", { class: "mode-card study", href: `#/study/${set.id}/${tense}` },
+      el("a", { class: "mode-card study", "data-mode": "study", href: `#/study/${set.id}/${tense}` },
         el("span", { class: "mode-icon" }, "📖"),
         el("strong", {}, "Estudia"),
         el("span", { class: "mode-en", lang: "en" }, "See the tables"),
       ),
       // unscored on purpose: no starRow here, ever (M8 owner decision)
-      el("a", { class: "mode-card practica-card", href: `#/practica/${set.id}/${tense}` },
+      el("a", { class: "mode-card practica-card", "data-mode": "practica", href: `#/practica/${set.id}/${tense}` },
         el("span", { class: "mode-icon" }, PRACTICA_META.icon),
         el("strong", {}, PRACTICA_META.es),
         el("span", { class: "mode-en", lang: "en" }, PRACTICA_META.en),
@@ -534,7 +535,7 @@ function renderSet(setId) {
       ),
       MODES.map((m) => {
         const best = store.getBest(set.id, tense, m);
-        return el("a", { class: "mode-card", href: `#/play/${set.id}/${tense}/${m}` },
+        return el("a", { class: "mode-card", "data-mode": m, href: `#/play/${set.id}/${tense}/${m}` },
           el("span", { class: "mode-icon" }, MODE_META[m].icon),
           el("strong", {}, MODE_META[m].es),
           el("span", { class: "mode-en", lang: "en" }, MODE_META[m].en),
@@ -543,7 +544,7 @@ function renderSet(setId) {
       }),
       // Escucha exists only where a Spanish voice does; badges, not stars.
       audioAvailable()
-        ? el("a", { class: "mode-card listen-card", href: `#/play/${set.id}/${tense}/${LISTEN}` },
+        ? el("a", { class: "mode-card listen-card", "data-mode": "listen", href: `#/play/${set.id}/${tense}/${LISTEN}` },
           el("span", { class: "mode-icon" }, LISTEN_META.icon),
           el("strong", {}, LISTEN_META.es),
           el("span", { class: "mode-en", lang: "en" }, LISTEN_META.en),
@@ -553,7 +554,7 @@ function renderSet(setId) {
 
     el("h2", {}, "3 · Reto ", el("span", { class: "h-en", lang: "en" }, "(challenge)")),
     el("div", { class: "mode-row contrast-row" },
-      el("a", { class: "mode-card contrast-card", href: `#/play/${set.id}/contrast` },
+      el("a", { class: "mode-card contrast-card", "data-mode": "contrast", href: `#/play/${set.id}/contrast` },
         el("span", { class: "mode-icon" }, "⚔️"),
         el("strong", {}, "¿Pretérito o imperfecto?"),
         el("span", { class: "mode-en", lang: "en" }, "Read the time clue, pick the past tense"),
@@ -815,7 +816,7 @@ function renderPlay(setId, tense, mode) {
   // setting — entering the listening mode is explicit audio intent.
   function listenPromptCard(t) {
     return el("div", { class: "prompt" },
-      el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
+      el("span", { class: "prompt-tense", "data-tense": tense }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
       infoButton(mode),
       el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en", lang: "en" }, "Which form do you hear?")),
       el("div", { class: "listen-controls" },
@@ -829,7 +830,7 @@ function renderPlay(setId, tense, mode) {
 
   function promptCard(t) {
     return el("div", { class: "prompt" },
-      el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
+      el("span", { class: "prompt-tense", "data-tense": tense }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
       infoButton(mode),
       el("div", { class: "prompt-main" },
         el("span", { class: "prompt-person" }, personDisplay(t.person)),

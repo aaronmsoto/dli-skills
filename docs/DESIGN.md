@@ -45,8 +45,8 @@ Token names match `css/tokens.css`. Light = "Prado"; dark = "forest night".
 | `--bg` | page ground | `#fbf6ea` | `#191e17` |
 | `--card` | card / surface | `#ffffff` | `#252c22` |
 | `--ink` | primary text | `#243026` | `#eef1e9` |
-| `--ink-soft` | secondary text | `#6c7568` | `#a3ad98` |
-| `--brand` | leaf-green brand | `#3f9256` | `#74c489` |
+| `--ink-soft` | secondary text | `#5c6558` * | `#a3ad98` |
+| `--brand` | leaf-green brand | `#2f6b4f` * | `#74c489` |
 | `--brand-tint` | soft brand fill (`--brand-2`) | `#e3f2df` | `#2c3a2b` |
 | `--accent` | persimmon accent | `#e37a4f` | `#f0946a` |
 | `--good` | correct | `#2f8a52` | `#6cc888` |
@@ -62,6 +62,13 @@ Token names match `css/tokens.css`. Light = "Prado"; dark = "forest night".
 `--lola-wing`, `--lola-chest`, `--lola-eye`, `--lola-beak`. Light:
 `#fff7ec / #eadfc8 / #c99a5b / #b08447 / #f3e4c8 / #2e2a26 / #e0a458`.
 Dark: `#f2ead9 / #d9cbae / #a8834e / #8f6e3e / #d9c6a0 / #1e1b18 / #c98f45`.
+
+\* **Darkened from the artifact for WCAG AA.** The design mocks the light
+palette at `--brand: #3f9256` and `--ink-soft: #6c7568`; both fail the
+4.5:1 text-contrast bar (3.84 and 4.44 respectively). During I\* the axe
+gate flagged them and they were darkened to `#2f6b4f` (5.85:1 vs `#fff`,
+5.7:1 vs `--bg`) and `#5c6558` (5.35:1 vs `--bg`). Dark values were
+already safe against the forest-night ground and stay unchanged.
 
 † **Derived, not in the artifact.** The dark mock (4b) never draws an error
 state, so `--bad`/`--bad-bg` dark are proposed values (warm terracotta on a
