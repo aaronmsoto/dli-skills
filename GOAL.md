@@ -28,11 +28,18 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue: IDLE — every loop-workable item is done (M12 complete
-2026-07-08).** Shipped to dev: M8 (07-07); M5 loop items, M9, M10, M11,
-M12 (07-08). Awaiting owner: M5's SME copy review + human screen-reader
-pass, the M2 hold, the M4 pause. The queue line here — not milestone
-numbering — sets loop priority.
+**Queue: M16 — Conjuga visual redesign (Claude Design–driven), then
+M17 — round-2 usability/accessibility audits (owner-directed 2026-07-09).**
+M16 unlocks once the design spec is committed: task **R** (design
+extraction) needs the seeded Claude Design file and runs in a
+design-seeded/owner session (NOT a fresh loop — loop sessions have no
+design-MCP access); every task after R (**G** gate, **T** theme selector,
+**I\*** per-screen migration, **RT**) is loop-capable from `origin/dev`
+under the redesign gate; the FINAL **FLIP** PR to main is human-merged (the
+redeploy with the new design). M17 (round-2 audits) follows the flip.
+Prior milestones M0–M15 complete on dev; still awaiting owner as before:
+M5's SME copy review + human screen-reader pass, the M2 hold, the M4 pause.
+The queue line here — not milestone numbering — sets loop priority.
 
 - [x] **M0 — Core trainer (v0.1)** · shipped 2026-07-07
   Engine + 100 verbs + Estudia/Elige/Escribe/Empareja + stars + Pages deploy.
@@ -461,6 +468,110 @@ numbering — sets loop priority.
   "part of DLIskills.com" (exact capitalization) under the Conjuga
   heading (plain text until the domain serves; link it then). About page
   GitHub link removed. Standing rule 6 in CLAUDE.md encodes all of it.
+
+- [ ] **M16 — 🎨 Conjuga visual redesign (Claude Design–driven;
+  owner-directed 2026-07-09)**
+  Reskin the entire app to the "Conjuga Redesign" Claude Design artifact
+  (project `7f989447-…`, file `Conjuga Redesign.dc.html`) while holding
+  functionality invariant. Owner decisions (2026-07-09):
+  • **Gated rollout** — the redesign lands as a new token/stylesheet layer
+    behind a `redesign` gate; loop PRs into `dev` never change today's live
+    look; the SINGLE human PR to `main` flips the gate ON (the one clean
+    redesign redeploy).
+  • **Theme selector** — the ☰ menu gains an Auto / Light / Dark selector
+    (localStorage-persisted, default **Auto** = follow the OS), working in
+    both the old and new looks.
+  • Design artifacts DRIVE visuals ONLY; routes, question sampling,
+    scoring, localStorage schema, TTS/clip lookup, 🔍 hint logic,
+    🧱 Práctica-unscored, every star denominator (STARS_PER_SET = 30), and
+    print behavior are untouched (strict functional control — this is the
+    product's guardrail for the redesign).
+  Hard constraints unchanged: no build step / no deps, ≤100 KB GZIPPED
+  **code** budget (clips excluded; the new tokens + redesign CSS DO count),
+  inline-SVG mascot ≤15 KB, no external fonts or trackers (self-host a font
+  within budget or substitute a system-font stack), relative URLs only,
+  A1/A2 pseudonyms, national-standards branding (rule 6).
+  Acceptance criteria, in order:
+  - [ ] **R (design extraction — REQUIRES the seeded design; run in the
+        design-seeded/owner session, NOT a fresh loop):** commit the raw
+        Claude Design export under `design/` (repo source, unlinked, not
+        app nav) and distill it into `docs/DESIGN.md` — color tokens
+        (light + dark), type scale, spacing, radii, shadows/elevation, and a
+        component inventory (buttons, cards, prompt card, conjugation
+        tables, ☰ menu, footer, Lola placement) with a screen-by-screen
+        map to our routes — plus `css/tokens.css` (CSS custom properties,
+        defined but NOT yet applied). This committed spec becomes the source
+        of truth so every later task is loop-capable WITHOUT design-MCP
+        access. No change to the live app. Docs/tests: a unit check that
+        tokens.css parses and docs/DESIGN.md lists a token block per screen.
+  - [ ] **G (gate + preview scaffold):** add the redesign gate — a
+        `data-redesign` attribute on `<html>` and `css/redesign.css` loaded
+        but INERT until the gate is on — plus a dev/e2e preview trigger
+        (`?redesign=1`) for screenshots. Wire `tokens.css`. Default look
+        UNCHANGED. E2e: default render unchanged; the preview flag applies
+        the new tokens; payload budget green.
+  - [ ] **T (theme selector — Auto / Light / Dark):** a ☰-menu segmented
+        control below the existing 🔊 Sonido row; localStorage (versioned
+        key; backward-compatible default **Auto** follows
+        `prefers-color-scheme`); Light/Dark override the OS; reduced-motion
+        respected; applies in BOTH looks. Independently releasable. E2e:
+        override beats the OS stub, Auto follows it, choice persists across
+        reload, menu focus/Esc wiring intact, and both existing dark-mode
+        e2e assertions still pass.
+  - [ ] **I\* (per-screen migration — ONE loop each, gate-only):** restyle
+        to `docs/DESIGN.md` via `redesign.css` for, in this order — home,
+        group, Estudia, 🧱 Práctica, Elige, Escribe, Empareja, 🎧 Escucha,
+        ⚔️ Contraste, informe, about.html, docs/index.html,
+        docs/usability.html. Each loop keeps DOM structure, behavior, and
+        e2e selectors identical; places Lola per the new design (SVG +
+        budget + reduced-motion intact); adds a redesign-preview screenshot
+        assertion; and runs the axe-core gate on the preview too (no new
+        Critical/Serious). Any design element that would change pedagogy or
+        break a golden rule is appended HERE as an owner-triage task
+        (M8/M10 pattern) instead of being implemented.
+  - [ ] **RT (regression):** full unit + e2e green throughout; ≤100 KB
+        gzipped code with tokens + redesign CSS included; no functional,
+        localStorage, or print regressions; BOTH the default and preview
+        looks pass axe.
+  - [ ] **FLIP (FINAL — human PR to `main`, the redeploy):** flip the gate
+        default ON so the redesign is live; the theme selector reflects the
+        new palette across Auto/Light/Dark; retire the superseded old styles
+        (or keep a documented fallback per owner); final regression green;
+        docs (SPEC / README / about / DESIGN) in sync. This one
+        human-merged release deploys the new design — everything above
+        reaches `dev` via loops first.
+
+- [ ] **M17 — 🔬 Round-2 usability & accessibility audits (post-redesign;
+  owner-directed 2026-07-09)**
+  After the redesign is live, re-run the four evaluations against the new
+  design and record dated results. The axe-core CI gate runs on the
+  redesign throughout M16, so this is the deeper manual round, not the
+  safety net. Owner decision (2026-07-09): update the existing reports
+  **IN PLACE** with dated "Round 2 (YYYY-MM-DD)" sections and per-finding
+  dated status (Found / Fixed dates), preserving all Round 1 content;
+  `docs/usability.html` mirrors both rounds with dates. Autonomy mirrors
+  M10: loops auto-fix WCAG Critical/Serious, Nielsen severity-3/4, and
+  low-risk quick wins; design/pedagogy-changing findings are appended here
+  for owner triage.
+  Acceptance criteria, in order:
+  - [ ] **DATING (schema first):** add a dated-findings convention to
+        `docs/audits/*.md` and `docs/usability.html` — each finding gets an
+        ID, a Found date, and a Fixed date (or Open); Round 1 items
+        back-dated to their original ship dates. One loop, docs-only, no app
+        change.
+  - [ ] **A1′ Don Norman · A2′ Nielsen · A3′ cognitive walkthrough ·
+        A4′ WCAG 2.2 AA:** re-run each per its skill against the redesigned
+        app; append a dated Round 2 section to `norman.md` / `nielsen.md` /
+        `walkthrough.md` / `wcag.md`, IDs continuing the sequence. One loop
+        per method.
+  - [ ] **F′ (fix wave):** auto-fix the mandated tiers with a test per fix,
+        each citing its finding ID and stamping a Fixed date; triage items
+        appended here.
+  - [ ] **P′ (usability page):** `docs/usability.html` updated with Round 2
+        scores, a dated findings table (Round 1 vs Round 2, Found/Fixed),
+        and the audit date; no drift from `docs/audits`.
+  - [ ] **V/RT:** e2e for any changed UI; axe-core green; full regression;
+        `journal/` entry.
 
 ## Non-goals (do not build)
 
