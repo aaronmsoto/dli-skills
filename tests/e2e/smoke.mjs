@@ -1251,6 +1251,25 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   }
   await axePrev.close();
   ok(`redesign axe: zero critical/serious violations across ${previewRoutes.length} redesigned routes`);
+
+  // Dark theme × redesign preview: exercise the forest-night palette
+  // through axe on the home route so a dark-mode contrast regression
+  // (e.g. --brand vs --bg dark) can't slip through.
+  const axeDark = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(axeDark);
+  await axeDark.goto(`${BASE}/?redesign=1#/`);
+  await axeDark.reload();
+  await axeDark.waitForSelector(".site-footer");
+  await axeDark.addScriptTag({ content: axeSource });
+  const badDark = await axeDark.evaluate(async () => {
+    const res = await window.axe.run(document, { resultTypes: ["violations"] });
+    return res.violations
+      .filter((v) => v.impact === "critical" || v.impact === "serious")
+      .map((v) => `${v.id}(${v.impact}) ×${v.nodes.length}`);
+  });
+  if (badDark.length) fail(`redesign axe dark: ${badDark.join(" | ")}`);
+  await axeDark.close();
+  ok("redesign axe: zero critical/serious violations in the forest-night (dark) preview");
 }
 
 // ---------- wrap up ----------

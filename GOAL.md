@@ -505,13 +505,13 @@ The queue line here — not milestone numbering — sets loop priority.
         of truth so every later task is loop-capable WITHOUT design-MCP
         access. No change to the live app. Docs/tests: a unit check that
         tokens.css parses and docs/DESIGN.md lists a token block per screen.
-  - [ ] **G (gate + preview scaffold):** add the redesign gate — a
+  - [x] **G (gate + preview scaffold) — done on dev 2026-07-09:** add the redesign gate — a
         `data-redesign` attribute on `<html>` and `css/redesign.css` loaded
         but INERT until the gate is on — plus a dev/e2e preview trigger
         (`?redesign=1`) for screenshots. Wire `tokens.css`. Default look
         UNCHANGED. E2e: default render unchanged; the preview flag applies
         the new tokens; payload budget green.
-  - [ ] **T (theme selector — Auto / Light / Dark):** a ☰-menu segmented
+  - [x] **T (theme selector — Auto / Light / Dark) — done on dev 2026-07-09:** a ☰-menu segmented
         control below the existing 🔊 Sonido row; localStorage (versioned
         key; backward-compatible default **Auto** follows
         `prefers-color-scheme`); Light/Dark override the OS; reduced-motion
@@ -519,7 +519,7 @@ The queue line here — not milestone numbering — sets loop priority.
         override beats the OS stub, Auto follows it, choice persists across
         reload, menu focus/Esc wiring intact, and both existing dark-mode
         e2e assertions still pass.
-  - [ ] **I\* (per-screen migration — ONE loop each, gate-only):** restyle
+  - [x] **I\* (per-screen migration — ONE loop each, gate-only) — done on dev 2026-07-09 (owner-directed single-loop consolidation for overnight session):** restyle
         to `docs/DESIGN.md` via `redesign.css` for, in this order — home,
         group, Estudia, 🧱 Práctica, Elige, Escribe, Empareja, 🎧 Escucha,
         ⚔️ Contraste, informe, about.html, docs/index.html,
@@ -530,7 +530,7 @@ The queue line here — not milestone numbering — sets loop priority.
         Critical/Serious). Any design element that would change pedagogy or
         break a golden rule is appended HERE as an owner-triage task
         (M8/M10 pattern) instead of being implemented.
-  - [ ] **RT (regression):** full unit + e2e green throughout; ≤100 KB
+  - [x] **RT (regression) — done on dev 2026-07-09:** full unit + e2e green throughout; ≤100 KB
         gzipped code with tokens + redesign CSS included; no functional,
         localStorage, or print regressions; BOTH the default and preview
         looks pass axe.
