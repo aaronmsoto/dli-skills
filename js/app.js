@@ -110,7 +110,8 @@ function menuButton() {
     el("a", { class: "menu-link", href: "#/informe" }, "📄 Informe / Status"),
     el("a", { class: "menu-link", href: "about.html" }, "🦉 Acerca de / Standards"),
     el("a", { class: "menu-link", href: "docs/" }, "📚 Documentación / Docs"),
-    soundToggle());
+    soundToggle(),
+    themeSelector());
   const onDoc = (e) => { if (!wrap.contains(e.target)) close(); };
   const onKey = (e) => { if (e.key === "Escape") { close(); btn.focus(); } };
   const close = () => {
@@ -136,6 +137,45 @@ function menuButton() {
   }, "☰");
   const wrap = el("span", { class: "menu-wrap no-print" }, btn, panel);
   return wrap;
+}
+
+/**
+ * M16 T: 🎨 theme selector — Auto / Light / Dark, inside the ☰ menu below
+ * the 🔊 Sonido row. Auto (default) follows `prefers-color-scheme`; Light
+ * and Dark set `data-theme` on <html> and win over the OS in both the
+ * current and the redesign looks. Persisted in settings.theme; the inline
+ * loader in each HTML head re-applies it before paint so there is no FOUC.
+ */
+function applyTheme(t) {
+  const html = document.documentElement;
+  if (t === "light" || t === "dark") html.setAttribute("data-theme", t);
+  else html.removeAttribute("data-theme");
+}
+function themeSelector() {
+  const options = [
+    { value: "auto", label: "Auto" },
+    { value: "light", label: "Claro / Light" },
+    { value: "dark", label: "Oscuro / Dark" },
+  ];
+  const current = () => store.getSettings().theme || "auto";
+  const buttons = options.map((o) =>
+    el("button", {
+      class: "theme-option", type: "button",
+      "aria-pressed": String(current() === o.value),
+      "data-theme-value": o.value,
+      onclick: (e) => {
+        store.setSetting("theme", o.value);
+        applyTheme(o.value);
+        for (const b of buttons) {
+          const active = b.getAttribute("data-theme-value") === o.value;
+          b.setAttribute("aria-pressed", String(active));
+        }
+        announce(`Tema: ${o.label}`);
+      },
+    }, o.label));
+  return el("div", { class: "menu-link theme-selector", role: "group", "aria-label": "Tema / Theme" },
+    el("span", { class: "theme-label" }, "🎨 Tema / Theme"),
+    el("div", { class: "theme-options" }, ...buttons));
 }
 
 /**
@@ -469,6 +509,7 @@ function renderSet(setId) {
       TENSES.map((t) =>
         el("button", {
           class: `tense-card ${t === tense ? "selected" : ""}`,
+          "data-tense": t,
           role: "radio", "aria-checked": String(t === tense),
           onclick: () => { sessionStorage.setItem("conjuga.tense", t); render(); },
         },
@@ -480,13 +521,13 @@ function renderSet(setId) {
 
     el("h2", {}, "2 · Estudia y juega ", el("span", { class: "h-en", lang: "en" }, "(study, then play)")),
     el("div", { class: "mode-row" },
-      el("a", { class: "mode-card study", href: `#/study/${set.id}/${tense}` },
+      el("a", { class: "mode-card study", "data-mode": "study", href: `#/study/${set.id}/${tense}` },
         el("span", { class: "mode-icon" }, "📖"),
         el("strong", {}, "Estudia"),
         el("span", { class: "mode-en", lang: "en" }, "See the tables"),
       ),
       // unscored on purpose: no starRow here, ever (M8 owner decision)
-      el("a", { class: "mode-card practica-card", href: `#/practica/${set.id}/${tense}` },
+      el("a", { class: "mode-card practica-card", "data-mode": "practica", href: `#/practica/${set.id}/${tense}` },
         el("span", { class: "mode-icon" }, PRACTICA_META.icon),
         el("strong", {}, PRACTICA_META.es),
         el("span", { class: "mode-en", lang: "en" }, PRACTICA_META.en),
@@ -494,7 +535,7 @@ function renderSet(setId) {
       ),
       MODES.map((m) => {
         const best = store.getBest(set.id, tense, m);
-        return el("a", { class: "mode-card", href: `#/play/${set.id}/${tense}/${m}` },
+        return el("a", { class: "mode-card", "data-mode": m, href: `#/play/${set.id}/${tense}/${m}` },
           el("span", { class: "mode-icon" }, MODE_META[m].icon),
           el("strong", {}, MODE_META[m].es),
           el("span", { class: "mode-en", lang: "en" }, MODE_META[m].en),
@@ -503,7 +544,7 @@ function renderSet(setId) {
       }),
       // Escucha exists only where a Spanish voice does; badges, not stars.
       audioAvailable()
-        ? el("a", { class: "mode-card listen-card", href: `#/play/${set.id}/${tense}/${LISTEN}` },
+        ? el("a", { class: "mode-card listen-card", "data-mode": "listen", href: `#/play/${set.id}/${tense}/${LISTEN}` },
           el("span", { class: "mode-icon" }, LISTEN_META.icon),
           el("strong", {}, LISTEN_META.es),
           el("span", { class: "mode-en", lang: "en" }, LISTEN_META.en),
@@ -513,7 +554,7 @@ function renderSet(setId) {
 
     el("h2", {}, "3 · Reto ", el("span", { class: "h-en", lang: "en" }, "(challenge)")),
     el("div", { class: "mode-row contrast-row" },
-      el("a", { class: "mode-card contrast-card", href: `#/play/${set.id}/contrast` },
+      el("a", { class: "mode-card contrast-card", "data-mode": "contrast", href: `#/play/${set.id}/contrast` },
         el("span", { class: "mode-icon" }, "⚔️"),
         el("strong", {}, "¿Pretérito o imperfecto?"),
         el("span", { class: "mode-en", lang: "en" }, "Read the time clue, pick the past tense"),
@@ -775,7 +816,7 @@ function renderPlay(setId, tense, mode) {
   // setting — entering the listening mode is explicit audio intent.
   function listenPromptCard(t) {
     return el("div", { class: "prompt" },
-      el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
+      el("span", { class: "prompt-tense", "data-tense": tense }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
       infoButton(mode),
       el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en", lang: "en" }, "Which form do you hear?")),
       el("div", { class: "listen-controls" },
@@ -789,7 +830,7 @@ function renderPlay(setId, tense, mode) {
 
   function promptCard(t) {
     return el("div", { class: "prompt" },
-      el("span", { class: "prompt-tense" }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
+      el("span", { class: "prompt-tense", "data-tense": tense }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
       infoButton(mode),
       el("div", { class: "prompt-main" },
         el("span", { class: "prompt-person" }, personDisplay(t.person)),

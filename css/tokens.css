@@ -1,0 +1,179 @@
+/* =====================================================================
+   Conjuga design tokens — M16 redesign ("Prado" direction)
+   Source of truth: design/Conjuga Redesign.dc.html (turns 2a/3a/4a-4b),
+   distilled in docs/DESIGN.md.
+
+   STATUS: DEFINED, NOT APPLIED (task R, spec-only).
+   - This file is NOT linked from any HTML yet.
+   - Every custom property is scoped to :root[data-redesign], and nothing
+     in the shipped app sets that attribute — so even if this file were
+     linked today it would change nothing. The G task adds the gate
+     (data-redesign on <html> + the ?redesign=1 preview) and wires this in;
+     the I* tasks consume these tokens from css/redesign.css.
+
+   Forward-compat with the M16 theme selector (task T, Auto/Light/Dark):
+   - :root[data-redesign]                      → light (Prado) defaults
+   - @media (prefers-color-scheme: dark) …     → Auto follows the OS
+   - :root[data-redesign][data-theme="dark"]   → manual Dark override
+   - :root[data-redesign][data-theme="light"]  → manual Light override
+
+   Hard M16 constraints honored here:
+   - No external fonts / no @import: font tokens are family STACKS with
+     system fallbacks. If Baloo 2 / Nunito are wanted, self-host a subset
+     within the 100 KB gzip budget; never add a Google Fonts <link>.
+   - This file counts toward the payload budget (tests/payload.test.mjs).
+   ===================================================================== */
+
+:root[data-redesign] {
+  /* ---- Type: families (self-host or fall back to system stacks) ---- */
+  --font-display: "Baloo 2", ui-rounded, "Segoe UI Rounded", system-ui, sans-serif;
+  --font-body: "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* ---- Type: weights ---- */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  /* ---- Type: role sizes (px values as drawn in the 394px artifact;
+          the migration maps these roles onto the app's rem rhythm) ---- */
+  --fs-wordmark: 31px;   /* display 800 — "Conjuga" hero */
+  --fs-h2: 20px;         /* display 800 — screen title */
+  --fs-results: 22px;    /* display 800 — results score */
+  --fs-prompt: 23px;     /* display 600 — play prompt verb */
+  --fs-title: 15px;      /* display 700 — card / group title */
+  --fs-answer: 15px;     /* body 800 — answer buttons */
+  --fs-section: 12.5px;  /* display 700 — numbered section headers */
+  --fs-body: 11.5px;     /* body 400/600 — running text */
+  --fs-caption: 10.5px;  /* body — secondary labels */
+  --fs-fine: 9px;        /* body — footer fine print */
+
+  /* ---- Spacing scale (design uses 2px granularity; these are the
+          load-bearing steps) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --pad-screen: 18px 16px 20px;  /* .scr-body padding */
+  --pad-card: 12px 13px;
+
+  /* ---- Radii ---- */
+  --radius-xs: 5px;      /* kbd chips */
+  --radius-sm: 11px;     /* review rows */
+  --radius-table: 14px;  /* conjugation table clip */
+  --radius-md: 16px;     /* answer buttons, activity tiles, review boxes */
+  --radius-lg: 22px;     /* cards, prompt card, hero band (design --radius) */
+  --radius-pill: 999px;  /* badges, chips, progress bar */
+
+  /* ---- Elevation ---- */
+  --shadow-sm: 0 1px 4px rgba(30, 40, 30, 0.08);
+  --shadow-card: 0 2px 8px rgba(30, 40, 30, 0.08);
+  --shadow-raised: 0 2px 10px rgba(30, 40, 30, 0.08);
+  --shadow-pop: 0 12px 30px rgba(30, 40, 30, 0.16), 0 2px 6px rgba(30, 40, 30, 0.1);
+
+  /* ---- Color: light (Prado) ---- */
+  --bg: #fbf6ea;
+  --card: #ffffff;
+  --ink: #243026;
+  --ink-soft: #5c6558;     /* darkened from artifact #6c7568 to pass 4.5:1 vs #fbf6ea (5.35); axe-verified */
+  --brand: #2f6b4f;        /* leaf green — darkened from artifact #3f9256 to pass 4.5:1 vs #fff (6.14) + #fbf6ea (5.7); axe-verified in I* */
+  --brand-tint: #e3f2df;   /* soft green fill (design --brand-2) */
+  --accent: #e37a4f;       /* persimmon */
+  --good: #2f8a52;
+  --good-bg: #dff2e2;
+  --bad: #c2492f;
+  --bad-bg: #f8e2da;
+  --star: #e0982f;         /* amber — progress stars */
+
+  /* ---- Color: tense hues (star-free triad; sun / flag / loop) ---- */
+  --tense-present: #e0982f;    /* sun — ahora */
+  --tense-preterite: #e37a4f;  /* planted flag — una vez */
+  --tense-imperfect: #3f9256;  /* repeat loop — muchas veces */
+
+  /* ---- Lola (re-themable mascot), light ---- */
+  --lola-face: #fff7ec;
+  --lola-face-line: #eadfc8;
+  --lola-body: #c99a5b;
+  --lola-wing: #b08447;
+  --lola-chest: #f3e4c8;
+  --lola-eye: #2e2a26;
+  --lola-beak: #e0a458;
+}
+
+/* ---- Color: dark (forest night). Auto = follow the OS. ---- */
+@media (prefers-color-scheme: dark) {
+  :root[data-redesign]:not([data-theme="light"]) {
+    --bg: #191e17;
+    --card: #252c22;
+    --ink: #eef1e9;
+    --ink-soft: #a3ad98;
+    --brand: #74c489;
+    --brand-tint: #2c3a2b;
+    --accent: #f0946a;
+    --good: #6cc888;
+    --good-bg: #243a22;
+    --bad: #ef8a6f;      /* derived: not drawn in the artifact (see DESIGN.md) */
+    --bad-bg: #3a231c;   /* derived: not drawn in the artifact (see DESIGN.md) */
+    --star: #f3b750;
+
+    --tense-present: #f3b750;
+    --tense-preterite: #f0946a;
+    --tense-imperfect: #74c489;
+
+    --lola-face: #f2ead9;
+    --lola-face-line: #d9cbae;
+    --lola-body: #a8834e;
+    --lola-wing: #8f6e3e;
+    --lola-chest: #d9c6a0;
+    --lola-eye: #1e1b18;
+    --lola-beak: #c98f45;
+
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-raised: 0 2px 10px rgba(0, 0, 0, 0.45);
+    --shadow-pop: 0 12px 30px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ---- Manual Dark override (task T selects Dark regardless of OS) ---- */
+:root[data-redesign][data-theme="dark"] {
+  --bg: #191e17;
+  --card: #252c22;
+  --ink: #eef1e9;
+  --ink-soft: #a3ad98;
+  --brand: #74c489;
+  --brand-tint: #2c3a2b;
+  --accent: #f0946a;
+  --good: #6cc888;
+  --good-bg: #243a22;
+  --bad: #ef8a6f;
+  --bad-bg: #3a231c;
+  --star: #f3b750;
+
+  --tense-present: #f3b750;
+  --tense-preterite: #f0946a;
+  --tense-imperfect: #74c489;
+
+  --lola-face: #f2ead9;
+  --lola-face-line: #d9cbae;
+  --lola-body: #a8834e;
+  --lola-wing: #8f6e3e;
+  --lola-chest: #d9c6a0;
+  --lola-eye: #1e1b18;
+  --lola-beak: #c98f45;
+
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-raised: 0 2px 10px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Manual Light override keeps the light tokens even when the OS is dark;
+   :root[data-redesign] already defines them, so this selector only needs
+   to exist to win specificity over the Auto media block above. */
+:root[data-redesign][data-theme="light"] {
+  --bg: #fbf6ea;
+}

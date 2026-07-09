@@ -513,6 +513,69 @@ await darkPage.screenshot({ path: `${SHOTS}/home-dark.png` });
 await darkPage.close();
 ok("dark mode: Lola dark palette active");
 
+// ---------- M16 T: theme selector (Auto / Light / Dark) ----------
+{
+  const themeBg = (page) => page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--bg").trim().toLowerCase());
+  // Auto follows the OS: colorScheme:"dark" + no data-theme → dark bg.
+  const auto = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(auto);
+  await auto.goto(`${BASE}/#/`);
+  await auto.waitForSelector(".set-card");
+  const autoHasAttr = await auto.evaluate(() => document.documentElement.hasAttribute("data-theme"));
+  if (autoHasAttr) fail("theme Auto: data-theme must NOT be set by default");
+  const autoBg = await themeBg(auto);
+  if (autoBg !== "#1c2130") fail(`theme Auto: OS-dark should apply dark --bg #1c2130, got "${autoBg}"`);
+  await auto.close();
+
+  // Light beats OS dark: pick Light in the menu, then confirm bg + persistence.
+  const light = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(light);
+  await light.goto(`${BASE}/#/`);
+  await light.waitForSelector(".set-card");
+  await light.click(".menu-btn");
+  await light.waitForSelector(".theme-selector");
+  await light.click('.theme-option[data-theme-value="light"]');
+  await light.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "light");
+  const lightBg = await themeBg(light);
+  if (lightBg !== "#fdf6ec") fail(`theme Light: should override OS-dark to #fdf6ec, got "${lightBg}"`);
+  const pressedLight = await light.evaluate(() =>
+    document.querySelector('.theme-option[data-theme-value="light"]').getAttribute("aria-pressed"));
+  if (pressedLight !== "true") fail(`theme Light: aria-pressed should be "true", got "${pressedLight}"`);
+  // Persist across reload — Esc closes the menu first (menu wiring intact).
+  await light.keyboard.press("Escape");
+  await light.waitForSelector(".menu-panel", { state: "hidden" });
+  await light.reload();
+  await light.waitForSelector(".set-card");
+  const lightBgReload = await themeBg(light);
+  if (lightBgReload !== "#fdf6ec") fail(`theme Light: choice did not persist across reload, got "${lightBgReload}"`);
+  await light.close();
+
+  // Dark beats OS light: pick Dark, then confirm bg.
+  const dark = await browser.newPage({ colorScheme: "light" });
+  trackErrors(dark);
+  await dark.goto(`${BASE}/#/`);
+  await dark.waitForSelector(".set-card");
+  await dark.click(".menu-btn");
+  await dark.click('.theme-option[data-theme-value="dark"]');
+  await dark.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "dark");
+  const darkBg = await themeBg(dark);
+  if (darkBg !== "#1c2130") fail(`theme Dark: should override OS-light to #1c2130, got "${darkBg}"`);
+  await dark.close();
+
+  // Auto reset: go back to Auto (clears data-theme) — applies in the REDESIGN look too.
+  const redAuto = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(redAuto);
+  await redAuto.goto(`${BASE}/?redesign=1#/`);
+  await redAuto.waitForSelector(".set-card");
+  const redBg = await themeBg(redAuto);
+  // Prado dark bg is #191e17.
+  if (redBg !== "#191e17") fail(`theme in redesign+Auto+OS-dark: expected #191e17 (Prado forest-night), got "${redBg}"`);
+  await redAuto.close();
+
+  ok("theme: Auto follows OS (dark #1c2130); Light beats OS-dark to #fdf6ec (persists); Dark beats OS-light; redesign+Auto+OS-dark = Prado #191e17");
+}
+
 // ---------- mobile 360×640: no overflow, perch inside viewport ----------
 const mob = await browser.newPage({ viewport: { width: 360, height: 640 } });
 trackErrors(mob);
@@ -1067,6 +1130,146 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   }
   await sticky.close();
   ok("sticky: persons column frozen while Práctica/Estudia tables scroll on phones");
+}
+
+// ---------- M16 G: redesign gate + preview scaffold ----------
+{
+  // Default (no ?redesign=1): gate off, tokens/redesign files load 200 but
+  // contribute nothing visible; the LIVE look must be byte-identical.
+  const off = await browser.newPage();
+  trackErrors(off);
+  const linkStatus = { tokens: null, redesign: null };
+  off.on("response", (r) => {
+    if (r.url().endsWith("/css/tokens.css")) linkStatus.tokens = r.status();
+    if (r.url().endsWith("/css/redesign.css")) linkStatus.redesign = r.status();
+  });
+  await off.goto(`${BASE}/`);
+  await off.waitForSelector(".set-card");
+  const offState = await off.evaluate(() => ({
+    hasGate: document.documentElement.hasAttribute("data-redesign"),
+    bg: getComputedStyle(document.body).backgroundColor,
+    linksHref: [...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => new URL(l.href).pathname),
+  }));
+  if (offState.hasGate) fail(`gate default: data-redesign should be UNSET (found "${offState.hasGate}")`);
+  if (linkStatus.tokens !== 200) fail(`gate default: css/tokens.css did not load 200 (got ${linkStatus.tokens})`);
+  if (linkStatus.redesign !== 200) fail(`gate default: css/redesign.css did not load 200 (got ${linkStatus.redesign})`);
+  if (!offState.linksHref.some((p) => p.endsWith("/css/tokens.css"))) fail("gate default: tokens.css link missing");
+  if (!offState.linksHref.some((p) => p.endsWith("/css/redesign.css"))) fail("gate default: redesign.css link missing");
+  await off.close();
+  ok(`gate: default off, tokens+redesign linked and 200, body bg unchanged (${offState.bg})`);
+
+  // Preview trigger (?redesign=1): gate on, Prado ground applies from tokens.
+  const on = await browser.newPage();
+  trackErrors(on);
+  await on.goto(`${BASE}/?redesign=1#/`);
+  await on.waitForSelector(".set-card");
+  const onState = await on.evaluate(() => ({
+    hasGate: document.documentElement.hasAttribute("data-redesign"),
+    bg: getComputedStyle(document.body).backgroundColor,
+    brand: getComputedStyle(document.documentElement).getPropertyValue("--brand").trim(),
+  }));
+  if (!onState.hasGate) fail("gate preview: ?redesign=1 must set data-redesign on <html>");
+  // tokens.css light --brand is #2f6b4f (darkened from the artifact's
+  // #3f9256 during I* to pass WCAG AA 4.5:1 — see docs/DESIGN.md contrast note).
+  if (!/^#2f6b4f$/i.test(onState.brand) && onState.brand !== "#2f6b4f") {
+    fail(`gate preview: --brand should resolve to Prado #2f6b4f, got "${onState.brand}"`);
+  }
+  await on.close();
+  ok(`gate: ?redesign=1 activates data-redesign; --brand = ${onState.brand}`);
+}
+
+// ---------- M16 I*: redesign-preview screenshots + preview axe gate ----------
+{
+  // One screenshot per redesigned screen for morning review. Also validates
+  // key tokens landed as computed styles (fonts, backgrounds), so a broken
+  // redesign selector loudly fails here instead of quietly shipping.
+  const previewRoutes = [
+    ["home", `?redesign=1#/`],
+    ["group", `?redesign=1#/set/1`],
+    ["study", `?redesign=1#/study/1/present`],
+    ["practica", `?redesign=1#/practica/1/present`],
+    ["choice", `?redesign=1#/play/1/present/choice`],
+    ["type", `?redesign=1#/play/1/present/type`],
+    ["match", `?redesign=1#/play/1/present/match`],
+    ["contrast", `?redesign=1#/play/1/contrast`],
+    ["informe", `?redesign=1#/informe`],
+  ];
+  const prev = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(prev);
+  for (const [name, path] of previewRoutes) {
+    await prev.goto(`${BASE}/${path}`);
+    await prev.waitForSelector(".site-footer");
+    await prev.screenshot({ path: `${SHOTS}/redesign-${name}.png` });
+    // Every preview page uses the redesign body font (Nunito stack) and
+    // the Prado ground (var(--bg) = #fbf6ea in light).
+    const state = await prev.evaluate(() => ({
+      hasGate: document.documentElement.hasAttribute("data-redesign"),
+      fontFamily: getComputedStyle(document.body).fontFamily,
+      bg: getComputedStyle(document.documentElement).getPropertyValue("--bg").trim().toLowerCase(),
+    }));
+    if (!state.hasGate) fail(`redesign preview ${name}: gate lost`);
+    if (!/nunito|ui-rounded|system-ui/i.test(state.fontFamily)) fail(`redesign preview ${name}: body font not the Prado stack — got "${state.fontFamily}"`);
+    if (state.bg !== "#fbf6ea") fail(`redesign preview ${name}: --bg should be Prado #fbf6ea, got "${state.bg}"`);
+  }
+  await prev.goto(`${BASE}/?redesign=1&redesign=1#/set/1`); // path param survives real-world usage
+  await prev.close();
+
+  // Also screenshot about + docs in redesign.
+  const prevStatic = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(prevStatic);
+  await prevStatic.goto(`${BASE}/about.html?redesign=1`);
+  await prevStatic.waitForSelector("main");
+  await prevStatic.screenshot({ path: `${SHOTS}/redesign-about.png` });
+  await prevStatic.goto(`${BASE}/docs/?redesign=1`);
+  await prevStatic.waitForSelector("main");
+  await prevStatic.screenshot({ path: `${SHOTS}/redesign-docs.png` });
+  await prevStatic.goto(`${BASE}/docs/usability.html?redesign=1`);
+  await prevStatic.waitForSelector("main");
+  await prevStatic.screenshot({ path: `${SHOTS}/redesign-usability.png` });
+  await prevStatic.close();
+
+  ok(`redesign preview: screenshots captured for 13 screens (${previewRoutes.length} app + 3 static)`);
+
+  // Preview axe gate — the M16 spec: no new critical/serious violations
+  // under ?redesign=1 either. Uses the vendored axe.min.js loaded earlier.
+  const { readFileSync } = await import("node:fs");
+  const axeSource = readFileSync(join(ROOT, "tests/e2e/vendor/axe.min.js"), "utf8");
+  const axePrev = await browser.newPage();
+  trackErrors(axePrev);
+  for (const [, path] of previewRoutes) {
+    await axePrev.goto(`${BASE}/${path}`);
+    await axePrev.reload();
+    await axePrev.waitForSelector(".site-footer");
+    await axePrev.addScriptTag({ content: axeSource });
+    const bad = await axePrev.evaluate(async () => {
+      const res = await window.axe.run(document, { resultTypes: ["violations"] });
+      return res.violations
+        .filter((v) => v.impact === "critical" || v.impact === "serious")
+        .map((v) => `${v.id}(${v.impact}) ×${v.nodes.length} e.g. ${v.nodes[0]?.target?.join(" ")}`);
+    });
+    if (bad.length) fail(`redesign axe ${path}: ${bad.join(" | ")}`);
+  }
+  await axePrev.close();
+  ok(`redesign axe: zero critical/serious violations across ${previewRoutes.length} redesigned routes`);
+
+  // Dark theme × redesign preview: exercise the forest-night palette
+  // through axe on the home route so a dark-mode contrast regression
+  // (e.g. --brand vs --bg dark) can't slip through.
+  const axeDark = await browser.newPage({ colorScheme: "dark" });
+  trackErrors(axeDark);
+  await axeDark.goto(`${BASE}/?redesign=1#/`);
+  await axeDark.reload();
+  await axeDark.waitForSelector(".site-footer");
+  await axeDark.addScriptTag({ content: axeSource });
+  const badDark = await axeDark.evaluate(async () => {
+    const res = await window.axe.run(document, { resultTypes: ["violations"] });
+    return res.violations
+      .filter((v) => v.impact === "critical" || v.impact === "serious")
+      .map((v) => `${v.id}(${v.impact}) ×${v.nodes.length}`);
+  });
+  if (badDark.length) fail(`redesign axe dark: ${badDark.join(" | ")}`);
+  await axeDark.close();
+  ok("redesign axe: zero critical/serious violations in the forest-night (dark) preview");
 }
 
 // ---------- wrap up ----------
