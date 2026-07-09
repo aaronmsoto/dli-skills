@@ -10,6 +10,11 @@ Round 2 attention.
 
 - `npm test` **50/50** green (the same 49 pre-existing tests plus the M16
   R spec-guard test).
+- **Preview screenshots** — the 12 morning-review PNGs live at
+  `docs/audits/M16-preview/redesign-*.png` (committed with this PR):
+  `home`, `group`, `study`, `practica`, `choice`, `type`, `match`,
+  `contrast`, `informe`, `about`, `docs`, `usability`. Regenerated on
+  every `npm run e2e` from `tests/e2e/shots/` (which is `.gitignore`d).
 - `npm run e2e` **all checks pass**, including new blocks:
   - `gate` (default off, `?redesign=1` on),
   - `theme` (Auto follows the OS, Light beats OS-dark, Dark beats OS-light,
