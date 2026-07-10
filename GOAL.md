@@ -29,11 +29,10 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 ## Milestones
 
 **Queue: M16 COMPLETE + live (Prado redesign shipped to main 2026-07-10).
-M17 round-2 audits + auto-fixes COMPLETE on dev 2026-07-10 — two
-design-decision findings (NN-7 split icon system, DN-6 imperfect tense-badge
-contrast) await the owner in M17 below; loops must not implement them until
-an option is chosen. No other loop-workable item is queued — the owner sets
-the next milestone.**
+M17 COMPLETE on dev 2026-07-10 — round-2 audits, all auto-fixes, and both
+owner design-decisions (NN-7/DN-8 icon system + DN-6 imperfect badge, option
+a) landed. No loop-workable item is queued — the M17 a11y + icon fixes ride
+the next dev→main release, and the owner sets the next milestone.**
 M16 tasks R (design extraction), G (gate), T (theme selector, Light
 default), I\* (per-screen migration), RT (regression), and FLIP (default
 the gate on + retire the old look) all landed on `dev`; the go-live deploy
@@ -552,9 +551,9 @@ The queue line here — not milestone numbering — sets loop priority.
         green. Docs (DESIGN/GOAL/SPEC/README/about) synced. The production
         redeploy of the new design is the next human-merged dev→main release.
 
-- [~] **M17 — 🔬 Round-2 usability & accessibility audits (post-redesign;
-  owner-directed 2026-07-09; audits + auto-fixes done on dev 2026-07-10 —
-  two design-decision items await the owner below)**
+- [x] **M17 — 🔬 Round-2 usability & accessibility audits (post-redesign;
+  owner-directed 2026-07-09; COMPLETE on dev 2026-07-10 — audits, auto-fixes,
+  and both owner design-decisions (option a) all landed)**
   Re-ran the four evaluations against the live Prado redesign and recorded
   dated results. The axe-core CI gate runs on the redesign, so this was the
   deeper manual round — and it earned its keep: axe snapshots empty screens,
@@ -586,23 +585,20 @@ The queue line here — not milestone numbering — sets loop priority.
   - [x] **V/RT** — e2e for the fixes (computed colors + target size),
         axe-core green (both themes), full regression 50/50 unit; journal
         entry written.
-  - Decision-pending Round 2 findings (owner triage — loops must NOT
-    implement these until an option is chosen here):
-    - [ ] **NN-7 (severity 2, aesthetic direction):** the group screen uses
-          monochrome `--brand` line-icons while the same activities keep
-          full-color emoji in the Estudia action row, h1 headings, and
-          footer — one activity, two icons by screen. Options: (a) push the
-          line-icon set everywhere; (b) revert the group cards to the shared
-          emoji; (c) accept the split. Auditor lean: (a) or (b) for
-          per-activity recognition consistency.
-    - [ ] **DN-6 (medium, 1.4.3):** the imperfect tense badge text is
-          3.58:1 — the mid-tone `--tense-imperfect #3f9256` fails 4.5:1 with
-          *both* dark (3.58) and white (3.85) text, so the fix means changing
-          the tense hue. Options: (a) darken the imperfect hue toward a green
-          that passes with white text (risks resembling `--brand`); (b)
-          lighten it to pass with dark text; (c) accept (the tense name also
-          shows in the breadcrumb, so it is not a color-only cue). Auditor
-          lean: (a) with a hue kept distinct from brand.
+  - [x] **NN-7 / DN-8 (icon system) — RESOLVED 2026-07-10, owner chose
+        option (a), refined.** Two clean icon languages: the Prado line-icon
+        set marks activity identity everywhere it appears (group cards +
+        activity `h1` headings + the Estudia action row, via a reusable
+        `.mode-icon.mi-inline`); the prompt-tense badge is a **text-only
+        colored pill** (the wrong 🌙/⭐ metaphors removed, incl. from the
+        informe headers); decorative nav/menu/footer label emoji (📖 📄 📚)
+        were **removed** for a text-forward look (owner direction); functional
+        /status glyphs (🔊 🖨️ ℹ️ 🔍, ⭐/🎧 counts) kept as a separate category.
+  - [x] **DN-6 (imperfect badge contrast) — RESOLVED 2026-07-10, owner chose
+        option (a).** Light `--tense-imperfect` darkened `#3f9256 → #1f7a45`
+        (distinct from `--brand`); imperfect badge text is white via
+        `--tense-imperfect-ink` (**5.35:1**); dark theme unchanged. Locked by
+        the "M17 owner fixes" e2e block.
   - Low-severity watch items (no action required; monitor with real K-5
     users): CW-4 (theme/sound behind the unlabeled ☰), CW-5 (activity tiles
     equal visual weight), CW-6 (star-total pill reads tappable), NN-4

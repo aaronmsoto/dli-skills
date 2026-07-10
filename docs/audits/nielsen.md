@@ -91,14 +91,19 @@ re-confirmed, not re-walked. New surface: the ☰-menu theme selector.
   "x/30" beside it keeps meaning (hence 2, not 3). **Found 2026-07-10 · FIXED
   2026-07-10** (`--star-glyph #b8770f`, 3.69:1; dark unchanged). *= WCAG-6 /
   DN-5.*
-- **NN-7 · Severity 2 · Consistency & standards · OWNER DECISION (open)** —
-  Prado gives the group screen monochrome line-icons (masked SVG, `--brand`),
-  but the same activities keep full-color emoji everywhere else (Estudia
-  action row, h1 headings, footer). One activity now wears two icons depending
-  on screen. Round 1 praised distinct-per-activity icons as a strength; the
-  split partially erodes that recognition cue. It's an aesthetic-direction
-  call (push line-icons everywhere, or revert group cards to emoji) → appended
-  to GOAL.md M17 for owner triage. Not mechanical.
+- **NN-7 · Severity 2 · Consistency & standards · FIXED 2026-07-10 (owner
+  chose option a, refined)** — Prado gave the group screen line-icons but the
+  same activities kept full-color emoji elsewhere (action row, h1 headings),
+  and a **wrong 🌙 moon / ⭐ star** rode the prompt-tense badge and informe
+  headers against the star-free triad. **Resolved into two icon languages:**
+  the line-icon set now marks activity identity on group cards **and** the
+  activity `h1` headings **and** the Estudia action row (reusable
+  `.mode-icon.mi-inline`); the tense badge is a **text-only colored pill**;
+  decorative nav/menu/footer label emoji (📖 back-links, 📄 Informe, 📚 Docs)
+  were **removed** for an elegant text-forward look (owner direction
+  2026-07-10); and functional/status glyphs (🔊 🖨️ ℹ️ 🔍, ⭐/🎧 counts) were
+  kept as a separate, universal category. Recognition-per-activity is restored
+  without a full emoji purge.
 - **NN-8 · Severity 1 · Touch target** — the 🎨 Tema segmented control was
   `min-height: 34px`, under the project's ≥44px K-5 rule (golden rule 4).
   **Found 2026-07-10 · FIXED 2026-07-10** (raised to 44px). Its active state

@@ -654,6 +654,46 @@ ok("dark mode: Lola dark palette active");
   ok("M17 a11y fixes: ★ glyph #b8770f (3.69:1), feedback text ink ≥4.5:1, theme options 44px + brand active border");
 }
 
+// ---------- M17 owner-decision fixes: NN-7 (line-icons everywhere) + DN-6 (imperfect badge) ----------
+{
+  const p = await browser.newPage({ colorScheme: "light" });
+  trackErrors(p);
+  // NN-7: the group card AND the h1 heading AND the Estudia action row all
+  // show the SAME masked line-icon (data-icon), sized > 0 (regression guard
+  // for the mode-icon re-key + the mi-inline font-size restore).
+  await p.goto(`${BASE}/#/set/1`);
+  await p.waitForSelector('.mode-card[data-mode="study"] .mode-icon[data-icon="study"]');
+  const iconOK = (sel) => p.evaluate((s) => {
+    const el = document.querySelector(s); if (!el) return { w: 0, mask: "none" };
+    const cs = getComputedStyle(el);
+    return { w: parseFloat(cs.width), mask: cs.maskImage || cs.webkitMaskImage || "none" };
+  }, sel);
+  const card = await iconOK('.mode-card[data-mode="study"] .mode-icon[data-icon="study"]');
+  if (card.w < 8 || card.mask === "none") fail(`NN-7: group-card study icon lost its mask after re-key (w=${card.w})`);
+  await p.goto(`${BASE}/#/study/1/present`);
+  await p.waitForSelector("h1 .mode-icon.mi-inline[data-icon='study']");
+  const head = await iconOK("h1 .mode-icon.mi-inline[data-icon='study']");
+  if (head.w < 8 || head.mask === "none") fail(`NN-7: heading line-icon not rendering (w=${head.w}, mask=${head.mask})`);
+  const actionIcons = await p.locator(".study-actions .mode-icon.mi-inline").count();
+  if (actionIcons < 4) fail(`NN-7: expected ≥4 line-icons in the Estudia action row, got ${actionIcons}`);
+  await p.close();
+
+  // DN-6: the imperfect tense badge is now WHITE text on the darkened green
+  // #1f7a45 (5.35:1); present/preterite keep dark text (verified elsewhere).
+  const q = await browser.newPage({ colorScheme: "light" });
+  trackErrors(q);
+  await q.goto(`${BASE}/#/play/1/imperfect/choice`);
+  await q.waitForSelector('.prompt-tense[data-tense="imperfect"]');
+  const badge = await q.evaluate(() => {
+    const cs = getComputedStyle(document.querySelector('.prompt-tense[data-tense="imperfect"]'));
+    return { color: cs.color, bg: cs.backgroundColor };
+  });
+  if (badge.color !== "rgb(255, 255, 255)") fail(`DN-6: imperfect badge text should be white, got ${badge.color}`);
+  if (badge.bg !== "rgb(31, 122, 69)") fail(`DN-6: imperfect badge bg should be #1f7a45, got ${badge.bg}`);
+  await q.close();
+  ok("M17 owner fixes: NN-7 line-icons on card+heading+action row; DN-6 imperfect badge white-on-#1f7a45");
+}
+
 // ---------- mobile 360×640: no overflow, perch inside viewport ----------
 const mob = await browser.newPage({ viewport: { width: 360, height: 640 } });
 trackErrors(mob);
