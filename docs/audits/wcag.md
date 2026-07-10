@@ -107,3 +107,96 @@ Dark: ink/bg 14.17 · ink-soft/bg 7.36 · brand/bg 5.89 · brand/card 4.96 ·
 good/bg 9.2 · bad/bg 8.45 · almost/bg 12.16 · star/card 6.29 ·
 credits-effective 5.73. (WCAG relative-luminance formula; blended colors
 computed for opacity cases.)
+
+---
+
+## Round 2 (2026-07-10) — Prado redesign
+
+**Date:** 2026-07-10 · **Auditor:** loop agent (M17 A4′) · **Scope:** the M16
+"Prado" visual redesign, now the DEFAULT look (`data-redesign` set
+unconditionally by every HTML head loader). All 10 screens + about.html +
+/docs, both themes via the ☰ theme selector (Auto / Light / Dark, **Light
+default**), 320–2560px. Prado changed **only colors/tokens and visual
+styling** — DOM, ARIA, roles, headings, focus handling and keyboard flows are
+byte-for-byte the Round 1 markup, so every Operable/Understandable/Robust PASS
+carries forward (re-confirmed by code review). This round is a
+**Perceivable / contrast** re-audit of the new palette.
+
+### Method & what the automated gate misses
+
+The e2e `redesign axe` checks run axe-core over every redesigned route in
+light and forest-night and assert **zero critical/serious** — green. **But
+axe snapshots empty-progress, pre-answer screens**, so the earned amber ★
+glyphs (need score > 0) and the `.feedback.*` text (only after an answer)
+never render during the axe run. Manual token-contrast computation is what
+catches the two dynamic-state regressions below.
+
+### Perceivable — findings (all light-theme only; dark passes everywhere)
+
+- **WCAG-6 · Moderate · 1.4.11 Non-text Contrast** — *Round 1's WCAG-2,
+  re-introduced by Prado.* Filled ★ glyphs (`.stars .star.on`) took
+  `color: var(--star)`; light `--star #e0982f` = **2.41:1 on `--card`**,
+  **2.24:1 on `--bg`** (< 3:1). Shape (★ vs ☆) + `aria-label` counts keep
+  1.4.1 a PASS, but the glyph misses 3:1. **Found 2026-07-10 · FIXED
+  2026-07-10** — split off a glyph-only token `--star-glyph: #b8770f`
+  (**3.69:1 / 3.43:1**), leaving `--star` for the `.total-stars` pill fill
+  (dark text on it stays 5.70:1). *Note:* Round 1's #d97706 is now
+  insufficient — on Prado's cream `--bg` it is only 2.95:1, so the fix went
+  darker.
+- **WCAG-7 · Serious · 1.4.3 Contrast (Minimum)** — *NEW.* Correctness
+  feedback text (`.feedback.good/.bad/.almost`, ~18.4px so 4.5:1 applies) all
+  missed AA in light: good `--good` on `--good-bg` **3.68:1**, bad **3.94:1**,
+  almost `--star` on its tint **~2.14:1**. Shown on every answer → Serious.
+  **Found 2026-07-10 · FIXED 2026-07-10** — darker `--good-ink #1f6b3c`
+  (5.56:1), `--bad-ink #a13318` (5.62:1), `--almost-ink #7d5200` (6.04:1);
+  tokens resolve to the bright values in dark (already passing).
+- **WCAG-8 · Moderate · 1.4.3** — *NEW.* `.footer-applied` ("✓ setting
+  applied") renders `--good` as **text on `--bg`** = **3.99:1** light. (The
+  `.choice.good`/`.match-card.matched` borders use `--good` as a 3:1 non-text
+  element — those pass.) **Found 2026-07-10 · FIXED 2026-07-10** — reuse
+  `--good-ink` (6.03:1 on `--bg`).
+- **WCAG-9 · Minor · 1.4.11 / 1.4.1** — *NEW, theme selector.* Active option
+  was signalled only by a fill swap (`--card #fff` on `.theme-options`
+  `--brand-tint #e3f2df` ≈ **1.17:1**). `aria-pressed` covers AT users; low-
+  vision sighted users get a weak cue. **Found 2026-07-10 · FIXED
+  2026-07-10** — added a `2px solid var(--brand)` border on the pressed
+  option (brand/card 6.29:1).
+- **PASS (re-confirmed for Prado)** — 1.4.10 Reflow, 1.4.4 Resize, 1.4.12 Text
+  Spacing, 1.3.1 Info & Relationships, 1.4.1 Use of Color (star shape+labels;
+  tense hues also carry distinct mask-icons sun/flag/loop). Prado text pairs
+  pass: ink/card 13.76, ink-soft/bg 5.63, brand/bg 5.84, brand-on-white 6.29.
+
+### Operable / Understandable / Robust — PASS (DOM unchanged)
+
+Keyboard, focus-visible (Prado adds `:focus-visible` brand borders at 6.29:1),
+no traps, page titles, skip link, `lang="en"` parts, valid roles, single
+`aria-live` region — all unchanged from Round 1 and re-confirmed. The new
+theme selector is a labelled `role="group"` of `aria-pressed` toggles with a
+live-region announcement — name/role/value all sound (visual note = WCAG-9,
+now fixed).
+
+### Summary (Round 2)
+
+| Severity | Count | IDs | Status |
+|---|---|---|---|
+| Critical | 0 | — | — |
+| Serious | 1 | WCAG-7 | FIXED 2026-07-10 |
+| Moderate | 2 | WCAG-6, WCAG-8 | FIXED 2026-07-10 |
+| Minor | 1 | WCAG-9 | FIXED 2026-07-10 |
+
+All four were light-theme contrast regressions from the color swap, all
+mechanical → auto-fixed in this PR (verified in `tests/e2e/smoke.mjs`, the
+"M17 a11y fixes" block). Standing gap unchanged: real screen-reader / K-5 AT
+user testing (queued with the M5 SME item).
+
+### Contrast measurements — Prado palette, post-fix (for reproducibility)
+
+**Light (Prado day; ✓ passes; text 4.5:1 / non-text 3:1):**
+ink/bg 12.76 ✓ · ink/card 13.76 ✓ · ink-soft/bg 5.63 ✓ · brand/bg 5.84 ✓ ·
+brand/card 6.29 ✓ · brand/white(btn) 6.29 ✓ · **star-glyph/card 3.69 ✓** ·
+**star-glyph/bg 3.43 ✓** · star-pill dark-text 5.70 ✓ · **good-ink/good-bg
+5.56 ✓** · **bad-ink/bad-bg 5.62 ✓** · **almost-ink/tint 6.04 ✓** ·
+**good-ink/bg (applied) 6.03 ✓** · theme-active brand border/card 6.29 ✓.
+**Dark (forest-night):** ink/bg 14.84 · ink-soft/bg 7.25 · brand/bg 8.07 ·
+good/bg 8.27 · bad/bg 6.89 · almost 5.75 · star/card 8.00 — all ✓ (unchanged
+by the fixes; the *-ink and -glyph tokens resolve to the bright dark values).

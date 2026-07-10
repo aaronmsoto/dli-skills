@@ -201,14 +201,15 @@ button.menu-link:hover, button.menu-link:focus-visible { background: var(--brand
 }
 .theme-option {
   font: inherit; font-size: 0.85rem;
-  padding: 8px 6px; min-height: 34px;
-  border: none; border-radius: 8px; cursor: pointer;
+  padding: 8px 6px; min-height: 44px; /* NN-8 (M17): K-5 ≥44px touch target */
+  border: 2px solid transparent; border-radius: 8px; cursor: pointer;
   background: transparent; color: var(--ink);
 }
 .theme-option[aria-pressed="true"] {
   background: var(--card); color: var(--ink);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   font-weight: 700;
+  border-color: var(--brand); /* WCAG-9/DN-7 (M17): active state was a ~1.17:1 fill swap; the brand border is a ≥3:1 sighted cue */
 }
 .theme-option:hover:not([aria-pressed="true"]),
 .theme-option:focus-visible:not([aria-pressed="true"]) {

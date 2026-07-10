@@ -32,40 +32,54 @@
   <p><a href="./">← Documentación</a> · <a href="../">Conjuga</a></p>
   <h1>🦉 Usability &amp; Accessibility</h1>
   <p class="es" lang="es">Queremos que Conjuga sea fácil y justa para todos los niños.</p>
-  <p>Conjuga underwent four formal evaluations on <strong>2026-07-08</strong>. This page summarizes
-  scope, findings, and current status. It is regenerated whenever findings change.</p>
+  <p>Conjuga has been evaluated in two rounds: <strong>Round 1 (2026-07-08)</strong> on the
+  original design, and <strong>Round 2 (2026-07-10)</strong> re-running all four evaluations against
+  the new "Prado" visual redesign. Each finding carries an ID and Found / Fixed dates. This page
+  summarizes scope, findings, and current status across both rounds.</p>
 
   <section>
     <h2>WCAG 2.2 Level AA audit</h2>
-    <p>Both themes, all 10 screens, 360-2560px. Measured token contrast, ARIA/keyboard/reflow review,
+    <p>Both themes, all 10 screens, 320-2560px. Measured token contrast, ARIA/keyboard/reflow review,
     reduced-motion and print passes.
-    <strong>Result: 0 Critical · 3 Serious · 2 Moderate — all five fixed same-day.</strong></p>
+    <strong>Round 1: 0 Critical · 3 Serious · 2 Moderate — all fixed 2026-07-08.
+    Round 2 (Prado): 0 Critical · 1 Serious · 2 Moderate · 1 Minor — all fixed 2026-07-10.</strong></p>
     <div class="tablewrap"><table>
-      <tr><th>ID</th><th>Criterion</th><th>Finding</th><th>Status</th></tr>
-      <tr><td>WCAG-1</td><td>1.4.3 Contrast</td><td>Footer credits 4.04:1 in light theme (translucency)</td><td class="fixed">FIXED → 5.57:1</td></tr>
-      <tr><td>WCAG-2</td><td>1.4.11 Non-text contrast</td><td>Earned-star color 2.15:1 on light cards</td><td class="fixed">FIXED → 3.3:1 (dark unchanged, 6.29:1)</td></tr>
-      <tr><td>WCAG-3</td><td>2.4.2 Page titled</td><td>Static document.title on every route</td><td class="fixed">FIXED — per-route titles</td></tr>
-      <tr><td>WCAG-4</td><td>2.4.1 Bypass blocks</td><td>No skip link</td><td class="fixed">FIXED — "Saltar al contenido"</td></tr>
-      <tr><td>WCAG-5</td><td>3.1.2 Language of parts</td><td>English support copy lacked lang="en"</td><td class="fixed">FIXED — 15 elements marked</td></tr>
+      <tr><th>ID</th><th>Round</th><th>Criterion</th><th>Finding</th><th>Status</th></tr>
+      <tr><td>WCAG-1</td><td>R1 · 07-08</td><td>1.4.3 Contrast</td><td>Footer credits 4.04:1 in light theme (translucency)</td><td class="fixed">FIXED 07-08 → 5.57:1</td></tr>
+      <tr><td>WCAG-2</td><td>R1 · 07-08</td><td>1.4.11 Non-text contrast</td><td>Earned-star color 2.15:1 on light cards</td><td class="fixed">FIXED 07-08 → 3.3:1 (see WCAG-6)</td></tr>
+      <tr><td>WCAG-3</td><td>R1 · 07-08</td><td>2.4.2 Page titled</td><td>Static document.title on every route</td><td class="fixed">FIXED 07-08 — per-route titles</td></tr>
+      <tr><td>WCAG-4</td><td>R1 · 07-08</td><td>2.4.1 Bypass blocks</td><td>No skip link</td><td class="fixed">FIXED 07-08 — "Saltar al contenido"</td></tr>
+      <tr><td>WCAG-5</td><td>R1 · 07-08</td><td>3.1.2 Language of parts</td><td>English support copy lacked lang="en"</td><td class="fixed">FIXED 07-08 — 15 elements marked</td></tr>
+      <tr><td>WCAG-6</td><td>R2 · 07-10</td><td>1.4.11 Non-text contrast</td><td>Prado amber ★ glyph 2.41:1 on white (re-opened WCAG-2)</td><td class="fixed">FIXED 07-10 → glyph token #b8770f, 3.69:1</td></tr>
+      <tr><td>WCAG-7</td><td>R2 · 07-10</td><td>1.4.3 Contrast</td><td>Answer feedback text (good/bad/almost) below 4.5:1 in light</td><td class="fixed">FIXED 07-10 → ink tokens ≥5.5:1</td></tr>
+      <tr><td>WCAG-8</td><td>R2 · 07-10</td><td>1.4.3 Contrast</td><td>"Setting applied" green text 3.99:1 on the page background</td><td class="fixed">FIXED 07-10 → 6.03:1</td></tr>
+      <tr><td>WCAG-9</td><td>R2 · 07-10</td><td>1.4.11 / 1.4.1</td><td>Theme selector active state a ~1.17:1 fill swap only</td><td class="fixed">FIXED 07-10 → brand border, 6.29:1</td></tr>
     </table></div>
     <p><strong>Known limitation:</strong> no human screen-reader (NVDA/VoiceOver) pass yet — queued with the
-    bilingual-educator copy review. An automated axe-core pass now runs in CI with a
-    zero-critical/serious gate.</p>
+    bilingual-educator copy review. An automated axe-core pass runs in CI with a zero-critical/serious gate
+    on both themes; note it snapshots empty screens, so the Round 2 earned-star and feedback-text contrast
+    fixes (WCAG-6/7) were caught by manual token computation and locked with dedicated e2e assertions.</p>
   </section>
 
   <section>
     <h2>Heuristic evaluation (Nielsen 10) &amp; UX principles audit (Norman)</h2>
-    <p>Post-fix-wave: 6/7 Norman principles rated "strength"; no severity-4 findings. Positives documented
-    and preserved: ambient status (star counts visible on home cards without navigating), never-punitive
-    feedback (wrong answers self-explain, Lola tilts her head but never scolds), and the single
-    conjugation-table conceptual model that Estudia, Práctica, and the quiz modes all share.</p>
+    <p>Round 1 post-fix-wave: 6/7 Norman principles rated "strength"; no severity-4 findings. Round 2
+    against the Prado redesign: behaviorally 7/7 principles at strength (the reskin strengthened
+    discoverability, feedback, affordances and the conceptual model), with a short set of light-theme
+    contrast/polish items — all auto-fixable ones fixed 2026-07-10; two design-direction items left for
+    owner triage. Preserved positives: ambient status, never-punitive feedback, one shared
+    conjugation-table model, and the new star-free tense color triad (sun/flag/loop).</p>
     <div class="tablewrap"><table>
-      <tr><th>ID</th><th>Severity</th><th>Finding</th><th>Status</th></tr>
-      <tr><td>NN-1 / DN-4 / CW-3</td><td>3</td><td>Footer setting toggles on a game screen silently restart the round</td><td class="fixed">FIXED (2026-07-08) — mid-round toggles save and apply as play continues; no restart</td></tr>
-      <tr><td>NN-3 / DN-1 / CW-1</td><td>2</td><td>No "start here" cue for first-time learners on the 20-group home</td><td class="fixed">FIXED (2026-07-08) — ¡Empieza aquí! ribbon on the first unstarted group</td></tr>
-      <tr><td>NN-2 / DN-3</td><td>2</td><td>Static page titles</td><td class="fixed">FIXED (= WCAG-3)</td></tr>
-      <tr><td>NN-4</td><td>1</td><td>Browser-native confirm() for progress reset</td><td>Accepted (noted)</td></tr>
-      <tr><td>NN-5</td><td>1</td><td>🎧 Escucha invisible on voiceless devices</td><td class="fixed">FIXED (M12) — pre-recorded clips make Escucha available on voiceless-but-online devices</td></tr>
+      <tr><th>ID</th><th>Round</th><th>Severity</th><th>Finding</th><th>Status</th></tr>
+      <tr><td>NN-1 / DN-4 / CW-3</td><td>R1</td><td>3</td><td>Footer setting toggles on a game screen silently restart the round</td><td class="fixed">FIXED 07-08 — toggles defer, no restart (re-verified R2)</td></tr>
+      <tr><td>NN-3 / DN-1 / CW-1</td><td>R1</td><td>2</td><td>No "start here" cue for first-time learners on the 20-group home</td><td class="fixed">FIXED 07-08 — ¡Empieza aquí! ribbon (improved by Prado color)</td></tr>
+      <tr><td>NN-2 / DN-3</td><td>R1</td><td>2</td><td>Static page titles</td><td class="fixed">FIXED 07-08 (= WCAG-3)</td></tr>
+      <tr><td>NN-4</td><td>R1</td><td>1</td><td>Browser-native confirm() for progress reset</td><td>Accepted (noted)</td></tr>
+      <tr><td>NN-5</td><td>R1</td><td>1</td><td>🎧 Escucha invisible on voiceless devices</td><td class="fixed">FIXED (M12) — clips make Escucha available voiceless-but-online</td></tr>
+      <tr><td>NN-6 / DN-5</td><td>R2</td><td>2</td><td>Prado amber ★ glyph 2.41:1 on white cards (re-opened WCAG-2)</td><td class="fixed">FIXED 07-10 — glyph token #b8770f, 3.69:1</td></tr>
+      <tr><td>NN-7</td><td>R2</td><td>2</td><td>Split icon system: group-screen line icons vs. emoji everywhere else</td><td class="pending">OPEN — owner design decision (M17)</td></tr>
+      <tr><td>NN-8 / WCAG-9 / DN-7</td><td>R2</td><td>1</td><td>Theme selector: 34px targets + weak active-state cue</td><td class="fixed">FIXED 07-10 — 44px + brand active border</td></tr>
+      <tr><td>DN-6</td><td>R2</td><td>2</td><td>Imperfect tense badge text 3.58:1 (mid-tone hue fails both text colors)</td><td class="pending">OPEN — owner design decision (M17)</td></tr>
     </table></div>
   </section>
 
@@ -81,14 +95,17 @@
     play 🎧 Escucha, (3) parent checks progress via the home cards and Informe, (4) teacher prints a study
     sheet + progress report, and (5) an adversarial task where a learner fidgets with the footer setting
     toggles mid-round at question 7.</p>
-    <p><strong>Result:</strong> near-100% first-round success for all personas on all core tasks. Tasks 3
-    and 4 scored perfectly after the M9 footer and M5 printables milestones. The only failure points were
-    the two findings in the table above (CW-1/CW-3, both now fixed): the unsignified start point on the
-    20-group home grid, and the mid-round toggle restart. CW-2 (badge-vs-star distinction is learnable
-    but unexplained in-app) was rated low severity and is covered by the ℹ️ standards panels.</p>
+    <p><strong>Round 1 result:</strong> near-100% first-round success for all personas on all core tasks;
+    the only failure points were CW-1 (unsignified start point) and CW-3 (mid-round toggle restart), both
+    fixed 2026-07-08. <strong>Round 2 (Prado):</strong> re-running the five tasks, the redesign is a
+    usability <em>gain</em> for the critical first-visit task — the ¡Empieza aquí! ribbon and the
+    pre-selected tense read more clearly in the new look, and CW-1/CW-3 remain resolved. Three new
+    low-severity signifier items surfaced (CW-4 theme/sound behind the unlabeled ☰; CW-5 activity tiles
+    equal visual weight; CW-6 the star-total pill reads tappable) — none impede task completion; logged
+    for owner watch. Success likelihoods equal-to-better than Round 1 across all four personas.</p>
   </section>
 
-  <p lang="es">Última actualización: 2026-07-08 · <a href="./">Documentación</a></p>
+  <p lang="es">Última actualización: 2026-07-10 · <a href="./">Documentación</a></p>
 </main>
 </body>
 </html>
