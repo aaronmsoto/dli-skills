@@ -34,6 +34,14 @@ const TENSE_META = {
   preterite: { icon: "⭐", hint: "ayer, una vez — completed past", example: "Ayer hablé con ella." },
   imperfect: { icon: "🌙", hint: "antes, muchas veces — ongoing past", example: "Antes hablaba cada día." },
 };
+// NN-7 (M17): inline line-icon matching the group-card set, for activity
+// headings and the Estudia action row. The redesign CSS masks the emoji
+// fallback with the shared glyph; aria-hidden because the adjacent text
+// already names the activity. `kind` ∈ study|practica|choice|type|match|
+// listen|contrast.
+function modeIcon(kind, emoji) {
+  return el("span", { class: "mode-icon mi-inline", "data-icon": kind, "aria-hidden": "true" }, emoji);
+}
 const PRAISE = ["¡Muy bien!", "¡Excelente!", "¡Genial!", "¡Fantástico!", "¡Perfecto!", "¡Súper!"];
 // 3 tenses × 3 modes + the past-tense contrast challenge, 3 stars each.
 const STARS_PER_SET = (TENSES.length * MODES.length + 1) * 3;
@@ -107,9 +115,9 @@ function menuButton() {
   let open = false;
   const panel = el("nav", { class: "menu-panel", hidden: true, "aria-label": "Páginas principales / Site menu" },
     el("a", { class: "menu-link", href: "#/" }, "🏠 Inicio / Home"),
-    el("a", { class: "menu-link", href: "#/informe" }, "📄 Informe / Status"),
+    el("a", { class: "menu-link", href: "#/informe" }, "Informe / Status"),
     el("a", { class: "menu-link", href: "about.html" }, "🦉 Acerca de / Standards"),
-    el("a", { class: "menu-link", href: "docs/" }, "📚 Documentación / Docs"),
+    el("a", { class: "menu-link", href: "docs/" }, "Documentación / Docs"),
     soundToggle(),
     themeSelector());
   const onDoc = (e) => { if (!wrap.contains(e.target)) close(); };
@@ -461,9 +469,9 @@ function renderFooter() {
       applied,
     ),
     el("div", { class: "footer-links" },
-      el("a", { class: "linklike", href: "#/informe" }, "📄 Informe / Status"),
+      el("a", { class: "linklike", href: "#/informe" }, "Informe / Status"),
       el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
-      el("a", { class: "linklike footer-docs", href: "docs/" }, "📚 Documentación / Docs"),
+      el("a", { class: "linklike footer-docs", href: "docs/" }, "Documentación / Docs"),
       el("button", {
         class: "linklike",
         onclick: () => {
@@ -523,13 +531,13 @@ function renderSet(setId) {
     el("h2", {}, "2 · Estudia y juega ", el("span", { class: "h-en", lang: "en" }, "(study, then play)")),
     el("div", { class: "mode-row" },
       el("a", { class: "mode-card study", "data-mode": "study", href: `#/study/${set.id}/${tense}` },
-        el("span", { class: "mode-icon" }, "📖"),
+        el("span", { class: "mode-icon", "data-icon": "study" }, "📖"),
         el("strong", {}, "Estudia"),
         el("span", { class: "mode-en", lang: "en" }, "See the tables"),
       ),
       // unscored on purpose: no starRow here, ever (M8 owner decision)
       el("a", { class: "mode-card practica-card", "data-mode": "practica", href: `#/practica/${set.id}/${tense}` },
-        el("span", { class: "mode-icon" }, PRACTICA_META.icon),
+        el("span", { class: "mode-icon", "data-icon": "practica" }, PRACTICA_META.icon),
         el("strong", {}, PRACTICA_META.es),
         el("span", { class: "mode-en", lang: "en" }, PRACTICA_META.en),
         el("span", { class: "mode-free" }, "práctica libre · free practice"),
@@ -537,7 +545,7 @@ function renderSet(setId) {
       MODES.map((m) => {
         const best = store.getBest(set.id, tense, m);
         return el("a", { class: "mode-card", "data-mode": m, href: `#/play/${set.id}/${tense}/${m}` },
-          el("span", { class: "mode-icon" }, MODE_META[m].icon),
+          el("span", { class: "mode-icon", "data-icon": m }, MODE_META[m].icon),
           el("strong", {}, MODE_META[m].es),
           el("span", { class: "mode-en", lang: "en" }, MODE_META[m].en),
           starRow(best?.stars ?? 0),
@@ -546,7 +554,7 @@ function renderSet(setId) {
       // Escucha exists only where a Spanish voice does; badges, not stars.
       audioAvailable()
         ? el("a", { class: "mode-card listen-card", "data-mode": "listen", href: `#/play/${set.id}/${tense}/${LISTEN}` },
-          el("span", { class: "mode-icon" }, LISTEN_META.icon),
+          el("span", { class: "mode-icon", "data-icon": "listen" }, LISTEN_META.icon),
           el("strong", {}, LISTEN_META.es),
           el("span", { class: "mode-en", lang: "en" }, LISTEN_META.en),
           badgeRow(store.getBest(set.id, tense, LISTEN)?.stars ?? 0))
@@ -556,7 +564,7 @@ function renderSet(setId) {
     el("h2", {}, "3 · Reto ", el("span", { class: "h-en", lang: "en" }, "(challenge)")),
     el("div", { class: "mode-row contrast-row" },
       el("a", { class: "mode-card contrast-card", "data-mode": "contrast", href: `#/play/${set.id}/contrast` },
-        el("span", { class: "mode-icon" }, "⚔️"),
+        el("span", { class: "mode-icon", "data-icon": "contrast" }, "⚔️"),
         el("strong", {}, "¿Pretérito o imperfecto?"),
         el("span", { class: "mode-en", lang: "en" }, "Read the time clue, pick the past tense"),
         starRow(contrastBest?.stars ?? 0),
@@ -577,12 +585,12 @@ function renderStudy(setId, tense) {
 
   mount(
     el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), menuButton()),
-    el("h1", {}, `📖 Estudia — ${TENSE_LABELS[tense].es}`, infoButton("study")),
+    el("h1", {}, modeIcon("study", "📖"), `Estudia — ${TENSE_LABELS[tense].es}`, infoButton("study")),
     // classroom print header: appears only on the printed study sheet
     el("p", { class: "print-fields print-only" },
       `Grupo ${setId} · Nombre: `, el("span", { class: "fill-line" }, ""),
       "  Fecha: ", el("span", { class: "fill-line short" }, "")),
-    el("p", { class: "study-hint" }, `${TENSE_META[tense].icon} ${TENSE_META[tense].hint} — ej.: `,
+    el("p", { class: "study-hint" }, `${TENSE_META[tense].hint} — ej.: `,
       el("em", {}, TENSE_META[tense].example)),
     speakable
       ? el("p", { class: "study-hint tap-hint" }, "👆🔊 Toca una forma para escucharla. Tap a form to hear it.")
@@ -609,17 +617,17 @@ function renderStudy(setId, tense) {
       // Práctica first: the rebuild-the-table step sits between studying
       // the chart and the scored games (Estudia → Práctica → Elige → …)
       el("a", { class: "btn primary practica-link", href: `#/practica/${setId}/${tense}` },
-        `${PRACTICA_META.icon} ${PRACTICA_META.es}`),
+        modeIcon("practica", PRACTICA_META.icon), PRACTICA_META.es),
       MODES.map((m) => el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/${m}` },
-        `${MODE_META[m].icon} ${MODE_META[m].es}`)),
+        modeIcon(m, MODE_META[m].icon), MODE_META[m].es)),
       // every current activity is reachable from Estudia (M7 owner add-on)
       audioAvailable()
         ? el("a", { class: "btn primary listen-link", href: `#/play/${setId}/${tense}/${LISTEN}` },
-          `${LISTEN_META.icon} ${LISTEN_META.es}`)
+          modeIcon("listen", LISTEN_META.icon), LISTEN_META.es)
         : null,
       tense !== "present"
         ? el("a", { class: "btn contrast-link", href: `#/play/${setId}/contrast` },
-          "⚔️ ¿Pretérito o imperfecto?")
+          modeIcon("contrast", "⚔️"), "¿Pretérito o imperfecto?")
         : null,
       el("button", { class: "btn print-btn", onclick: () => window.print() }, "🖨️ Imprimir")),
     renderFooter(),
@@ -660,9 +668,9 @@ function renderPractica(setId, tense) {
   mount(
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
-      el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
+      el("a", { href: `#/study/${setId}/${tense}` }, "Estudia"),
       menuButton()),
-    el("h1", { class: "match-title" }, lola.el, `${PRACTICA_META.icon} Práctica — ${TENSE_LABELS[tense].es}`, infoButton("practica")),
+    el("h1", { class: "match-title" }, lola.el, modeIcon("practica", PRACTICA_META.icon), `Práctica — ${TENSE_LABELS[tense].es}`, infoButton("practica")),
     el("p", { class: "match-help" },
       "Reconstruye la tabla palabra por palabra. Rebuild the table word by word — no stars, just practice."),
     el("div", { class: "table-scroll" }, table),
@@ -750,9 +758,9 @@ function renderPractica(setId, tense) {
         el("p", { class: "score-line" }, "¡Tabla completa! 🎉"),
         el("p", {}, "¡Muy bien! Ahora, ¿un juego? · Great! Ready for a game?"),
         el("div", { class: "result-actions" },
-          el("a", { class: "btn", href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
+          el("a", { class: "btn", href: `#/study/${setId}/${tense}` }, "Estudia"),
           el("button", { class: "btn", onclick: () => render() }, "🔁 Otra vez"),
-          el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/choice` }, "✅ Elige"))));
+          el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/choice` }, "Elige"))));
   }
 
   startColumn();
@@ -780,7 +788,7 @@ function renderPlay(setId, tense, mode) {
   mount(
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
-      el("a", { href: `#/study/${setId}/${tense}` }, "📖 Estudia"),
+      el("a", { href: `#/study/${setId}/${tense}` }, "Estudia"),
       menuButton()),
     el("p", { class: "lola-help" }, "¡Ayuda a Lola a llegar a su nido! · Help Lola reach her nest!"),
     header, stage,
@@ -817,7 +825,7 @@ function renderPlay(setId, tense, mode) {
   // setting — entering the listening mode is explicit audio intent.
   function listenPromptCard(t) {
     return el("div", { class: "prompt" },
-      el("span", { class: "prompt-tense", "data-tense": tense }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
+      el("span", { class: "prompt-tense", "data-tense": tense }, TENSE_LABELS[tense].es),
       infoButton(mode),
       el("p", { class: "listen-question" }, "¿Qué forma escuchas? ", el("span", { class: "h-en", lang: "en" }, "Which form do you hear?")),
       el("div", { class: "listen-controls" },
@@ -831,7 +839,7 @@ function renderPlay(setId, tense, mode) {
 
   function promptCard(t) {
     return el("div", { class: "prompt" },
-      el("span", { class: "prompt-tense", "data-tense": tense }, `${TENSE_META[tense].icon} ${TENSE_LABELS[tense].es}`),
+      el("span", { class: "prompt-tense", "data-tense": tense }, TENSE_LABELS[tense].es),
       infoButton(mode),
       el("div", { class: "prompt-main" },
         el("span", { class: "prompt-person" }, personDisplay(t.person)),
@@ -971,9 +979,9 @@ function renderMatch(set, tense, vosotros) {
   mount(
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${set.id}` }, "← Salir"),
-      el("a", { href: `#/study/${set.id}/${tense}` }, "📖 Estudia"),
+      el("a", { href: `#/study/${set.id}/${tense}` }, "Estudia"),
       menuButton()),
-    el("h1", { class: "match-title" }, lola.el, `🧩 Empareja — ${TENSE_LABELS[tense].es}`, infoButton("match")),
+    el("h1", { class: "match-title" }, lola.el, modeIcon("match", "🧩"), `Empareja — ${TENSE_LABELS[tense].es}`, infoButton("match")),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
     board, feedback,
     renderFooter(),
@@ -1053,10 +1061,10 @@ function renderContrast(setId) {
   mount(
     el("nav", { class: "crumbs" },
       el("a", { href: `#/set/${setId}` }, "← Salir"),
-      el("a", { href: `#/study/${setId}/preterite` }, "📖 Pretérito"),
-      el("a", { href: `#/study/${setId}/imperfect` }, "📖 Imperfecto"),
+      el("a", { href: `#/study/${setId}/preterite` }, "Pretérito"),
+      el("a", { href: `#/study/${setId}/imperfect` }, "Imperfecto"),
       menuButton()),
-    el("h1", { class: "contrast-title" }, "⚔️ ¿Pretérito o imperfecto?"),
+    el("h1", { class: "contrast-title" }, modeIcon("contrast", "⚔️"), "¿Pretérito o imperfecto?"),
     el("p", { class: "match-help" },
       "La palabra del tiempo es la pista: ", el("strong", {}, "una vez ⭐"), " o ",
       el("strong", {}, "muchas veces 🌙"), ". The time word is your clue."),
@@ -1106,7 +1114,7 @@ function renderContrast(setId) {
               lola.setState(state.streak >= 3 ? "is-turn" : "is-hop");
               const msg = PRAISE[Math.floor(Math.random() * PRAISE.length)];
               feedback.className = "feedback good";
-              feedback.textContent = `${msg} ${q.cue} → ${TENSE_LABELS[q.tense].es} ${TENSE_META[q.tense].icon}`;
+              feedback.textContent = `${msg} ${q.cue} → ${TENSE_LABELS[q.tense].es}`;
               announce(msg);
               sayForm(q.person, q.answer);
               setTimeout(next, 1100);
@@ -1119,7 +1127,7 @@ function renderContrast(setId) {
               }
               feedback.className = "feedback bad";
               feedback.replaceChildren(
-                `"${q.cue}" pide el ${TENSE_LABELS[q.tense].es.toLowerCase()} ${TENSE_META[q.tense].icon}: `,
+                `"${q.cue}" pide el ${TENSE_LABELS[q.tense].es.toLowerCase()}: `,
                 el("strong", {}, `${personDisplay(q.person)} ${q.answer}`),
                 el("div", {}, el("button", { class: "btn primary", onclick: next }, "Siguiente →")),
               );
@@ -1170,7 +1178,7 @@ function renderReport() {
   mount(
     el("nav", { class: "crumbs no-print" }, el("a", { href: "#/" }, "← Volver"), menuButton()),
     el("div", { class: "report" },
-      el("h1", {}, "📄 Informe de progreso ", el("span", { class: "h-en", lang: "en" }, "/ Status"), " — Conjuga", infoButton("report")),
+      el("h1", {}, "Informe de progreso ", el("span", { class: "h-en", lang: "en" }, "/ Status"), " — Conjuga", infoButton("report")),
       el("p", { class: "report-fields" },
         "Nombre: ", el("span", { class: "fill-line" }, ""),
         "  Fecha: ", el("span", { class: "fill-line short" }, today)),
@@ -1181,9 +1189,9 @@ function renderReport() {
           el("thead", {},
             el("tr", {},
               el("th", { scope: "col" }, "Grupo"),
-              TENSES.map((t) => el("th", { scope: "col" }, `${TENSE_META[t].icon} ${TENSE_LABELS[t].es}`)),
-              el("th", { scope: "col" }, "⚔️ Reto"),
-              el("th", { scope: "col" }, "🎧 Escucha"),
+              TENSES.map((t) => el("th", { scope: "col" }, TENSE_LABELS[t].es)),
+              el("th", { scope: "col" }, "Reto"),
+              el("th", { scope: "col" }, "Escucha"),
               el("th", { scope: "col" }, "Total ⭐"))),
           el("tbody", {},
             SETS.map((s) =>

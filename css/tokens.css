@@ -95,7 +95,8 @@
   /* ---- Color: tense hues (star-free triad; sun / flag / loop) ---- */
   --tense-present: #e0982f;    /* sun — ahora */
   --tense-preterite: #e37a4f;  /* planted flag — una vez */
-  --tense-imperfect: #3f9256;  /* repeat loop — muchas veces */
+  --tense-imperfect: #1f7a45;  /* repeat loop — muchas veces (DN-6 M17: darkened from #3f9256 so WHITE badge text passes 4.5:1 = 5.35:1; a saturated green kept distinct from --brand #2f6b4f) */
+  --tense-imperfect-ink: #fff; /* DN-6 (M17): imperfect badge text — white on the darker light hue (dark themes flip this to dark ink below) */
 
   /* ---- Lola (re-themable mascot), light ---- */
   --lola-face: #fff7ec;
@@ -128,6 +129,7 @@
     --tense-present: #f3b750;
     --tense-preterite: #f0946a;
     --tense-imperfect: #74c489;
+    --tense-imperfect-ink: #243026; /* DN-6: dark badge text on the bright dark-theme green (7.63:1) */
 
     --lola-face: #f2ead9;
     --lola-face-line: #d9cbae;
@@ -164,6 +166,7 @@
   --tense-present: #f3b750;
   --tense-preterite: #f0946a;
   --tense-imperfect: #74c489;
+  --tense-imperfect-ink: #243026; /* DN-6: dark badge text on the bright dark-theme green */
 
   --lola-face: #f2ead9;
   --lola-face-line: #d9cbae;
