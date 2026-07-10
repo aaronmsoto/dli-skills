@@ -98,29 +98,36 @@ DN-1 first-visit cue) shipped in M10 and are re-verified resolved.
 - **DN-7 · low · = WCAG-9** — theme-selector active state signalled only by a
   ~1.17:1 fill swap. **Found 2026-07-10 · FIXED 2026-07-10** (2px `--brand`
   border on the pressed option).
-- **DN-6 · medium · OWNER DECISION (open)** — the imperfect tense badge puts
-  dark text on `--tense-imperfect #3f9256` = **3.58:1** (< 4.5:1 for its
-  ~13.6px bold label); white text is only 3.85:1, so *neither* text color
-  passes on this mid-tone hue — the fix requires darkening the imperfect tense
-  hue (toward the brand green it would then resemble) or otherwise re-treating
-  the badge. Because it changes a Prado design color, it is appended to
-  GOAL.md M17 for owner triage, not auto-fixed. Mitigated by the tense name
-  also appearing in the breadcrumb (not a color-only cue).
-- **Line-icon color-coding (watch, no finding).** Prado replaces some
-  activity emoji with single-hue `--brand` mask icons on the group screen,
-  losing multicolor differentiation — but each keeps a distinct glyph shape +
-  text label, so identity holds. Consistency angle logged as Nielsen NN-7.
+- **DN-6 · medium · FIXED 2026-07-10 (owner chose option a)** — the imperfect
+  tense badge put dark text on `--tense-imperfect #3f9256` = **3.58:1** (both
+  dark and white text failed this mid-tone hue). **Resolved:** the light
+  imperfect hue was darkened to a saturated `#1f7a45` (kept distinct from the
+  muted `--brand #2f6b4f`) and the badge text switched to white via
+  `--tense-imperfect-ink` — **white on #1f7a45 = 5.35:1**. Dark theme keeps
+  dark text on its bright green (7.63:1).
+- **DN-8 · low · FIXED 2026-07-10 (owner-directed icon-system cleanup)** —
+  the mapping/signifier split flagged in Round 2 (activity/tense line-icons on
+  the group cards but *emoji* elsewhere, incl. a **wrong 🌙 moon and ⭐ star**
+  in the prompt-tense badge and informe headers that contradicted the
+  star-free sun/flag/loop triad). **Resolved into two clean icon languages:**
+  the Prado **line-icon set** now marks activity identity everywhere it
+  appears (group cards + activity `h1` headings + the Estudia action row, via
+  a reusable `.mode-icon.mi-inline`); the tense badge became a **text-only
+  colored pill** (moon/star gone); decorative nav/footer/label emoji (📖 📄 📚)
+  were **removed** for a text-forward look; and genuinely functional glyphs
+  (🔊 🖨️ ℹ️ 🔍, plus ⭐/🎧 status counts) were kept as a deliberately separate
+  category.
 
 ### Prioritized (Round 2)
 
 1. **DN-5** star glyph 2.41:1 — FIXED (regressed M10 WCAG-2).
-2. **DN-6** imperfect tense-badge text 3.58:1 — OWNER DECISION (hue change).
+2. **DN-6** imperfect tense-badge text 3.58:1 — FIXED (hue → #1f7a45 + white text).
 3. **DN-7** theme-selector active state — FIXED.
+4. **DN-8** activity/tense icon-system split — FIXED (line-icons for identity, text elsewhere).
 
 **Overall:** Prado is a net Norman gain — discoverability closed out,
 feedback/affordances/mapping visibly strengthened, the model reinforced by
 the tense triad. Behaviorally **7/7 principles at strength**; the visual layer
-briefly reopened Signifiers (two light-contrast items, both now fixed) with
-one open owner-decision (DN-6). Post-fix score: **6.5/7** — the only
-non-strength being the single imperfect-hue text-contrast call awaiting the
-owner.
+briefly reopened Signifiers (light-contrast items + the icon split), **all now
+fixed**. Post-fix score: **7/7** — the two icon languages (line-icons for
+identity, text/functional glyphs elsewhere) close the last consistency gap.
