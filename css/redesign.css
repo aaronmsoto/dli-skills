@@ -73,6 +73,14 @@
   border-radius: var(--radius-pill);
   margin-top: 4px;
 }
+/* WCAG-6 (M17 Round 2): filled ★ glyphs take the darker --star-glyph (3.69:1
+   on card) rather than the --star pill fill above (2.41:1 as a glyph). The
+   hollow ☆ keeps --ink-soft. .big-stars nests a .stars row, so this covers
+   the results/celebration stars too. */
+:root[data-redesign] .stars .star.on { color: var(--star-glyph); }
+/* WCAG-8 (M17 Round 2): the "✓ setting applied" line is --good text on --bg
+   (3.99:1 light); use the darker success ink (6.03:1). */
+:root[data-redesign] .footer-applied { color: var(--good-ink); }
 :root[data-redesign] .set-card {
   background: var(--card);
   border-radius: var(--radius-lg);
@@ -366,9 +374,12 @@
   font-family: var(--font-body);
 }
 :root[data-redesign] .type-input:focus-visible { border-color: var(--brand); outline: none; }
-:root[data-redesign] .feedback.good { color: var(--good); background: var(--good-bg); }
-:root[data-redesign] .feedback.bad { color: var(--bad); background: var(--bad-bg); }
-:root[data-redesign] .feedback.almost { color: var(--star); background: color-mix(in srgb, var(--star) 15%, transparent); }
+/* WCAG-7 (M17 Round 2): feedback text uses the darker *-ink tokens so the
+   light theme clears 4.5:1 (good 3.68→5.56, bad 3.94→5.62, almost 2.14→6.04);
+   dark already passed and the tokens resolve to the bright values there. */
+:root[data-redesign] .feedback.good { color: var(--good-ink); background: var(--good-bg); }
+:root[data-redesign] .feedback.bad { color: var(--bad-ink); background: var(--bad-bg); }
+:root[data-redesign] .feedback.almost { color: var(--almost-ink); background: color-mix(in srgb, var(--star) 15%, transparent); }
 
 /* Hint / Pista chip */
 :root[data-redesign] .hint-btn {

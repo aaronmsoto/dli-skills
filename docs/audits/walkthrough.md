@@ -73,3 +73,74 @@ acting, is progress visible? Ratings ✅ / ⚠️ / ❌ per step.
 | CW-1 first-visit start cue | medium | NN-3/DN-1 | DECISION PENDING |
 | CW-2 badge-vs-star wording reach | low | — | covered by ℹ️ panels; monitor |
 | CW-3 mid-round toggle restart | high | NN-1/DN-4 | DECISION PENDING |
+
+---
+
+## Round 2 (2026-07-10) — Prado redesign
+
+**Date:** 2026-07-10 · **Facilitator:** loop agent (M17 A3′). Re-run of the
+five Round 1 tasks against the now-default "Prado" visual layer. Redesign is
+**visual-only** — routes, DOM, and every flow unchanged (verified in
+`js/app.js`). Round 1's CW-1 (first-visit cue) and CW-3 (mid-round toggle
+restart) fixed in M10 and re-verified here. New surface: the ☰-menu theme
+selector. Same four personas + four questions.
+
+### Task 1 — First visit → finish a first Elige round (P1, P2)
+
+| Step | Q1 | Q2 | Q3 | Q4 | Notes |
+|---|---|---|---|---|---|
+| Land on home, choose a group | ✅ | ✅ | ✅ | ✅ | **CW-1 resolved**: terracotta ¡Empieza aquí! ribbon is the only saturated element on a grid of white cards — reads as the entry point. |
+| Pick a tense | ✅ | ✅ | ✅ | ✅ | **Improved**: Presente ships pre-selected with a green fill + ring — a far stronger selected-state signifier than Round 1's flat card. |
+| Estudia first? | ✅ | ✅ | ⚠️ | ✅ | Numbered sections carry the ladder, but the six activity tiles are now visually uniform (**CW-5**, low: flattening slightly weakens the recognition-before-production signpost). |
+| Start ✅ Elige, answer 10 | ✅ | ✅ | ✅ | ✅ | prompt card + tense chip + progress bar + Lola all clear; 🔍 Pista visible; ℹ️ at the prompt-card corner. |
+| Understand results | ✅ | ✅ | ✅ | ✅ | flow unchanged; stars + plain-language tiers intact. |
+
+**Success:** P2 ~100%; P1 high — the redesign made step 1 *easier* than Round 1.
+
+### Task 2 — Find and play 🎧 Escucha (P2)
+
+| Step | Q1 | Q2 | Q3 | Q4 | Notes |
+|---|---|---|---|---|---|
+| Know listening exists | ✅ | ✅ | ✅ | — | 🎧 tile in the activity grid + Estudia action row. |
+| Play by ear, replay/slow | ✅ | ✅ | ✅ | ✅ | unchanged; unlimited 🔊/🐢, mute-independent. |
+| Read badges vs stars | ✅ | ⚠️ | ✅ | ✅ | **CW-2 unchanged (low)**: 🎧 n/9 vs ⭐ n/30 still learnable-but-unexplained; ℹ️ panel covers it. |
+
+### Task 3 — Parent checks progress (P3)
+
+| Step | Q1 | Q2 | Q3 | Q4 | Notes |
+|---|---|---|---|---|---|
+| Open app | ✅ | ✅ | ✅ | ✅ | home cards show ⭐/🎧; Prado spacing aids scanning. |
+| Deeper look (Informe) | ✅ | ✅ | ✅ | ✅ | 📄 Informe in every footer; the redesigned table (icon heads, zebra rows) is more legible. |
+| Set light/dark theme | ✅ | ⚠️ | ⚠️ | ✅ | **CW-4 (new, low)**: theme + sound live behind the icon-only ☰ (unlabeled); a parent must guess it holds settings. Once open, the Auto/Light/Dark control is clear, `aria-pressed`-correct, and (post-fix) has a brand active border + 44px targets. Light-default means most parents never need it. |
+| Trust/privacy | ✅ | ✅ | ✅ | ✅ | footer credits + standards + about; "no login, no data" intact. |
+
+### Task 4 — Teacher prints (P4)
+
+| Step | Q1 | Q2 | Q3 | Q4 | Notes |
+|---|---|---|---|---|---|
+| Reach a study table | ✅ | ✅ | ✅ | ✅ | redesign keeps the M5 Grupo/Nombre/Fecha header. |
+| Print study sheet | ✅ | ✅ | ✅ | ✅ | 🖨️ is a white outline pill in the dark-green action row — de-emphasized but clearly labeled. |
+| Print the informe | ✅ | ✅ | ✅ | ✅ | fill-lines + star legend + `.no-print` chrome survive. |
+
+### Task 5 (adversarial) — mid-round toggle
+
+| Step | Q1 | Q2 | Q3 | Q4 | Notes |
+|---|---|---|---|---|---|
+| Tap 🔍 Pistas at question 7 | ✅ | ✅ | ✅ | ✅ | **CW-3 resolved & re-verified**: setting saves without re-render (no restart) + a `role="status"` "✓ Guardado — se aplica al continuar" confirmation. Progress preserved; Prado de-emphasizes the footer, making the accidental tap even less likely. |
+
+### Failure-point summary (Round 2)
+
+| ID | Severity | Same as | Status |
+|---|---|---|---|
+| CW-1 first-visit start cue | — | NN-3/DN-1 | RESOLVED (ribbon; Prado makes it the sole saturated element) |
+| CW-2 badge-vs-star wording | low | — | Unchanged; ℹ️ panels; monitor |
+| CW-3 mid-round toggle restart | — | NN-1/DN-4 | RESOLVED & re-verified |
+| CW-4 theme/sound behind unlabeled ☰ | low | NN-7/DN-2 | NEW — owner watch (Light default lowers urgency) |
+| CW-5 activity tiles equal weight | low | — | NEW — owner watch (numbered sections mitigate) |
+| CW-6 "0/600 estrellas" pill false affordance | low | DN-2 | NEW — owner watch (static pill reads tappable to P1) |
+
+**Net:** Prado is a usability *gain* for the critical first-visit task,
+strengthening the two Round 1 concerns most tied to visual hierarchy (CW-1
+start cue, tense-selection affordance) with no new blockers. All three new
+findings are low-severity signifier/discoverability polish; success
+likelihoods are equal-to-better than Round 1 across all four personas.

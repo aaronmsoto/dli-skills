@@ -58,3 +58,69 @@ prevented structurally, not policed.
 **Overall:** strong feedback/model/mapping/constraints; the open work is
 session-state awareness in global chrome. Score: 6/7 principles at
 "strength" or better after the fix wave.
+
+---
+
+## Round 2 (2026-07-10) — Prado redesign (M16)
+
+**Date:** 2026-07-10 · **Auditor:** loop agent (M17 A1′) · same severity
+scale. Scope: the now-default "Prado" visual system + the ☰-menu theme
+selector. **Behavior, routes, DOM, scoring and ARIA are unchanged from Round
+1**, so every Round 1 verdict carries over except where the new *visual* layer
+moved it. Round 1's two DECISION-PENDING items (DN-4 footer-toggle restart,
+DN-1 first-visit cue) shipped in M10 and are re-verified resolved.
+
+### Principle carry-over (behavior unchanged → verdicts hold, mostly improved)
+
+- **Feedback — strength (visually richer).** Same ~100ms loop; Prado adds
+  semantic color (green/red `.choice` borders + tinted fills, brand progress
+  fill, hue-coded tense badges). ARIA live still mirrors all of it.
+- **Conceptual model — strength (reinforced).** The conjugation TABLE is
+  intact; Prado adds a coherent tense triad (sun/amber presente,
+  flag/persimmon pretérito, loop/green imperfecto) applied consistently.
+- **Mapping — strength (extended).** Fixed person rows, frequency columns,
+  Lola-to-nest motion, star tiers all unchanged; tense→hue→icon is a clean new
+  natural mapping.
+- **Constraints — strength (holds).** Structural prevention unchanged.
+- **Affordances — strength (improved); DN-2 unchanged.** 22px radius cards +
+  `--shadow-card` + hover lift read more pressable than Round 1. DN-2
+  (`.cell-speak` afforded only via the hint line) still low, still accepted.
+- **Discoverability — now a strength (was medium).** DN-1 fixed: the
+  persimmon "¡Empieza aquí!" pill is the sole saturated element on the card
+  grid; it reads as the entry point at a glance.
+
+### Signifiers — the one principle Prado moved (light-theme contrast)
+
+- **DN-5 · medium · = WCAG-6 / NN-6** — filled ★ progress glyph `--star`
+  2.41:1 on white (< 3:1 non-text), a regression of the M10-fixed 3.3:1.
+  **Found 2026-07-10 · FIXED 2026-07-10** (glyph-only `--star-glyph #b8770f`,
+  3.69:1; pill fill unchanged).
+- **DN-7 · low · = WCAG-9** — theme-selector active state signalled only by a
+  ~1.17:1 fill swap. **Found 2026-07-10 · FIXED 2026-07-10** (2px `--brand`
+  border on the pressed option).
+- **DN-6 · medium · OWNER DECISION (open)** — the imperfect tense badge puts
+  dark text on `--tense-imperfect #3f9256` = **3.58:1** (< 4.5:1 for its
+  ~13.6px bold label); white text is only 3.85:1, so *neither* text color
+  passes on this mid-tone hue — the fix requires darkening the imperfect tense
+  hue (toward the brand green it would then resemble) or otherwise re-treating
+  the badge. Because it changes a Prado design color, it is appended to
+  GOAL.md M17 for owner triage, not auto-fixed. Mitigated by the tense name
+  also appearing in the breadcrumb (not a color-only cue).
+- **Line-icon color-coding (watch, no finding).** Prado replaces some
+  activity emoji with single-hue `--brand` mask icons on the group screen,
+  losing multicolor differentiation — but each keeps a distinct glyph shape +
+  text label, so identity holds. Consistency angle logged as Nielsen NN-7.
+
+### Prioritized (Round 2)
+
+1. **DN-5** star glyph 2.41:1 — FIXED (regressed M10 WCAG-2).
+2. **DN-6** imperfect tense-badge text 3.58:1 — OWNER DECISION (hue change).
+3. **DN-7** theme-selector active state — FIXED.
+
+**Overall:** Prado is a net Norman gain — discoverability closed out,
+feedback/affordances/mapping visibly strengthened, the model reinforced by
+the tense triad. Behaviorally **7/7 principles at strength**; the visual layer
+briefly reopened Signifiers (two light-contrast items, both now fixed) with
+one open owner-decision (DN-6). Post-fix score: **6.5/7** — the only
+non-strength being the single imperfect-hue text-contrast call awaiting the
+owner.
