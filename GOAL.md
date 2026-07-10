@@ -28,15 +28,15 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue: M16 — Conjuga visual redesign (Claude Design–driven), then
-M17 — round-2 usability/accessibility audits (owner-directed 2026-07-09).**
-M16 unlocks once the design spec is committed: task **R** (design
-extraction) needs the seeded Claude Design file and runs in a
-design-seeded/owner session (NOT a fresh loop — loop sessions have no
-design-MCP access); every task after R (**G** gate, **T** theme selector,
-**I\*** per-screen migration, **RT**) is loop-capable from `origin/dev`
-under the redesign gate; the FINAL **FLIP** PR to main is human-merged (the
-redeploy with the new design). M17 (round-2 audits) follows the flip.
+**Queue: M16 COMPLETE on dev (FLIP landed 2026-07-09 — the Prado redesign
+is now the DEFAULT look, gate always on). The production go-live is the
+next human-merged dev→main release. Next loop work: M17 — round-2
+usability/accessibility audits (owner-directed 2026-07-09).**
+M16 tasks R (design extraction), G (gate), T (theme selector, Light
+default), I\* (per-screen migration), RT (regression), and FLIP (default
+the gate on + retire the old look) all landed on `dev`; the go-live deploy
+is the next dev→main release a human merges. M17 (round-2 audits) is the
+next loop work and runs against the now-default redesign.
 Prior milestones M0–M15 complete on dev; still awaiting owner as before:
 M5's SME copy review + human screen-reader pass, the M2 hold, the M4 pause.
 The queue line here — not milestone numbering — sets loop priority.
@@ -535,13 +535,20 @@ The queue line here — not milestone numbering — sets loop priority.
         gzipped code with tokens + redesign CSS included; no functional,
         localStorage, or print regressions; BOTH the default and preview
         looks pass axe.
-  - [ ] **FLIP (FINAL — human PR to `main`, the redeploy):** flip the gate
-        default ON so the redesign is live; the theme selector reflects the
-        new palette across Auto/Light/Dark; retire the superseded old styles
-        (or keep a documented fallback per owner); final regression green;
-        docs (SPEC / README / about / DESIGN) in sync. This one
-        human-merged release deploys the new design — everything above
-        reaches `dev` via loops first.
+  - [x] **FLIP (code landed on dev 2026-07-09; go-live is the next
+        dev→main release):** the inline head loader in every HTML now sets
+        `data-redesign` unconditionally, so the Prado redesign is the
+        DEFAULT look — the `?redesign=1` preview trigger is retired
+        (redesign is always on). Theme selector reflects the new palette
+        across Auto/Light/Dark (Light default). The old look is retired as a
+        reachable/default state; `css/styles.css` stays as the structural
+        base beneath the redesign override layer (removing it would drop
+        layout + fallback tokens like `--brand-soft` the redesign still
+        consumes) — a deeper CSS consolidation is a separate follow-up, not
+        a blocker. E2e "default off" checks flipped to "default on";
+        theme/star/gate assertions updated to Prado values; unit 50/50, e2e
+        green. Docs (DESIGN/GOAL/SPEC/README/about) synced. The production
+        redeploy of the new design is the next human-merged dev→main release.
 
 - [ ] **M17 — 🔬 Round-2 usability & accessibility audits (post-redesign;
   owner-directed 2026-07-09)**

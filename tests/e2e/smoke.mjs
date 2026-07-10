@@ -548,8 +548,10 @@ ok("dark mode: Lola dark palette active");
 {
   const themeBg = (page) => page.evaluate(() =>
     getComputedStyle(document.documentElement).getPropertyValue("--bg").trim().toLowerCase());
+  // Post-FLIP: the redesign (Prado) is the only look now, so every route
+  // resolves the Prado palette — light day #fbf6ea, forest-night #191e17.
   // Light is the DEFAULT (owner 2026-07-09): a fresh visitor on an OS-dark
-  // device still gets data-theme="light" + the light bg, not the OS scheme.
+  // device still gets data-theme="light" + the Prado day bg, not the OS scheme.
   const def = await browser.newPage({ colorScheme: "dark" });
   trackErrors(def);
   await def.goto(`${BASE}/#/`);
@@ -557,10 +559,10 @@ ok("dark mode: Lola dark palette active");
   const defAttr = await def.evaluate(() => document.documentElement.getAttribute("data-theme"));
   if (defAttr !== "light") fail(`theme default: data-theme should be "light" by default, got "${defAttr}"`);
   const defBg = await themeBg(def);
-  if (defBg !== "#fdf6ec") fail(`theme default Light: OS-dark should still show light --bg #fdf6ec, got "${defBg}"`);
+  if (defBg !== "#fbf6ea") fail(`theme default Light: OS-dark should still show Prado day #fbf6ea, got "${defBg}"`);
   await def.close();
 
-  // Auto is opt-in: selecting it clears data-theme so the OS scheme wins.
+  // Auto is opt-in: selecting it clears data-theme so the OS scheme wins → forest-night.
   const auto = await browser.newPage({ colorScheme: "dark" });
   trackErrors(auto);
   await auto.goto(`${BASE}/#/`);
@@ -570,7 +572,7 @@ ok("dark mode: Lola dark palette active");
   await auto.click('.theme-option[data-theme-value="auto"]');
   await auto.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
   const autoBg = await themeBg(auto);
-  if (autoBg !== "#1c2130") fail(`theme Auto: OS-dark should apply dark --bg #1c2130, got "${autoBg}"`);
+  if (autoBg !== "#191e17") fail(`theme Auto: OS-dark should apply Prado forest-night #191e17, got "${autoBg}"`);
   await auto.close();
 
   // Light beats OS dark: pick Light in the menu, then confirm bg + persistence.
@@ -583,7 +585,7 @@ ok("dark mode: Lola dark palette active");
   await light.click('.theme-option[data-theme-value="light"]');
   await light.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "light");
   const lightBg = await themeBg(light);
-  if (lightBg !== "#fdf6ec") fail(`theme Light: should override OS-dark to #fdf6ec, got "${lightBg}"`);
+  if (lightBg !== "#fbf6ea") fail(`theme Light: should override OS-dark to Prado day #fbf6ea, got "${lightBg}"`);
   const pressedLight = await light.evaluate(() =>
     document.querySelector('.theme-option[data-theme-value="light"]').getAttribute("aria-pressed"));
   if (pressedLight !== "true") fail(`theme Light: aria-pressed should be "true", got "${pressedLight}"`);
@@ -593,10 +595,10 @@ ok("dark mode: Lola dark palette active");
   await light.reload();
   await light.waitForSelector(".set-card");
   const lightBgReload = await themeBg(light);
-  if (lightBgReload !== "#fdf6ec") fail(`theme Light: choice did not persist across reload, got "${lightBgReload}"`);
+  if (lightBgReload !== "#fbf6ea") fail(`theme Light: choice did not persist across reload, got "${lightBgReload}"`);
   await light.close();
 
-  // Dark beats OS light: pick Dark, then confirm bg.
+  // Dark beats OS light: pick Dark, then confirm forest-night bg.
   const dark = await browser.newPage({ colorScheme: "light" });
   trackErrors(dark);
   await dark.goto(`${BASE}/#/`);
@@ -605,33 +607,10 @@ ok("dark mode: Lola dark palette active");
   await dark.click('.theme-option[data-theme-value="dark"]');
   await dark.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "dark");
   const darkBg = await themeBg(dark);
-  if (darkBg !== "#1c2130") fail(`theme Dark: should override OS-light to #1c2130, got "${darkBg}"`);
+  if (darkBg !== "#191e17") fail(`theme Dark: should override OS-light to Prado forest-night #191e17, got "${darkBg}"`);
   await dark.close();
 
-  // Redesign look also defaults to Light: fresh ?redesign=1 on OS-dark →
-  // Prado day bg #fbf6ea (not forest-night), since Light is the default.
-  const redDef = await browser.newPage({ colorScheme: "dark" });
-  trackErrors(redDef);
-  await redDef.goto(`${BASE}/?redesign=1#/`);
-  await redDef.waitForSelector(".set-card");
-  const redDefBg = await themeBg(redDef);
-  if (redDefBg !== "#fbf6ea") fail(`theme redesign default Light: expected Prado day #fbf6ea, got "${redDefBg}"`);
-  await redDef.close();
-
-  // Auto in the redesign look still follows the OS: select Auto, OS-dark → Prado forest-night.
-  const redAuto = await browser.newPage({ colorScheme: "dark" });
-  trackErrors(redAuto);
-  await redAuto.goto(`${BASE}/?redesign=1#/`);
-  await redAuto.waitForSelector(".set-card");
-  await redAuto.click(".menu-btn");
-  await redAuto.click('.theme-option[data-theme-value="auto"]');
-  await redAuto.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
-  const redBg = await themeBg(redAuto);
-  // Prado dark bg is #191e17.
-  if (redBg !== "#191e17") fail(`theme in redesign+Auto+OS-dark: expected #191e17 (Prado forest-night), got "${redBg}"`);
-  await redAuto.close();
-
-  ok("theme: Light is default (OS-dark → #fdf6ec; redesign → Prado day #fbf6ea); Auto opt-in follows OS (#1c2130 / Prado #191e17); Dark beats OS-light; Light persists");
+  ok("theme (post-flip, Prado only): Light default (OS-dark → day #fbf6ea, persists); Auto opt-in follows OS → forest-night #191e17; Dark beats OS-light");
 }
 
 // ---------- mobile 360×640: no overflow, perch inside viewport ----------
@@ -926,11 +905,12 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     const lang = await page.locator(sel).first().getAttribute("lang");
     if (lang !== "en") fail(`lang: ${sel} must carry lang="en" (WCAG 3.1.2), got "${lang}"`);
   }
-  // contrast tokens: credits no longer translucent; light star is the AA-passing amber
+  // contrast tokens: credits no longer translucent; post-flip the Prado
+  // amber --star (#e0982f light) is the token in play.
   const creditsOpacity = await page.evaluate(() => getComputedStyle(document.querySelector(".footer-credits")).opacity);
   if (creditsOpacity !== "1") fail(`contrast: footer credits must not be translucent, opacity=${creditsOpacity}`);
   const starTok = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--star").trim());
-  if (!starTok.startsWith("#d97706")) fail(`contrast: light --star should be #d97706, got "${starTok}"`);
+  if (!starTok.startsWith("#e0982f")) fail(`contrast: light --star should be Prado #e0982f, got "${starTok}"`);
   const darkStar = await browser.newPage({ colorScheme: "dark" });
   trackErrors(darkStar);
   await darkStar.goto(`${BASE}/#/`);
@@ -941,7 +921,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await darkStar.click('.theme-option[data-theme-value="auto"]');
   await darkStar.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
   const starDark = await darkStar.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--star").trim());
-  if (!starDark.startsWith("#f59e0b")) fail(`contrast: dark --star should stay #f59e0b, got "${starDark}"`);
+  if (!starDark.startsWith("#f3b750")) fail(`contrast: dark --star should be Prado #f3b750, got "${starDark}"`);
   await darkStar.close();
   ok("fix wave: per-route titles, skip link, lang=en parts, contrast tokens");
 }
@@ -1195,50 +1175,38 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("sticky: persons column frozen while Práctica/Estudia tables scroll on phones");
 }
 
-// ---------- M16 G: redesign gate + preview scaffold ----------
+// ---------- M16 FLIP: redesign gate is now DEFAULT ON ----------
 {
-  // Default (no ?redesign=1): gate off, tokens/redesign files load 200 but
-  // contribute nothing visible; the LIVE look must be byte-identical.
-  const off = await browser.newPage();
-  trackErrors(off);
+  // Post-flip: every page's inline head loader sets data-redesign, so the
+  // Prado look is the live default with no ?redesign=1 needed. tokens.css
+  // and redesign.css load 200 and now drive the visible look.
+  const on = await browser.newPage();
+  trackErrors(on);
   const linkStatus = { tokens: null, redesign: null };
-  off.on("response", (r) => {
+  on.on("response", (r) => {
     if (r.url().endsWith("/css/tokens.css")) linkStatus.tokens = r.status();
     if (r.url().endsWith("/css/redesign.css")) linkStatus.redesign = r.status();
   });
-  await off.goto(`${BASE}/`);
-  await off.waitForSelector(".set-card");
-  const offState = await off.evaluate(() => ({
-    hasGate: document.documentElement.hasAttribute("data-redesign"),
-    bg: getComputedStyle(document.body).backgroundColor,
-    linksHref: [...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => new URL(l.href).pathname),
-  }));
-  if (offState.hasGate) fail(`gate default: data-redesign should be UNSET (found "${offState.hasGate}")`);
-  if (linkStatus.tokens !== 200) fail(`gate default: css/tokens.css did not load 200 (got ${linkStatus.tokens})`);
-  if (linkStatus.redesign !== 200) fail(`gate default: css/redesign.css did not load 200 (got ${linkStatus.redesign})`);
-  if (!offState.linksHref.some((p) => p.endsWith("/css/tokens.css"))) fail("gate default: tokens.css link missing");
-  if (!offState.linksHref.some((p) => p.endsWith("/css/redesign.css"))) fail("gate default: redesign.css link missing");
-  await off.close();
-  ok(`gate: default off, tokens+redesign linked and 200, body bg unchanged (${offState.bg})`);
-
-  // Preview trigger (?redesign=1): gate on, Prado ground applies from tokens.
-  const on = await browser.newPage();
-  trackErrors(on);
-  await on.goto(`${BASE}/?redesign=1#/`);
+  await on.goto(`${BASE}/`);
   await on.waitForSelector(".set-card");
-  const onState = await on.evaluate(() => ({
+  const state = await on.evaluate(() => ({
     hasGate: document.documentElement.hasAttribute("data-redesign"),
     bg: getComputedStyle(document.body).backgroundColor,
     brand: getComputedStyle(document.documentElement).getPropertyValue("--brand").trim(),
+    linksHref: [...document.querySelectorAll('link[rel="stylesheet"]')].map((l) => new URL(l.href).pathname),
   }));
-  if (!onState.hasGate) fail("gate preview: ?redesign=1 must set data-redesign on <html>");
-  // tokens.css light --brand is #2f6b4f (darkened from the artifact's
-  // #3f9256 during I* to pass WCAG AA 4.5:1 — see docs/DESIGN.md contrast note).
-  if (!/^#2f6b4f$/i.test(onState.brand) && onState.brand !== "#2f6b4f") {
-    fail(`gate preview: --brand should resolve to Prado #2f6b4f, got "${onState.brand}"`);
-  }
+  if (!state.hasGate) fail("gate: data-redesign must be set by DEFAULT after the flip (no query needed)");
+  if (linkStatus.tokens !== 200) fail(`gate: css/tokens.css did not load 200 (got ${linkStatus.tokens})`);
+  if (linkStatus.redesign !== 200) fail(`gate: css/redesign.css did not load 200 (got ${linkStatus.redesign})`);
+  if (!state.linksHref.some((p) => p.endsWith("/css/tokens.css"))) fail("gate: tokens.css link missing");
+  if (!state.linksHref.some((p) => p.endsWith("/css/redesign.css"))) fail("gate: redesign.css link missing");
+  // Prado ground + brand are live by default now (light default → --bg #fbf6ea = rgb(251,246,234)).
+  if (state.bg !== "rgb(251, 246, 234)") fail(`gate: default body bg should be Prado day rgb(251, 246, 234), got "${state.bg}"`);
+  // tokens.css light --brand is #2f6b4f (darkened from the artifact's #3f9256
+  // during I* to pass WCAG AA 4.5:1 — see docs/DESIGN.md contrast note).
+  if (!/^#2f6b4f$/i.test(state.brand)) fail(`gate: --brand should resolve to Prado #2f6b4f by default, got "${state.brand}"`);
   await on.close();
-  ok(`gate: ?redesign=1 activates data-redesign; --brand = ${onState.brand}`);
+  ok(`gate: redesign is DEFAULT ON (data-redesign set, Prado bg ${state.bg}, --brand ${state.brand})`);
 }
 
 // ---------- M16 I*: redesign-preview screenshots + preview axe gate ----------

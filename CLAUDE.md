@@ -129,6 +129,18 @@ never become an app dependency.
   track, deliberately excluded from MODES and every star denominator;
   the mode renders only when `audioAvailable()` (clips or local voice).
   Print styles live in styles.css (`@media print` + `.no-print`).
+- **Visual system (M16 "Prado", FLIP 2026-07-09).** Three stylesheets:
+  `css/styles.css` is the structural base (layout, print, a11y);
+  `css/tokens.css` defines the Prado design tokens; `css/redesign.css` is
+  the visual layer. Every rule in tokens/redesign is scoped to
+  `:root[data-redesign]`, and the inline `<head>` loader in each HTML now
+  sets `data-redesign` UNCONDITIONALLY — so the Prado look is the default
+  (the `?redesign=1` preview trigger is retired). redesign tokens win by
+  specificity; styles.css tokens remain as fallback (e.g. `--brand-soft`),
+  so don't delete it. Theme selector (☰ menu) is Auto/Light/Dark, **Light
+  default** — an unset theme applies `data-theme="light"`; Auto follows the
+  OS. Both the inline loader and `themeSelector()` in js/app.js encode that
+  default; keep them in sync.
 - Persons are always indexed 0-5 (yo, tú, él/ella/Ud., nosotros, vosotros,
   ellos/Uds.); vosotros (index 4) is filtered at the UI layer per user setting,
   never removed from data.

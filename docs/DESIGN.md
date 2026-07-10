@@ -5,10 +5,13 @@ committed at [`design/Conjuga Redesign.dc.html`](../design/Conjuga%20Redesign.dc
 (the raw artifact — repo source, **not** linked from app nav). The machine
 copy of these values lives in [`css/tokens.css`](../css/tokens.css).
 
-> **Status: spec only (task R).** `tokens.css` is defined but **not applied**
-> — it is unlinked and scoped to `:root[data-redesign]`, which nothing sets
-> yet. Wiring the gate is task **G**; per-screen migration is **I\***; the
-> human `main` flip is **FLIP**. Nothing here changes the live app.
+> **Status: LIVE by default (FLIP, 2026-07-09).** `tokens.css` +
+> `redesign.css` are linked and every HTML's inline head loader sets
+> `data-redesign` unconditionally, so this Prado system is the default look
+> (the `?redesign=1` preview trigger is retired). `css/styles.css` remains
+> as the structural base beneath the redesign override layer. The theme
+> selector (task **T**) defaults to Light. The production redeploy is the
+> next human-merged dev→main release.
 
 ## The committed direction — "Prado"
 

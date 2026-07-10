@@ -210,6 +210,12 @@ Hidden in print.
 - Best score and stars persist per (group, tense, mode).
 
 ### 4.5 Non-functional
+- **Visual system (M16 "Prado", FLIP 2026-07-09):** the app ships the Prado
+  redesign as its default look — `css/tokens.css` + `css/redesign.css` layer
+  over the structural `css/styles.css`, gated on `:root[data-redesign]` which
+  the inline head loader now sets unconditionally (the `?redesign=1` preview
+  trigger is retired). A ☰-menu theme selector offers Auto / Light / Dark with
+  **Light as the default**; full token spec in [docs/DESIGN.md](DESIGN.md).
 - **Accessibility:** WCAG-minded — ARIA live region for feedback, focus-visible
   styles, keyboard play, ≥44px targets, dark mode, prefers-reduced-motion.
 - **Performance:** no network calls after load; total payload < 100 KB GZIPPED — the wire-transfer measure (owner, 2026-07-08; ~37 KB at changeover).
