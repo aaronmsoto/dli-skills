@@ -86,7 +86,11 @@
   --good-bg: #dff2e2;
   --bad: #c2492f;
   --bad-bg: #f8e2da;
-  --star: #e0982f;         /* amber — progress stars */
+  --star: #e0982f;         /* amber — progress-star PILL fill (dark text on it = 5.70:1) */
+  --star-glyph: #b8770f;   /* WCAG-6 (M17): darker amber for filled ★ glyphs — 3.69:1 on card, 3.43:1 on bg (≥3:1 non-text) */
+  --good-ink: #1f6b3c;     /* WCAG-7/8 (M17): success text on --good-bg (5.56:1) and --bg (6.03:1) */
+  --bad-ink: #a13318;      /* WCAG-7 (M17): error text on --bad-bg (5.62:1) */
+  --almost-ink: #7d5200;   /* WCAG-7 (M17): almost-retry text on the star tint (6.04:1) */
 
   /* ---- Color: tense hues (star-free triad; sun / flag / loop) ---- */
   --tense-present: #e0982f;    /* sun — ahora */
@@ -118,6 +122,8 @@
     --bad: #ef8a6f;      /* derived: not drawn in the artifact (see DESIGN.md) */
     --bad-bg: #3a231c;   /* derived: not drawn in the artifact (see DESIGN.md) */
     --star: #f3b750;
+    --star-glyph: #f3b750;   /* dark ★ glyph already 8:1 — no darkening needed */
+    --good-ink: var(--good); --bad-ink: var(--bad); --almost-ink: var(--star); /* dark feedback text all ≥4.5:1 */
 
     --tense-present: #f3b750;
     --tense-preterite: #f0946a;
@@ -152,6 +158,8 @@
   --bad: #ef8a6f;
   --bad-bg: #3a231c;
   --star: #f3b750;
+  --star-glyph: #f3b750;
+  --good-ink: var(--good); --bad-ink: var(--bad); --almost-ink: var(--star);
 
   --tense-present: #f3b750;
   --tense-preterite: #f0946a;

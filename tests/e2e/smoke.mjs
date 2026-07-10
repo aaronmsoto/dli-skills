@@ -613,6 +613,47 @@ ok("dark mode: Lola dark palette active");
   ok("theme (post-flip, Prado only): Light default (OS-dark → day #fbf6ea, persists); Auto opt-in follows OS → forest-night #191e17; Dark beats OS-light");
 }
 
+// ---------- M17 Round 2: WCAG contrast fixes (light Prado) ----------
+{
+  const p = await browser.newPage({ colorScheme: "light" });
+  trackErrors(p);
+  await p.goto(`${BASE}/#/`);
+  await p.waitForSelector(".set-card");
+  // Inject one node per fixed surface and read the COMPUTED color under the
+  // live Prado CSS (these states — earned ★, post-answer feedback — don't
+  // render on the empty home the axe gate snapshots, so assert them directly).
+  const col = await p.evaluate(() => {
+    const probe = (html, sel) => {
+      const w = document.createElement("div");
+      w.innerHTML = html; document.body.appendChild(w);
+      const c = getComputedStyle(w.querySelector(sel)).color; w.remove(); return c;
+    };
+    return {
+      star: probe('<span class="stars"><span class="star on">★</span></span>', ".star.on"),
+      good: probe('<div class="feedback good">x</div>', ".feedback.good"),
+      bad: probe('<div class="feedback bad">x</div>', ".feedback.bad"),
+      almost: probe('<div class="feedback almost">x</div>', ".feedback.almost"),
+    };
+  });
+  if (col.star !== "rgb(184, 119, 15)") fail(`WCAG-6: filled ★ glyph should be --star-glyph #b8770f, got "${col.star}"`);
+  if (col.good !== "rgb(31, 107, 60)") fail(`WCAG-7: .feedback.good text should be --good-ink #1f6b3c, got "${col.good}"`);
+  if (col.bad !== "rgb(161, 51, 24)") fail(`WCAG-7: .feedback.bad text should be --bad-ink #a13318, got "${col.bad}"`);
+  if (col.almost !== "rgb(125, 82, 0)") fail(`WCAG-7: .feedback.almost text should be --almost-ink #7d5200, got "${col.almost}"`);
+  // NN-8 + WCAG-9/DN-7: theme option ≥44px touch target and a brand-border active cue.
+  await p.click(".menu-btn");
+  await p.waitForSelector(".theme-selector");
+  const opt = await p.evaluate(() => {
+    const b = document.querySelector('.theme-option[data-theme-value="light"]');
+    const s = getComputedStyle(b);
+    return { h: parseFloat(s.minHeight), pressed: b.getAttribute("aria-pressed"), border: s.borderTopColor, bw: s.borderTopWidth };
+  });
+  if (opt.h < 44) fail(`NN-8: .theme-option min-height should be ≥44px, got ${opt.h}`);
+  if (opt.pressed === "true" && (opt.border !== "rgb(47, 107, 79)" || parseFloat(opt.bw) < 2))
+    fail(`WCAG-9: active theme option needs a 2px --brand border, got ${opt.bw} ${opt.border}`);
+  await p.close();
+  ok("M17 a11y fixes: ★ glyph #b8770f (3.69:1), feedback text ink ≥4.5:1, theme options 44px + brand active border");
+}
+
 // ---------- mobile 360×640: no overflow, perch inside viewport ----------
 const mob = await browser.newPage({ viewport: { width: 360, height: 640 } });
 trackErrors(mob);
@@ -946,7 +987,12 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await docs.goto(`${BASE}/docs/usability.html`);
   if (!(await docs.getByRole("heading", { name: /Usability & Accessibility/ }).count())) fail("usability page: h1 missing");
   if ((await docs.locator("td.fixed").count()) < 7) fail("usability page: expected ≥7 FIXED findings");
-  if (await docs.locator("td.pending").count()) fail("usability page: no findings should remain in owner triage");
+  // Round 2 may leave design-DECISION items open for the owner; each pending
+  // cell must say "owner" so a stray unresolved finding can't hide here.
+  const pending = await docs.locator("td.pending").allInnerTexts();
+  const stray = pending.filter((t) => !/owner/i.test(t));
+  if (stray.length) fail(`usability page: non-owner finding still pending: ${stray.join(" | ")}`);
+  if (pending.length > 2) fail(`usability page: ${pending.length} pending findings (expected ≤2 owner-decision)`);
   await docs.close();
   ok("docs: hub + usability page render; all sections, statuses, and relative links OK");
 }

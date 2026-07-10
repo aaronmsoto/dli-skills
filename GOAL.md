@@ -28,10 +28,12 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue: M16 COMPLETE on dev (FLIP landed 2026-07-09 — the Prado redesign
-is now the DEFAULT look, gate always on). The production go-live is the
-next human-merged dev→main release. Next loop work: M17 — round-2
-usability/accessibility audits (owner-directed 2026-07-09).**
+**Queue: M16 COMPLETE + live (Prado redesign shipped to main 2026-07-10).
+M17 round-2 audits + auto-fixes COMPLETE on dev 2026-07-10 — two
+design-decision findings (NN-7 split icon system, DN-6 imperfect tense-badge
+contrast) await the owner in M17 below; loops must not implement them until
+an option is chosen. No other loop-workable item is queued — the owner sets
+the next milestone.**
 M16 tasks R (design extraction), G (gate), T (theme selector, Light
 default), I\* (per-screen migration), RT (regression), and FLIP (default
 the gate on + retire the old look) all landed on `dev`; the go-live deploy
@@ -550,37 +552,61 @@ The queue line here — not milestone numbering — sets loop priority.
         green. Docs (DESIGN/GOAL/SPEC/README/about) synced. The production
         redeploy of the new design is the next human-merged dev→main release.
 
-- [ ] **M17 — 🔬 Round-2 usability & accessibility audits (post-redesign;
-  owner-directed 2026-07-09)**
-  After the redesign is live, re-run the four evaluations against the new
-  design and record dated results. The axe-core CI gate runs on the
-  redesign throughout M16, so this is the deeper manual round, not the
-  safety net. Owner decision (2026-07-09): update the existing reports
-  **IN PLACE** with dated "Round 2 (YYYY-MM-DD)" sections and per-finding
-  dated status (Found / Fixed dates), preserving all Round 1 content;
-  `docs/usability.html` mirrors both rounds with dates. Autonomy mirrors
-  M10: loops auto-fix WCAG Critical/Serious, Nielsen severity-3/4, and
-  low-risk quick wins; design/pedagogy-changing findings are appended here
-  for owner triage.
+- [~] **M17 — 🔬 Round-2 usability & accessibility audits (post-redesign;
+  owner-directed 2026-07-09; audits + auto-fixes done on dev 2026-07-10 —
+  two design-decision items await the owner below)**
+  Re-ran the four evaluations against the live Prado redesign and recorded
+  dated results. The axe-core CI gate runs on the redesign, so this was the
+  deeper manual round — and it earned its keep: axe snapshots empty screens,
+  so it was blind to the earned-★ and post-answer feedback-text contrast
+  regressions that manual token computation caught. Owner decision
+  (2026-07-09): reports updated **IN PLACE** with dated "Round 2" sections +
+  per-finding Found/Fixed dates, Round 1 preserved; `docs/usability.html`
+  mirrors both rounds. Autonomy per M10: auto-fixed WCAG Critical/Serious,
+  Nielsen 3/4, and low-risk quick wins; design/pedagogy-changing findings
+  appended below for owner triage.
   Acceptance criteria, in order:
-  - [ ] **DATING (schema first):** add a dated-findings convention to
-        `docs/audits/*.md` and `docs/usability.html` — each finding gets an
-        ID, a Found date, and a Fixed date (or Open); Round 1 items
-        back-dated to their original ship dates. One loop, docs-only, no app
-        change.
-  - [ ] **A1′ Don Norman · A2′ Nielsen · A3′ cognitive walkthrough ·
-        A4′ WCAG 2.2 AA:** re-run each per its skill against the redesigned
-        app; append a dated Round 2 section to `norman.md` / `nielsen.md` /
-        `walkthrough.md` / `wcag.md`, IDs continuing the sequence. One loop
-        per method.
-  - [ ] **F′ (fix wave):** auto-fix the mandated tiers with a test per fix,
-        each citing its finding ID and stamping a Fixed date; triage items
-        appended here.
-  - [ ] **P′ (usability page):** `docs/usability.html` updated with Round 2
-        scores, a dated findings table (Round 1 vs Round 2, Found/Fixed),
-        and the audit date; no drift from `docs/audits`.
-  - [ ] **V/RT:** e2e for any changed UI; axe-core green; full regression;
-        `journal/` entry.
+  - [x] **DATING** — dated-findings convention (ID + Found/Fixed dates,
+        Round 1 back-dated) added across `docs/audits/*.md` and
+        `docs/usability.html` (Round column, R1/R2 dates).
+  - [x] **A1′ Don Norman · A2′ Nielsen · A3′ cognitive walkthrough ·
+        A4′ WCAG 2.2 AA** — each re-run against the live redesign; dated
+        Round 2 sections appended to `norman.md` / `nielsen.md` /
+        `walkthrough.md` / `wcag.md`, IDs continuing the sequence (DN-5..7,
+        NN-6..8, CW-4..6, WCAG-6..9).
+  - [x] **F′ (fix wave)** — auto-fixed the mandated tiers, each citing its
+        finding ID + Fixed date, locked by the "M17 a11y fixes" e2e block:
+        WCAG-6 (★ glyph → `--star-glyph #b8770f`, 3.69:1), WCAG-7 (feedback
+        text → `--good-ink/--bad-ink/--almost-ink`, ≥5.5:1), WCAG-8
+        (`.footer-applied` → `--good-ink`, 6.03:1), WCAG-9/DN-7 (theme active
+        state → brand border), NN-8 (theme options → 44px).
+  - [x] **P′ (usability page)** — `docs/usability.html` updated with Round 2
+        scores, a dated R1-vs-R2 findings table (Found/Fixed), and the
+        2026-07-10 audit date; no drift from `docs/audits`.
+  - [x] **V/RT** — e2e for the fixes (computed colors + target size),
+        axe-core green (both themes), full regression 50/50 unit; journal
+        entry written.
+  - Decision-pending Round 2 findings (owner triage — loops must NOT
+    implement these until an option is chosen here):
+    - [ ] **NN-7 (severity 2, aesthetic direction):** the group screen uses
+          monochrome `--brand` line-icons while the same activities keep
+          full-color emoji in the Estudia action row, h1 headings, and
+          footer — one activity, two icons by screen. Options: (a) push the
+          line-icon set everywhere; (b) revert the group cards to the shared
+          emoji; (c) accept the split. Auditor lean: (a) or (b) for
+          per-activity recognition consistency.
+    - [ ] **DN-6 (medium, 1.4.3):** the imperfect tense badge text is
+          3.58:1 — the mid-tone `--tense-imperfect #3f9256` fails 4.5:1 with
+          *both* dark (3.58) and white (3.85) text, so the fix means changing
+          the tense hue. Options: (a) darken the imperfect hue toward a green
+          that passes with white text (risks resembling `--brand`); (b)
+          lighten it to pass with dark text; (c) accept (the tense name also
+          shows in the breadcrumb, so it is not a color-only cue). Auditor
+          lean: (a) with a hue kept distinct from brand.
+  - Low-severity watch items (no action required; monitor with real K-5
+    users): CW-4 (theme/sound behind the unlabeled ☰), CW-5 (activity tiles
+    equal visual weight), CW-6 (star-total pill reads tappable), NN-4
+    (native `confirm()` for reset — carried, accepted).
 
 ## Non-goals (do not build)
 
