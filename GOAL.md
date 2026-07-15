@@ -32,11 +32,12 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 #79-#83: Chispa + F1, Nido scene, Nido ceremonies + `?m18demo=1`, Vuelo core,
 Vuelo garnish) — they ship on the next dev→main release a human merges.
 M18.4 (Postales) stays BLOCKED on SME review + owner clip run — loops must
-not start it. NEXT LOOP WORK: **M19** (🎧 accessibility reframe + 🪶 nest
-feather, owner-directed 2026-07-15, one iteration). Post-release owner
-checklist: verify celebrations on the live site via `?m18demo=1`, and
-optionally run tools/generate-audio.mjs for the nest nouns (la brizna /
-la ramita / la flor / la pluma) so they get premium clips.**
+not start it. M19 (🎧 accessibility reframe + 🪶 nest feather) COMPLETE on
+dev 2026-07-15 — rides the same release. No loop-workable item is queued;
+the owner sets the next milestone. Post-release owner checklist: verify
+celebrations on the live site via `?m18demo=1`, and optionally run
+tools/generate-audio.mjs for the nest nouns (la brizna / la ramita /
+la flor / la pluma) so they get premium clips.**
 M16 tasks R (design extraction), G (gate), T (theme selector, Light
 default), I\* (per-screen migration), RT (regression), and FLIP (default
 the gate on + retire the old look) all landed on `dev`; the go-live deploy
@@ -691,8 +692,8 @@ The queue line here — not milestone numbering — sets loop priority.
   lockstep path vs free choice) · Jardín de Verbos as pitched (no per-verb
   data exists; 100-target overload; backlog guilt — salvaged as freebie F1).
 
-- [ ] **M19 — 🎧→🪶 Listening track: accessibility reframe + nest feather
-  (owner-directed 2026-07-15; loop-workable, one iteration)**
+- [x] **M19 — 🎧→🪶 Listening track: accessibility reframe + nest feather
+  (owner-directed 2026-07-15; complete on dev 2026-07-15)**
   Owner question: with pre-generated mp3 clips (M12), should 🎧 badges fold
   into stars? **Owner decision (2026-07-15): NO — keep the parallel track,
   but for the RIGHT reason.** The original rationale ("devices without a
@@ -703,25 +704,22 @@ The queue line here — not milestone numbering — sets loop priority.
   the nest's twig derivation stays hearing-free. Star denominators are
   UNCHANGED (30/set, 600 site). Do not fold tracks; do not add listen to
   `nestFactsFor`'s allStarred.
-  Acceptance criteria:
-  - [ ] **REFRAME** — every public statement of the old voiceless rationale
-        updated to the accessibility rationale: about.html Escucha row (also
-        fix the stale "appears only on devices with a Spanish voice" —
-        clips-era truth is "whenever Spanish audio is available"),
-        `js/standards-info.js` listen entry, code comments in js/app.js that
-        restate the old reason, and a dated note here. CLAUDE.md standing
-        rule 3 wording is updated by the owner in the stub PR, not by loops.
-  - [ ] **🪶 FEATHER** — a group at 🎧 9/9 badges adds a pluma to its nest
-        item: derivation `listenBadges(setId) === 9` (derived-only, no new
-        storage), rendered in the nido scene + list ("… y la pluma", spoken
-        when audio exists), a group with ONLY listening progress (tier 0 +
-        feather) appears as "Grupo N · la pluma", home set-card appends 🪶
-        beside 🎧 9/9, nestSummary counts plumas. QUIET discovery like the
-        brizna — no ceremony (listening rounds keep their own celebration
-        surface unchanged). `?m18demo=1` sample nest includes feathers.
-  - [ ] **V** — unit tests (summary/derivation) + e2e (seeded 9/9 → feather
-        in nest + home glyph; 8/9 → no feather; voiceless parity holds);
-        docs in sync; journal entry.
+  Acceptance criteria (all complete on dev 2026-07-15,
+  loop/20260715-m19-escucha-feather):
+  - [x] **REFRAME** — about.html Escucha row rewritten (accessibility
+        rationale + clips-era availability truth; stale "only on devices
+        with a Spanish voice" removed; feather mentioned),
+        `js/standards-info.js` listen entry rewritten, js/app.js LISTEN
+        comment reframed. CLAUDE.md rule 3 was updated in the stub PR (#84).
+  - [x] **🪶 FEATHER** — `listenBadges(setId) === 9` → pluma on the group's
+        nest item (derived-only): nido list "… y la pluma" (spoken when audio
+        exists), quill drawn in the scene, listening-only groups appear as
+        "Grupo N · la pluma", home set-card appends 🪶 with a bilingual
+        aria-label, nestSummary counts plumas, demo nest includes feathers.
+        Quiet discovery — no ceremony; star tiers verified hearing-free.
+  - [x] **V** — unit 52/52 (new pluma test) · e2e PASS with three M19 blocks
+        (9/9 → feather everywhere; 8/9 → nothing; listening-only → pluma;
+        about.html carries the new rationale and not the stale claim).
 
 ## Non-goals (do not build)
 
