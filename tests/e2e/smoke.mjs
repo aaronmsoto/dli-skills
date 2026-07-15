@@ -1976,7 +1976,12 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
       }, [cx, cy]);
       if (border !== "none" && border !== "rgba(0, 0, 0, 0)")
         fail(`m20-3: cloud under parked pointer shows phantom border ${border}`);
-      await pg.mouse.move(cx + 120, cy + 60);
+      // move WITHIN the sky (to another cloud's center — a fixed offset was
+      // flaky: depending on which shuffled cloud was correct it could exit
+      // the sky, where the pointermove listener never fires). Same semantics
+      // as the .choice grid test: hover restores on movement within the grid.
+      const other = await pg.locator(".vuelo-cloud").nth(1).boundingBox();
+      await pg.mouse.move(other.x + other.width / 2, other.y + other.height / 2);
       await pg.waitForTimeout(60);
       if (await pg.locator(".vuelo-sky.no-hover").count())
         fail("m20-3: no-hover must clear on real pointer movement");
@@ -1984,6 +1989,92 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     await pg.close();
     ok(`M20 a11y sprint (${theme}): done-card ink + primary-button ink${theme === "light" ? " + cloud sticky-hover guard" : ""} verified`);
   }
+}
+
+// ---------- M21 "La Travesía": traversal, listen-first + ABC toggle, sky stages ----------
+{
+  const intoFlight = async (pg) => {
+    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.waitForSelector(".match-card");
+    const r = await pg.evaluate(async () => {
+      const { SETS } = await import("./js/verbs.js");
+      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+      for (const l of left) {
+        const [personLabel, inf] = l.textContent.split(" · ");
+        const verb = SETS[0].verbs.find((v) => v.inf === inf);
+        const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+        const rc = [...document.querySelectorAll(".match-col.right .match-card")]
+          .find((x) => x.textContent === form && !x.disabled);
+        if (!rc) return "missing card";
+        l.click(); rc.click();
+        await new Promise((res) => setTimeout(res, 40));
+      }
+      return "ok";
+    });
+    if (r !== "ok") fail(`m21 setup: ${r}`);
+    await pg.waitForSelector(".vuelo-invite");
+    await pg.click(".vuelo-invite");
+    await pg.waitForSelector(".vuelo .vuelo-cloud");
+  };
+  const answerOne = (pg) => pg.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const [personLabel, inf] = document.querySelector(".vuelo-prompt").textContent.split(" · ");
+    const verb = SETS[0].verbs.find((v) => v.inf === inf);
+    const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+    [...document.querySelectorAll(".vuelo-cloud")].find((c) => c.textContent === form).click();
+  });
+
+  // clips context → listen-first: prompt hidden, ear + toggle present
+  const trav = await browser.newPage();
+  trackErrors(trav);
+  await intoFlight(trav);
+  if (!(await trav.locator(".vuelo.vuelo-listen").count())) fail("m21: listen mode missing with audio");
+  if ((await trav.locator(".vuelo-prompt").evaluate((n) => getComputedStyle(n).display)) !== "none")
+    fail("m21: written prompt must hide in listen mode");
+  if (!(await trav.locator(".vuelo-ear").count())) fail("m21: 🎧 ear cue missing");
+  const abc = trav.locator(".vuelo-text-toggle");
+  if ((await abc.getAttribute("aria-pressed")) !== "false") fail("m21: ABC toggle should start unpressed");
+  await abc.click();
+  if ((await trav.locator(".vuelo-prompt").evaluate((n) => getComputedStyle(n).display)) === "none")
+    fail("m21: ABC toggle must reveal the written prompt");
+  if ((await abc.getAttribute("aria-pressed")) !== "true") fail("m21: ABC toggle aria-pressed must update");
+  // journey strip: 6 puffs + nest + Lola at the start
+  if ((await trav.locator(".vuelo-puff").count()) !== 6) fail("m21: expected 6 journey puffs");
+  if (!(await trav.locator(".vuelo-journey-nest").count())) fail("m21: journey nest missing");
+  if ((await trav.locator(".vuelo-card").getAttribute("data-step")) !== "0") fail("m21: journey should start at step 0");
+  // one correct answer → Lola advances one puff, sky stage ticks
+  await answerOne(trav);
+  await trav.waitForTimeout(760);
+  if ((await trav.locator(".vuelo-card").getAttribute("data-step")) !== "1") fail("m21: data-step should advance to 1");
+  if ((await trav.locator(".vuelo-puff-done").count()) !== 1) fail("m21: first puff should fill");
+  const prog = await trav.locator(".vuelo-journey").evaluate((n) => n.style.getPropertyValue("--vuelo-progress"));
+  if (Math.abs(parseFloat(prog) - 1 / 6) > 0.01) fail(`m21: --vuelo-progress should be 1/6, got ${prog}`);
+  // finish the journey → landing at step 6, all puffs filled
+  for (let k = 0; k < 5; k++) { await answerOne(trav); await trav.waitForTimeout(760); }
+  await trav.waitForSelector(".vuelo-landing");
+  if ((await trav.locator(".vuelo-card").getAttribute("data-step")) !== "6") fail("m21: landing should be step 6");
+  if ((await trav.locator(".vuelo-puff-done").count()) !== 6) fail("m21: all puffs should fill at landing");
+  if (await trav.locator(".vuelo-text-toggle").count()) fail("m21: ABC toggle should retire at landing");
+  await trav.screenshot({ path: `${SHOTS}/m21-travesia-landing.png` });
+  await trav.close();
+  ok("M21 travesía: listen-first + ABC toggle, puff-by-puff traversal, sky stages, landing at the nest");
+
+  // muted context: clips available but sound off → text prompts, no ear affordances
+  const muted = await browser.newPage();
+  trackErrors(muted);
+  await muted.addInitScript(() => {
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: { sound: false }, best: {} }));
+  });
+  await intoFlight(muted);
+  if (await muted.locator(".vuelo.vuelo-listen").count()) fail("m21 muted: listen mode must not engage with sound off");
+  if ((await muted.locator(".vuelo-prompt").evaluate((n) => getComputedStyle(n).display)) === "none")
+    fail("m21 muted: text prompt must show when sound is off");
+  if (await muted.locator(".vuelo-text-toggle").count()) fail("m21 muted: no ABC toggle in text mode");
+  if (await muted.locator(".vuelo-replay").count()) fail("m21 muted: no replay affordance with sound off");
+  await muted.close();
+  ok("M21 travesía: muted device gets text prompts with no dangling audio affordances");
 }
 
 // ---------- wrap up ----------

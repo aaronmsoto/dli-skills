@@ -32,11 +32,10 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 #79-#83: Chispa + F1, Nido scene, Nido ceremonies + `?m18demo=1`, Vuelo core,
 Vuelo garnish) — they ship on the next dev→main release a human merges.
 M18.4 (Postales) stays BLOCKED on SME review + owner clip run — loops must
-not start it. M19 (🎧 accessibility reframe + 🪶 nest feather) and M20 (a11y
-sprint: owner-reported contrast + phantom-selection fixes) COMPLETE on dev
-2026-07-15 — both ride the next release. OPEN OWNER QUESTION (M21 candidate):
-make El Vuelo feel more like a flight and less like Elige — proposal options
-sent to the owner 2026-07-15; do not start without the owner's pick. No loop-workable item is queued;
+not start it. M19 (🎧 reframe + 🪶 feather), M20 (a11y sprint), and M21
+(La Travesía — owner picked options A+B+C 2026-07-15) COMPLETE on dev
+2026-07-15 — all ride the next release a human merges. No loop-workable item
+is queued; the owner sets the next milestone. No loop-workable item is queued;
 the owner sets the next milestone. Post-release owner checklist: verify
 celebrations on the live site via `?m18demo=1`, and optionally run
 tools/generate-audio.mjs for the nest nouns (la brizna / la ramita /
@@ -723,6 +722,37 @@ The queue line here — not milestone numbering — sets loop priority.
   - [x] **V** — unit 52/52 (new pluma test) · e2e PASS with three M19 blocks
         (9/9 → feather everywhere; 8/9 → nothing; listening-only → pluma;
         about.html carries the new rationale and not the stale claim).
+
+- [x] **M21 — 🌤️ La Travesía: the flight becomes a journey (owner picked
+  A+B+C 2026-07-15; complete on dev 2026-07-15,
+  loop/20260715-m21-travesia)**
+  Owner feedback on the shipped M18.3: the flight felt mechanically like
+  Elige with a skin. Rebuilt around three approved directions, keeping the
+  non-negotiables (anchored ≥64px targets, no timer, no failure state,
+  reduced-motion parity, flair scales but never gates):
+  - [x] **A — TRAVERSAL:** a journey strip (one puff per prompt + the nest)
+        where Lola visibly flies puff-to-puff toward home on each correct
+        answer (`--vuelo-progress` positions her; motion is a CSS left
+        transition + swoop arc under no-preference; instant reposition under
+        reduce). Arrival IS the landing. Strip is decorative/aria-hidden;
+        meaning stays in the live region + n/6 text.
+  - [x] **B — LISTEN-FIRST:** when audio can actually play (backend present
+        AND sound unmuted — app.js passes `onSay` only then), the written
+        prompt hides and the flight plays by ear (🎧 + prominent 🔊 replay) —
+        a genuinely different skill from Elige's reading. An **ABC toggle**
+        reveals the text in one tap (equity escape hatch for deaf/HoH
+        learners and noisy rooms; not persisted). Voiceless or muted contexts
+        default to text prompts.
+  - [x] **C — ATMOSPHERE:** parallax cloud bands drifting BEHIND the anchored
+        targets and a skyband that warms from morning green through midday
+        amber to sunset persimmon as `data-step` advances (color-mix on
+        Prado tokens, dark theme automatic). All drift/transition rules live
+        inside the no-preference media query.
+  - [x] **V** — e2e: new M21 block (listen-first default + ABC toggle
+        behavior, journey advancement puff-by-puff, data-step sky stages,
+        landing at step 6, muted-context text fallback with no toggle/replay)
+        plus the existing vuelo blocks re-verified; about.html flight row
+        updated; unit suite green.
 
 - [x] **M20 — 🔍 A11y sprint: owner-reported contrast + phantom-selection
   fixes (owner-directed 2026-07-15; complete on dev 2026-07-15)**
