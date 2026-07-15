@@ -1764,6 +1764,68 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M18.3a vuelo: offline import degrades to a message, results intact");
 }
 
+// ---------- M18.3b: flight garnish (motion-gated) + 🔊 replay affordance ----------
+{
+  const solveMatchRound2 = async (pg) => {
+    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.waitForSelector(".match-card");
+    const r = await pg.evaluate(async () => {
+      const { SETS } = await import("./js/verbs.js");
+      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+      for (const l of left) {
+        const [personLabel, inf] = l.textContent.split(" · ");
+        const verb = SETS[0].verbs.find((v) => v.inf === inf);
+        const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+        const rc = [...document.querySelectorAll(".match-col.right .match-card")]
+          .find((x) => x.textContent === form && !x.disabled);
+        if (!rc) return `no right card for ${form}`;
+        l.click(); rc.click();
+        await new Promise((res) => setTimeout(res, 40));
+      }
+      return "ok";
+    });
+    if (r !== "ok") fail(`vuelo-garnish setup: ${r}`);
+    await pg.waitForSelector(".results");
+    await pg.click(".vuelo-invite");
+    await pg.waitForSelector(".vuelo .vuelo-cloud");
+  };
+
+  const gar = await browser.newPage();
+  trackErrors(gar);
+  await solveMatchRound2(gar);
+  // clips are served here → the ear gets its replay affordance
+  if (!(await gar.locator(".vuelo-replay").count())) fail("vuelo-garnish: 🔊 replay missing with audio available");
+  // clouds bob in place under normal motion…
+  const bob = await gar.evaluate(() =>
+    getComputedStyle(document.querySelector(".vuelo-cloud")).animationName);
+  if (bob !== "vuelo-bob") fail(`vuelo-garnish: expected vuelo-bob, got ${bob}`);
+  // …and hold still under reduced motion — same game, replay stays (audio ≠ motion)
+  await gar.emulateMedia({ reducedMotion: "reduce" });
+  const still = await gar.evaluate(() =>
+    getComputedStyle(document.querySelector(".vuelo-cloud")).animationName);
+  if (still === "vuelo-bob") fail("vuelo-garnish: bobbing must stop under reduced motion");
+  if (!(await gar.locator(".vuelo-replay").count())) fail("vuelo-garnish: replay must survive reduced motion");
+  await gar.close();
+  ok("M18.3b: clouds bob in place (motion-gated off under reduce), 🔊 replay present with audio");
+
+  // voiceless device: no replay affordance, flight fully playable
+  const quiet = await browser.newPage();
+  trackErrors(quiet);
+  await quiet.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await quiet.addInitScript(() => {
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: { getVoices: () => [], addEventListener: () => {}, cancel: () => {} },
+    });
+  });
+  await solveMatchRound2(quiet);
+  if (await quiet.locator(".vuelo-replay").count()) fail("vuelo-garnish: replay must hide on voiceless devices");
+  if ((await quiet.locator(".vuelo-cloud").count()) < 4) fail("vuelo-garnish: voiceless flight must still deal clouds");
+  await quiet.close();
+  ok("M18.3b: voiceless flight hides the replay affordance and stays fully playable");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();
