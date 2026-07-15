@@ -1826,6 +1826,65 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M18.3b: voiceless flight hides the replay affordance and stays fully playable");
 }
 
+// ---------- M19: 🪶 feather at 🎧 9/9 + accessibility reframe ----------
+{
+  const fea = await browser.newPage();
+  trackErrors(fea);
+  // group 1: one star + FULL listening badges → brizna y pluma
+  await fea.addInitScript(() => {
+    const e = (stars) => ({ score: 10, total: 10, stars, plays: 1, at: Date.now() });
+    const best = { "1.present.choice": e(1) };
+    for (const t of ["present", "preterite", "imperfect"]) best[`1.${t}.listen`] = e(3);
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
+  });
+  await fea.goto(`${BASE}/#/nido`);
+  await fea.waitForSelector(".nido-list");
+  const item = await fea.locator(".nido-item").first().innerText();
+  if (!/Grupo 1 · la brizna y la pluma/.test(item)) fail(`feather: expected brizna y pluma, got: ${item}`);
+  if (!/pluma/.test(await fea.locator(".nido-summary").innerText())) fail("feather: summary must count plumas");
+  // nest tiers stay hearing-free: badges alone never make a twig
+  const tierClass = await fea.locator(".nido-item").first().getAttribute("class");
+  if (/tier-2|tier-3/.test(tierClass)) fail("feather: listening must never upgrade a star tier");
+  // home card announces both
+  await fea.goto(`${BASE}/#/`);
+  await fea.waitForSelector(".set-card");
+  const lab = await fea.locator(".set-card .set-tier").first().getAttribute("aria-label");
+  if (!/la brizna y la pluma en el nido/.test(lab)) fail(`feather: home glyph label wrong: ${lab}`);
+  await fea.close();
+  ok("M19 feather: 🎧 9/9 adds la pluma (list + summary + home glyph), star tiers untouched");
+
+  // 8/9 is not a feather; listening-only progress still shows as la pluma
+  const edge = await browser.newPage();
+  trackErrors(edge);
+  await edge.addInitScript(() => {
+    const e = (stars) => ({ score: 10, total: 10, stars, plays: 1, at: Date.now() });
+    const best = {};
+    best["1.present.listen"] = e(3); best["1.preterite.listen"] = e(3); best["1.imperfect.listen"] = e(2);
+    for (const t of ["present", "preterite", "imperfect"]) best[`2.${t}.listen`] = e(3);
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
+  });
+  await edge.goto(`${BASE}/#/nido`);
+  await edge.waitForSelector(".nido-list");
+  const items = await edge.locator(".nido-item").allInnerTexts();
+  if (items.length !== 1) fail(`feather edge: expected only the 9/9 group, got ${items.length}`);
+  if (!/Grupo 2 · la pluma/.test(items[0])) fail(`feather edge: listening-only group should be la pluma, got: ${items[0]}`);
+  await edge.close();
+  ok("M19 feather: 8/9 earns nothing yet; a listening-only 9/9 group appears as la pluma");
+
+  // demo nest includes feathers; about.html carries the accessibility reframe
+  const rf = await browser.newPage();
+  trackErrors(rf);
+  await rf.goto(`${BASE}/?m18demo=1#/nido`);
+  await rf.waitForSelector(".nido-list");
+  if ((await rf.locator(".nido-item.has-pluma").count()) < 4) fail("feather: demo nest should include plumas");
+  await rf.goto(`${BASE}/about.html`);
+  const aboutText = await rf.locator("main").innerText();
+  if (!/progress never requires hearing/.test(aboutText)) fail("reframe: about.html accessibility rationale missing");
+  if (/only on devices with a Spanish voice/.test(aboutText)) fail("reframe: stale voice-support claim still on about.html");
+  await rf.close();
+  ok("M19 reframe: demo nest has plumas; about.html states the accessibility rationale");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();

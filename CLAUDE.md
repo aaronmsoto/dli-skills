@@ -44,6 +44,12 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
    denominator), 🎧 badges (parallel track, NEVER in star totals), or
    unscored practice (🧱 Práctica — no `recordResult` at all). Changing
    any star denominator is an owner decision, never a loop's.
+   The 🎧 split is an ACCESSIBILITY guarantee, not a device workaround
+   (owner reframe 2026-07-15, M19): listening earns its own track so that
+   progress never requires hearing — deaf/hard-of-hearing learners, muted
+   devices, and offline+voiceless browsers can reach every star, and nest
+   tiers must never depend on listen results. Folding badges into stars
+   was considered and rejected; do not propose it again.
 4. **Kids' privacy.** The owner's children appear ONLY as the pseudonyms
    "A1" and "A2" — never real names — anywhere in the repo or on the site.
 5. **Standard chrome (owner layout, 2026-07-08).** Screens get the crumbs

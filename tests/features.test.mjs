@@ -123,3 +123,21 @@ test("nido (M18.2): tier derivation is additive and perfection only upgrades", a
   assert.match(s, /1 brizna/);
   assert.ok(!/20|falta|quedan/.test(s), "never says what's missing");
 });
+
+test("nido feather (M19): plumas stack on any tier and never touch star tiers", async () => {
+  const { nestSummary, PLUMA } = await import("../js/nido.js");
+  assert.equal(PLUMA.article, "la pluma");
+  // feather-only group (listening-first learner) still shows in the nest
+  const s1 = nestSummary([{ setId: 1, tier: 0, feather: true }]);
+  assert.match(s1, /1 pluma/);
+  // feather + twig counts once each
+  const s2 = nestSummary([
+    { setId: 1, tier: 2, feather: true },
+    { setId: 2, tier: 3, feather: false },
+    { setId: 3, tier: 0, feather: true },
+  ]);
+  assert.match(s2, /1 ramita/);
+  assert.match(s2, /1 flor/);
+  assert.match(s2, /2 plumas/);
+  assert.ok(!/falta|quedan/.test(s2), "never a deficit");
+});

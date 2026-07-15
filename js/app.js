@@ -14,12 +14,15 @@ import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildC
 import * as store from "./storage.js";
 import { speak, ttsAvailable, audioAvailable, initClips, chirp } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
-import { createNido, nestTier, tierMeta } from "./nido.js";
+import { createNido, nestTier, tierMeta, PLUMA } from "./nido.js";
 import { STANDARDS_INFO } from "./standards-info.js";
 
 const MODES = ["choice", "type", "match"];
 // Escucha is a parallel track: badges, not stars — never in MODES, so no
-// star denominator, sampling, or next-mode logic ever counts it.
+// star denominator, sampling, or next-mode logic ever counts it. This is an
+// ACCESSIBILITY guarantee (owner reframe 2026-07-15, M19): progress never
+// requires hearing, so deaf/hard-of-hearing learners and muted or
+// offline+voiceless devices can reach every star.
 const LISTEN = "listen";
 const LISTEN_META = { icon: "🎧", es: "Escucha", en: "Listen & pick" };
 // Práctica is UNSCORED by owner decision (M8): no stars/badges/recordResult.
@@ -355,9 +358,20 @@ function nestFactsFor(setId) {
 }
 
 function nestItems() {
-  if (m18demo()) // sample nest, storage untouched
-    return SETS.map((s) => ({ setId: s.id, tier: s.id <= 3 ? 3 : s.id <= 9 ? 2 : s.id <= 13 ? 1 : 0 }));
-  return SETS.map((s) => ({ setId: s.id, tier: nestTier(nestFactsFor(s.id)) }));
+  if (m18demo()) // sample nest, storage untouched (feathers on 2, 5, 11 — incl. a pluma-only group 14)
+    return SETS.map((s) => ({
+      setId: s.id,
+      tier: s.id <= 3 ? 3 : s.id <= 9 ? 2 : s.id <= 13 ? 1 : 0,
+      feather: [2, 5, 11, 14].includes(s.id),
+    }));
+  // 🪶 (M19): full listening badges add a feather — derived-only, and kept
+  // OUT of nestTier/allStarred: nest tiers must never depend on hearing
+  // (accessibility guarantee, CLAUDE.md rule 3).
+  return SETS.map((s) => ({
+    setId: s.id,
+    tier: nestTier(nestFactsFor(s.id)),
+    feather: listenBadges(s.id) === 9,
+  }));
 }
 
 function go(hash) {
@@ -435,7 +449,7 @@ function renderReviewQueue() {
 
 function renderHome() {
   const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
-  const tierById = new Map(nestItems().map((i) => [i.setId, i.tier]));
+  const itemById = new Map(nestItems().map((i) => [i.setId, i]));
 
   mount(
     el("header", { class: "hero" },
@@ -464,14 +478,18 @@ function renderHome() {
           el("span", { class: "set-progress" },
             `⭐ ${earned}/${STARS_PER_SET}`,
             listenBadges(s.id) ? ` · 🎧 ${listenBadges(s.id)}/9` : "",
-            (() => { // M18.2b: nest-tier status glyph (🌾/🪵/🌼 — same category as ⭐/🎧)
-              const t = tierById.get(s.id);
-              return t ? el("span", {
-                class: `set-tier tier-${t}`,
+            (() => { // M18.2b/M19: nest status glyphs (🌾/🪵/🌼 + 🪶 — same category as ⭐/🎧)
+              const item = itemById.get(s.id);
+              if (!item || (!item.tier && !item.feather)) return null;
+              const names = [item.tier ? tierMeta(item.tier).article : null,
+                item.feather ? PLUMA.article : null].filter(Boolean).join(" y ");
+              const glyphs = `${item.tier ? tierMeta(item.tier).emoji : ""}${item.feather ? PLUMA.emoji : ""}`;
+              return el("span", {
+                class: `set-tier tier-${item.tier}${item.feather ? " has-pluma" : ""}`,
                 role: "img",
-                "aria-label": `${tierMeta(t).article} en el nido`,
-                title: `${tierMeta(t).article} en el nido`,
-              }, ` ${tierMeta(t).emoji}`) : null;
+                "aria-label": `${names} en el nido`,
+                title: `${names} en el nido`,
+              }, ` ${glyphs}`);
             })()),
           s.id === firstFresh
             ? el("span", { class: "start-here" }, "¡Empieza aquí! ", el("span", { class: "h-en", lang: "en" }, "Start here"))
