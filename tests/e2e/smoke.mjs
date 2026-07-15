@@ -1395,6 +1395,437 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("redesign axe: zero critical/serious violations in the forest-night (dark) preview");
 }
 
+// ---------- M18.1 "Empareja con Chispa": up-only counts, run celebration, F1 droplet ----------
+{
+  const chispa = await browser.newPage();
+  trackErrors(chispa);
+  await chispa.goto(`${BASE}/#/play/1/present/match`);
+  await chispa.waitForSelector(".match-card");
+  // counter starts empty (no "0 parejas" — nothing to celebrate yet)
+  if ((await chispa.locator(".pareja-count").innerText()).trim() !== "")
+    fail("chispa: pareja counter should start empty");
+  // deliberate miss: counter stays empty, no visible reset artifact anywhere.
+  // Miss against the LAST left pair's card — the solve loop below excludes
+  // that pair, so exactly one solved pair is non-first-try and the run
+  // deterministically reaches 3+ ("seguidas") regardless of shuffle order.
+  await chispa.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const formOf = (cardEl) => {
+      const [personLabel, inf] = cardEl.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      return conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+    };
+    const left = [...document.querySelectorAll(".match-col.left .match-card")];
+    const lastForm = formOf(left[left.length - 1]);
+    const wrong = [...document.querySelectorAll(".match-col.right .match-card")]
+      .find((x) => x.textContent === lastForm);
+    left[0].click(); wrong.click();
+  });
+  if ((await chispa.locator(".pareja-count").innerText()).trim() !== "")
+    fail("chispa: counter must not change on a miss");
+  if (!(await chispa.locator(".feedback.bad").count())) fail("chispa: miss feedback missing");
+  // solve all but ONE pair (results render 700ms after the last match would
+  // tear down the board mid-assertion); counter must only ever go up and a
+  // run must get celebrated along the way
+  const chispaRun = await chispa.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const seen = [];
+    const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+    for (const l of left.slice(0, -1)) {
+      const [personLabel, inf] = l.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+      const r = [...document.querySelectorAll(".match-col.right .match-card")]
+        .find((x) => x.textContent === form && !x.disabled);
+      if (!r) return { err: `no right card for ${form}` };
+      l.click(); r.click();
+      seen.push(parseInt(document.querySelector(".pareja-count").textContent, 10));
+      await new Promise((res) => setTimeout(res, 40));
+    }
+    return { seen, feedback: document.querySelector(".feedback").textContent };
+  });
+  if (chispaRun.err) fail(`chispa: ${chispaRun.err}`);
+  const upOnly = chispaRun.seen.every((n, i) => n === i + 1);
+  if (!upOnly) fail(`chispa: counter not up-only (${chispaRun.seen.join(",")})`);
+  if (!/seguidas/.test(chispaRun.feedback)) fail("chispa: run celebration missing after consecutive matches");
+  // pop animation is wired (decorative; reduced-motion removes it)
+  const popAnim = await chispa.evaluate(() =>
+    getComputedStyle(document.querySelector(".match-card.done")).animationName);
+  if (popAnim !== "chispa-pop") fail(`chispa: expected chispa-pop animation, got ${popAnim}`);
+  // reduced motion strips transform/animation juice but the game is identical
+  await chispa.emulateMedia({ reducedMotion: "reduce" });
+  const rmAnim = await chispa.evaluate(() =>
+    getComputedStyle(document.querySelector(".match-card.done")).animationName);
+  if (rmAnim === "chispa-pop") fail("chispa: pop animation must be removed under reduced motion");
+  await chispa.emulateMedia({ reducedMotion: null });
+  // finish the round so the result records, then verify F1 on home
+  await chispa.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const l = document.querySelector(".match-col.left .match-card:not(.done)");
+    const [personLabel, inf] = l.textContent.split(" · ");
+    const verb = SETS[0].verbs.find((v) => v.inf === inf);
+    const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+    const r = [...document.querySelectorAll(".match-col.right .match-card")]
+      .find((x) => x.textContent === form && !x.disabled);
+    l.click(); r.click();
+  });
+  await chispa.waitForSelector(".results");
+  // F1 droplet: the review queue reads as watering, not backlog
+  await chispa.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("conjuga.v1"));
+    for (const k of Object.keys(s.best)) s.best[k].at = Date.now() - 8 * 24 * 3600 * 1000;
+    localStorage.setItem("conjuga.v1", JSON.stringify(s));
+  });
+  await chispa.goto(`${BASE}/#/`);
+  await chispa.reload();
+  await chispa.waitForSelector(".review-queue");
+  const water = await chispa.locator(".review-water").innerText();
+  if (!/riega/.test(water)) fail("chispa F1: watering line missing from review queue");
+  if (/\d/.test(water)) fail("chispa F1: watering line must never show a backlog count");
+  await chispa.screenshot({ path: `${SHOTS}/m18-chispa-home.png` });
+  await chispa.close();
+  ok("M18.1 chispa: up-only pareja count, run celebration, pop juice (motion-gated), F1 watering line");
+}
+
+// ---------- M18.2a "El Nido de Lola": derived tiers, a11y list, voiceless parity ----------
+{
+  const nido = await browser.newPage();
+  trackErrors(nido);
+  // fresh visitor: inviting empty state, no list, no counters of what's missing
+  await nido.goto(`${BASE}/#/nido`);
+  await nido.waitForSelector(".nido");
+  const emptyText = await nido.locator(".nido").innerText();
+  if (!/espera su primera brizna/.test(emptyText)) fail("nido: inviting empty state missing");
+  if (await nido.locator(".nido-list").count()) fail("nido: fresh nest must not render a list");
+  if (/\/\s*20|faltan/.test(emptyText)) fail("nido: empty state must never show a deficit count");
+  if ((await nido.title()) !== "El Nido de Lola · Conjuga") fail("nido: page title missing");
+  // seed three groups at the three tiers: wisp (one star), twig (all ≥1★), flower (30/30)
+  await nido.evaluate(() => {
+    const best = {};
+    const entry = (stars) => ({ score: 6, total: 6, stars, plays: 1, at: Date.now() });
+    best["1.present.choice"] = entry(1); // group 1 → brizna
+    for (const t of ["present", "preterite", "imperfect"])
+      for (const m of ["choice", "type", "match"]) {
+        best[`2.${t}.${m}`] = entry(1); // group 2 → ramita (all ≥1★, far from perfect)
+        best[`3.${t}.${m}`] = entry(3); // group 3 → flor (30/30)
+      }
+    best["2.past.contrast"] = entry(1);
+    best["3.past.contrast"] = entry(3);
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
+  });
+  await nido.reload();
+  await nido.waitForSelector(".nido-list");
+  const items = await nido.locator(".nido-list .nido-item").allInnerTexts();
+  if (items.length !== 3) fail(`nido: expected 3 items, got ${items.length}`);
+  if (!items.some((t) => /Grupo 1 · la brizna/.test(t))) fail("nido: group 1 should be a brizna");
+  if (!items.some((t) => /Grupo 2 · la ramita/.test(t))) fail("nido: group 2 (all ≥1★, imperfect) should be a ramita — no perfection gate");
+  if (!items.some((t) => /Grupo 3 · la flor/.test(t))) fail("nido: group 3 (30/30) should be a flor");
+  const summary = await nido.locator(".nido-summary").innerText();
+  if (!/1 ramita, 1 flor y 1 brizna/.test(summary)) fail(`nido: summary wrong: ${summary}`);
+  // scene is decorative; the list is the semantic surface
+  if ((await nido.locator(".nido-scene").getAttribute("aria-hidden")) !== "true")
+    fail("nido: scene svg must be aria-hidden");
+  // clips are served in this context → audio affordance renders as buttons
+  if ((await nido.locator(".nido-say").count()) !== 3) fail("nido: expected tap-to-hear buttons with audio available");
+  // home hero links into the nest
+  await nido.goto(`${BASE}/#/`);
+  await nido.waitForSelector(".nido-link");
+  await nido.click(".nido-link");
+  await nido.waitForSelector(".nido-summary");
+  ok("M18.2a nido: tiers derive correctly (no perfection gate), semantic list + aria-hidden scene, home link works");
+  await nido.screenshot({ path: `${SHOTS}/m18-nido.png` });
+  await nido.close();
+
+  // voiceless device: same nest, plain list items, zero broken affordances
+  const mute = await browser.newPage();
+  trackErrors(mute);
+  await mute.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await mute.addInitScript(() => {
+    // voiceless: speechSynthesis exists but reports no voices (matches real
+    // devices; a bare `undefined` would crash audio.js's boot listener)
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: { getVoices: () => [], addEventListener: () => {}, cancel: () => {} },
+    });
+    const best = { "1.present.choice": { score: 6, total: 6, stars: 1, plays: 1, at: Date.now() } };
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
+  });
+  await mute.goto(`${BASE}/#/nido`);
+  await mute.waitForSelector(".nido-list");
+  if (await mute.locator(".nido-say").count()) fail("nido voiceless: audio buttons must hide");
+  if ((await mute.locator(".nido-plain").count()) !== 1) fail("nido voiceless: plain items expected");
+  await mute.close();
+  ok("M18.2a nido: voiceless device gets the same nest with no audio affordance");
+}
+
+// ---------- M18.2b: tier-crossing ceremonies, home badges, ?m18demo=1 ----------
+{
+  const solveMatch = async (pg) => pg.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+    for (const l of left) {
+      const [personLabel, inf] = l.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+      const r = [...document.querySelectorAll(".match-col.right .match-card")]
+        .find((x) => x.textContent === form && !x.disabled);
+      if (!r) return `no right card for ${form}`;
+      l.click(); r.click();
+      await new Promise((res) => setTimeout(res, 40));
+    }
+    return "ok";
+  });
+  const seed = (pg, matchStars, otherStars) => pg.addInitScript(([ms, os]) => {
+    const best = {};
+    const entry = (stars) => ({ score: 6, total: 6, stars, plays: 1, at: Date.now() });
+    for (const t of ["present", "preterite", "imperfect"])
+      for (const m of ["choice", "type", "match"]) best[`1.${t}.${m}`] = entry(os);
+    best["1.past.contrast"] = entry(os);
+    if (ms === null) delete best["1.present.match"]; else best["1.present.match"] = entry(ms);
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
+  }, [matchStars, otherStars]);
+
+  // twig crossing: group 1 all ≥1★ EXCEPT present/match unplayed → perfect
+  // match makes every activity starred → ramita ceremony (no perfection gate)
+  const twig = await browser.newPage();
+  trackErrors(twig);
+  await seed(twig, null, 1);
+  await twig.goto(`${BASE}/#/play/1/present/match`);
+  await twig.waitForSelector(".match-card");
+  const tw = await solveMatch(twig);
+  if (tw !== "ok") fail(`nido-celebra twig: ${tw}`);
+  await twig.waitForSelector(".results");
+  await twig.waitForSelector(".nido-ceremony.tier-2");
+  const twigMsg = await twig.locator(".ceremony-msg").innerText();
+  if (!/ramita nueva/.test(twigMsg)) fail(`nido-celebra: expected twig ceremony, got: ${twigMsg}`);
+  // ceremony links into the nest; group 1 shows as ramita there
+  await twig.click(".nido-ceremony a");
+  await twig.waitForSelector(".nido-list");
+  if (!(await twig.locator(".nido-item", { hasText: "Grupo 1 · la ramita" }).count()))
+    fail("nido-celebra: group 1 missing as ramita after ceremony");
+  // home card shows the tier status glyph with an accessible name
+  await twig.goto(`${BASE}/#/`);
+  await twig.waitForSelector(".set-card");
+  const tierBadge = twig.locator(".set-card .set-tier").first();
+  if (!(await tierBadge.count())) fail("nido-celebra: home set-card tier glyph missing");
+  if (!/en el nido/.test(await tierBadge.getAttribute("aria-label")))
+    fail("nido-celebra: tier glyph needs an accessible name");
+  // replaying the same round must NOT re-fire the ceremony (upgrade-only)
+  await twig.goto(`${BASE}/#/play/1/present/match`);
+  await twig.waitForSelector(".match-card");
+  const re = await solveMatch(twig);
+  if (re !== "ok") fail(`nido-celebra replay: ${re}`);
+  await twig.waitForSelector(".results");
+  if (await twig.locator(".nido-ceremony").count()) fail("nido-celebra: ceremony re-fired on replay");
+  await twig.close();
+  ok("M18.2b: twig ceremony on all-starred crossing (1★ everywhere — equity), upgrade-only, home badge + nest link");
+
+  // flower crossing: all 3★ except present/match at 1★ → perfect match → 30/30
+  const flor = await browser.newPage();
+  trackErrors(flor);
+  await seed(flor, 1, 3);
+  await flor.goto(`${BASE}/#/play/1/present/match`);
+  await flor.waitForSelector(".match-card");
+  const fl = await solveMatch(flor);
+  if (fl !== "ok") fail(`nido-celebra flor: ${fl}`);
+  await flor.waitForSelector(".results");
+  await flor.waitForSelector(".nido-ceremony.tier-3");
+  if (!/flor nueva/.test(await flor.locator(".ceremony-msg").innerText()))
+    fail("nido-celebra: expected flower ceremony at 30/30");
+  await flor.screenshot({ path: `${SHOTS}/m18-flor-ceremony.png` });
+  await flor.close();
+  ok("M18.2b: flower ceremony fires on the 30/30 crossing");
+
+  // ?m18demo=1 — sample nest + forced ceremony, ZERO storage writes
+  const demo = await browser.newPage();
+  trackErrors(demo);
+  await demo.goto(`${BASE}/?m18demo=1#/nido`);
+  await demo.waitForSelector(".nido-list");
+  if (!(await demo.locator(".demo-banner").count())) fail("m18demo: banner missing");
+  if ((await demo.locator(".nido-item").count()) < 10) fail("m18demo: sample nest looks empty");
+  await demo.goto(`${BASE}/?m18demo=1#/play/1/present/match`);
+  await demo.waitForSelector(".match-card");
+  const dm = await solveMatch(demo);
+  if (dm !== "ok") fail(`m18demo: ${dm}`);
+  await demo.waitForSelector(".results");
+  await demo.waitForSelector(".nido-ceremony.tier-2");
+  const stored = await demo.evaluate(() => localStorage.getItem("conjuga.v1"));
+  if (stored !== null && JSON.stringify(JSON.parse(stored).best ?? {}) !== "{}")
+    fail(`m18demo: demo mode wrote progress: ${stored}`);
+  await demo.close();
+  ok("M18.2b: ?m18demo=1 shows sample nest + forced ceremony and writes nothing");
+}
+
+// ---------- M18.3a "El Vuelo de Lola": core flight (static anchored grid) ----------
+{
+  const solveMatchRound = async (pg) => {
+    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.waitForSelector(".match-card");
+    const r = await pg.evaluate(async () => {
+      const { SETS } = await import("./js/verbs.js");
+      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+      for (const l of left) {
+        const [personLabel, inf] = l.textContent.split(" · ");
+        const verb = SETS[0].verbs.find((v) => v.inf === inf);
+        const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+        const rc = [...document.querySelectorAll(".match-col.right .match-card")]
+          .find((x) => x.textContent === form && !x.disabled);
+        if (!rc) return `no right card for ${form}`;
+        l.click(); rc.click();
+        await new Promise((res) => setTimeout(res, 40));
+      }
+      return "ok";
+    });
+    if (r !== "ok") fail(`vuelo setup: ${r}`);
+    await pg.waitForSelector(".results");
+  };
+
+  const fly = await browser.newPage();
+  trackErrors(fly);
+  await solveMatchRound(fly); // perfect → 3 stars
+  await fly.waitForSelector(".vuelo-invite");
+  await fly.click(".vuelo-invite");
+  await fly.waitForSelector(".vuelo .vuelo-cloud");
+  // 3★ flair = 5 clouds (flair scales; access never gated); ≥64px targets
+  if ((await fly.locator(".vuelo-cloud").count()) !== 5)
+    fail("vuelo: expected 5 clouds on a 3-star flight");
+  const cbb = await fly.locator(".vuelo-cloud").first().boundingBox();
+  if (cbb.height < 64) fail(`vuelo: cloud tap target ${cbb.height}px < 64px`);
+  // wrong tap: NO failure state — prompt unchanged, cloud stays tappable
+  const wrongTap = await fly.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const pill = document.querySelector(".vuelo-prompt");
+    const [personLabel, inf] = pill.textContent.split(" · ");
+    const verb = SETS[0].verbs.find((v) => v.inf === inf);
+    const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+    const wrong = [...document.querySelectorAll(".vuelo-cloud")].find((c) => c.textContent !== form);
+    const before = pill.textContent;
+    wrong.click();
+    return { before, after: pill.textContent, disabled: wrong.disabled };
+  });
+  if (wrongTap.before !== wrongTap.after) fail("vuelo: wrong tap must not advance the prompt");
+  if (wrongTap.disabled) fail("vuelo: wrong cloud must stay tappable (no failure state)");
+  // fly the whole route home
+  const flew = await fly.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    for (let k = 0; k < 7; k++) {
+      const pill = document.querySelector(".vuelo-prompt");
+      if (!pill || !pill.textContent.includes("·")) break;
+      const [personLabel, inf] = pill.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+      const cloud = [...document.querySelectorAll(".vuelo-cloud")].find((c) => c.textContent === form);
+      if (!cloud) return `no cloud for ${form}`;
+      cloud.click();
+      await new Promise((res) => setTimeout(res, 720));
+    }
+    return "ok";
+  });
+  if (flew !== "ok") fail(`vuelo: ${flew}`);
+  await fly.waitForSelector(".vuelo-landing");
+  if (!/Qué vuelo/.test(await fly.locator(".vuelo-done").innerText()))
+    fail("vuelo: landing message missing");
+  await fly.screenshot({ path: `${SHOTS}/m18-vuelo-landing.png` });
+  await fly.click(".vuelo-landing .btn.primary");
+  if (await fly.locator(".vuelo").count()) fail("vuelo: overlay must close on Seguir");
+  if (!(await fly.locator(".results").count())) fail("vuelo: results must remain underneath");
+  // reduced motion: the SAME game (structure identical), skip closes
+  await fly.emulateMedia({ reducedMotion: "reduce" });
+  await fly.click(".vuelo-invite");
+  await fly.waitForSelector(".vuelo .vuelo-cloud");
+  if ((await fly.locator(".vuelo-cloud").count()) !== 5)
+    fail("vuelo: reduced-motion flight must be the identical game");
+  await fly.click(".vuelo-skip");
+  if (await fly.locator(".vuelo").count()) fail("vuelo: Saltar must close the overlay");
+  await fly.close();
+  ok("M18.3a vuelo: invitation on results, 5-cloud 3★ flight, ≥64px anchored targets, no failure state, landing + skip, reduced-motion parity");
+
+  // offline degrade: UNTRACKED page — the blocked module fetch logs an
+  // EXPECTED console error; the app itself must not crash and the button
+  // must explain itself bilingually.
+  const off = await browser.newPage();
+  await off.route("**/js/vuelo.js", (r) => r.abort());
+  await solveMatchRound(off);
+  await off.waitForSelector(".vuelo-invite");
+  await off.click(".vuelo-invite");
+  await off.waitForTimeout(300);
+  const offBtn = off.locator(".vuelo-invite");
+  if (!(await offBtn.isDisabled())) fail("vuelo offline: button should disable");
+  if (!/conexión/.test(await offBtn.innerText())) fail("vuelo offline: bilingual fallback message missing");
+  if (!(await off.locator(".results").count())) fail("vuelo offline: results must survive");
+  await off.close();
+  ok("M18.3a vuelo: offline import degrades to a message, results intact");
+}
+
+// ---------- M18.3b: flight garnish (motion-gated) + 🔊 replay affordance ----------
+{
+  const solveMatchRound2 = async (pg) => {
+    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.waitForSelector(".match-card");
+    const r = await pg.evaluate(async () => {
+      const { SETS } = await import("./js/verbs.js");
+      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+      for (const l of left) {
+        const [personLabel, inf] = l.textContent.split(" · ");
+        const verb = SETS[0].verbs.find((v) => v.inf === inf);
+        const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+        const rc = [...document.querySelectorAll(".match-col.right .match-card")]
+          .find((x) => x.textContent === form && !x.disabled);
+        if (!rc) return `no right card for ${form}`;
+        l.click(); rc.click();
+        await new Promise((res) => setTimeout(res, 40));
+      }
+      return "ok";
+    });
+    if (r !== "ok") fail(`vuelo-garnish setup: ${r}`);
+    await pg.waitForSelector(".results");
+    await pg.click(".vuelo-invite");
+    await pg.waitForSelector(".vuelo .vuelo-cloud");
+  };
+
+  const gar = await browser.newPage();
+  trackErrors(gar);
+  await solveMatchRound2(gar);
+  // clips are served here → the ear gets its replay affordance
+  if (!(await gar.locator(".vuelo-replay").count())) fail("vuelo-garnish: 🔊 replay missing with audio available");
+  // clouds bob in place under normal motion…
+  const bob = await gar.evaluate(() =>
+    getComputedStyle(document.querySelector(".vuelo-cloud")).animationName);
+  if (bob !== "vuelo-bob") fail(`vuelo-garnish: expected vuelo-bob, got ${bob}`);
+  // …and hold still under reduced motion — same game, replay stays (audio ≠ motion)
+  await gar.emulateMedia({ reducedMotion: "reduce" });
+  const still = await gar.evaluate(() =>
+    getComputedStyle(document.querySelector(".vuelo-cloud")).animationName);
+  if (still === "vuelo-bob") fail("vuelo-garnish: bobbing must stop under reduced motion");
+  if (!(await gar.locator(".vuelo-replay").count())) fail("vuelo-garnish: replay must survive reduced motion");
+  await gar.close();
+  ok("M18.3b: clouds bob in place (motion-gated off under reduce), 🔊 replay present with audio");
+
+  // voiceless device: no replay affordance, flight fully playable
+  const quiet = await browser.newPage();
+  trackErrors(quiet);
+  await quiet.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await quiet.addInitScript(() => {
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: { getVoices: () => [], addEventListener: () => {}, cancel: () => {} },
+    });
+  });
+  await solveMatchRound2(quiet);
+  if (await quiet.locator(".vuelo-replay").count()) fail("vuelo-garnish: replay must hide on voiceless devices");
+  if ((await quiet.locator(".vuelo-cloud").count()) < 4) fail("vuelo-garnish: voiceless flight must still deal clouds");
+  await quiet.close();
+  ok("M18.3b: voiceless flight hides the replay affordance and stays fully playable");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();

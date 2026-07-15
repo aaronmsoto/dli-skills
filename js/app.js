@@ -12,8 +12,9 @@ import { SETS } from "./verbs.js";
 import { conjugate, PERSONS, TENSES, TENSE_LABELS, normalizeAnswer, stripAccents } from "./conjugator.js";
 import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
 import * as store from "./storage.js";
-import { speak, ttsAvailable, audioAvailable, initClips } from "./audio.js";
+import { speak, ttsAvailable, audioAvailable, initClips, chirp } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
+import { createNido, nestTier, tierMeta } from "./nido.js";
 import { STANDARDS_INFO } from "./standards-info.js";
 
 const MODES = ["choice", "type", "match"];
@@ -322,6 +323,7 @@ function parseRoute() {
   if (parts[0] === "play" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]) && (MODES.includes(parts[3]) || parts[3] === LISTEN))
     return { screen: "play", setId: +parts[1], tense: parts[2], mode: parts[3] };
   if (parts[0] === "informe") return { screen: "report" };
+  if (parts[0] === "nido") return { screen: "nido" };
   return { screen: "home" };
 }
 
@@ -331,6 +333,31 @@ function earnedStars(setId) {
     store.setStars(setId, TENSES, MODES) +
     (store.getBest(setId, CONTRAST_KEY.tense, CONTRAST_KEY.mode)?.stars ?? 0)
   );
+}
+
+/** M18 testing flag (owner directive 2026-07-15): `?m18demo=1` on the URL
+ *  (before the hash) forces the celebration surfaces with sample data and
+ *  suppresses all progress writes, so the owner can verify ceremonies on the
+ *  published site without grinding stars. Pattern follows the retired
+ *  `?redesign=1` preview gate; deliberately unlinked. */
+function m18demo() {
+  return new URLSearchParams(location.search).get("m18demo") === "1";
+}
+
+/** M18.2 nest derivation — per-group tier facts, 100% from existing `best`
+ *  data (unscored celebration layer; see GOAL.md M18 + docs/games-proposal.html). */
+function nestFactsFor(setId) {
+  const earned = earnedStars(setId);
+  const starActivities = TENSES.flatMap((t) => MODES.map((m) => [t, m]))
+    .concat([[CONTRAST_KEY.tense, CONTRAST_KEY.mode]]);
+  const allStarred = starActivities.every(([t, m]) => (store.getBest(setId, t, m)?.stars ?? 0) >= 1);
+  return { earned, allStarred, perfect: earned === STARS_PER_SET };
+}
+
+function nestItems() {
+  if (m18demo()) // sample nest, storage untouched
+    return SETS.map((s) => ({ setId: s.id, tier: s.id <= 3 ? 3 : s.id <= 9 ? 2 : s.id <= 13 ? 1 : 0 }));
+  return SETS.map((s) => ({ setId: s.id, tier: nestTier(nestFactsFor(s.id)) }));
 }
 
 function go(hash) {
@@ -348,6 +375,7 @@ function routeTitle(r) {
     return `${label} ${TENSE_LABELS[r.tense].es} · Grupo ${r.setId} · Conjuga`;
   }
   if (r.screen === "report") return "Informe / Status · Conjuga";
+  if (r.screen === "nido") return "El Nido de Lola · Conjuga";
   return "Conjuga — Spanish Verb Skills Builder (K-5 DLI)";
 }
 
@@ -362,6 +390,7 @@ function render() {
   else if (route.screen === "practica") renderPractica(route.setId, route.tense);
   else if (route.screen === "contrast") renderContrast(route.setId);
   else if (route.screen === "report") renderReport();
+  else if (route.screen === "nido") renderNido();
   else renderPlay(route.setId, route.tense, route.mode);
 }
 
@@ -391,6 +420,11 @@ function renderReviewQueue() {
   if (!due.length) return null;
   return el("section", { class: "review-queue", "aria-label": "Repaso de hoy" },
     el("h2", {}, "🔁 Repasa hoy ", el("span", { class: "h-en", lang: "en" }, "(today's review)")),
+    // F1 (M18.1): the garden metaphor at 2% of the cost — review as watering,
+    // an invitation, never a backlog count (docs/games-proposal.html kill list)
+    el("p", { class: "review-water" }, "Un poquito de repaso riega lo aprendido.",
+      el("span", { class: "h-en", lang: "en" }, " A little review waters what you've learned."),
+      el("span", { "aria-hidden": "true" }, " 💧")),
     el("div", { class: "review-list" },
       due.map((item) =>
         el("a", { class: "review-item", href: reviewHref(item) },
@@ -401,6 +435,7 @@ function renderReviewQueue() {
 
 function renderHome() {
   const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
+  const tierById = new Map(nestItems().map((i) => [i.setId, i.tier]));
 
   mount(
     el("header", { class: "hero" },
@@ -411,6 +446,9 @@ function renderHome() {
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
       el("p", { class: "tagline-en", lang: "en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
       el("p", { class: "total-stars" }, `⭐ ${totalEarned} / ${SETS.length * STARS_PER_SET} estrellas`),
+      el("a", { class: "nido-link", href: "#/nido" },
+        el("span", { class: "mode-icon mi-inline", "data-icon": "nido", "aria-hidden": "true" }, "🪺"),
+        "El nido de Lola"),
     ),
     renderReviewQueue(),
     el("section", { class: "set-grid", "aria-label": "Grupos de verbos" },
@@ -425,7 +463,16 @@ function renderHome() {
           el("span", { class: "set-verbs" }, s.verbs.map((v) => v.inf).join(" · ")),
           el("span", { class: "set-progress" },
             `⭐ ${earned}/${STARS_PER_SET}`,
-            listenBadges(s.id) ? ` · 🎧 ${listenBadges(s.id)}/9` : ""),
+            listenBadges(s.id) ? ` · 🎧 ${listenBadges(s.id)}/9` : "",
+            (() => { // M18.2b: nest-tier status glyph (🌾/🪵/🌼 — same category as ⭐/🎧)
+              const t = tierById.get(s.id);
+              return t ? el("span", {
+                class: `set-tier tier-${t}`,
+                role: "img",
+                "aria-label": `${tierMeta(t).article} en el nido`,
+                title: `${tierMeta(t).article} en el nido`,
+              }, ` ${tierMeta(t).emoji}`) : null;
+            })()),
           s.id === firstFresh
             ? el("span", { class: "start-here" }, "¡Empieza aquí! ", el("span", { class: "h-en", lang: "en" }, "Start here"))
             : null,
@@ -971,10 +1018,15 @@ function renderPlay(setId, tense, mode) {
 
 function renderMatch(set, tense, vosotros) {
   const pairs = buildMatchPairs(set.verbs, tense, vosotros);
-  const state = { matched: 0, firstTryHits: 0, attemptedIds: new Set(), selected: null };
+  // M18.1 "Chispa": `run` counts consecutive first-try matches. It resets
+  // internally on a miss but is NEVER displayed as a reset — runs are
+  // celebrated only when they happen (a visible reset would be the app's
+  // first punishment mechanic; see docs/games-proposal.html).
+  const state = { matched: 0, firstTryHits: 0, attemptedIds: new Set(), selected: null, run: 0 };
   const lola = createLola(52);
 
   const feedback = el("div", { class: "feedback", role: "status" });
+  const counter = el("p", { class: "pareja-count" });
   const board = el("div", { class: "match-board" });
   mount(
     el("nav", { class: "crumbs" },
@@ -983,7 +1035,7 @@ function renderMatch(set, tense, vosotros) {
       menuButton()),
     el("h1", { class: "match-title" }, lola.el, modeIcon("match", "🧩"), `Empareja — ${TENSE_LABELS[tense].es}`, infoButton("match")),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
-    board, feedback,
+    counter, board, feedback,
     renderFooter(),
   );
 
@@ -1023,13 +1075,19 @@ function renderMatch(set, tense, vosotros) {
     a.btn.classList.remove("picked");
     suppressHover(board);
     if (a.card.id === card.id) {
-      if (!state.attemptedIds.has(card.id)) state.firstTryHits++;
+      const firstTry = !state.attemptedIds.has(card.id);
+      if (firstTry) state.firstTryHits++;
       state.attemptedIds.add(card.id);
       for (const b of [a.btn, btn]) { b.classList.add("done"); b.disabled = true; }
       state.matched++;
+      state.run = firstTry ? state.run + 1 : 0;
+      // up-only count — the number only ever grows (never a visible reset)
+      counter.textContent = `${state.matched} ${state.matched === 1 ? "pareja" : "parejas"}`;
       lola.setState("is-turn");
       feedback.className = "feedback good";
-      feedback.textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+      const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+      feedback.textContent = state.run >= 3 ? `¡${state.run} seguidas! ${praise}` : praise;
+      if (store.getSettings().sound) chirp(state.run >= 3 ? "run" : "match");
       const pair = pairs.find((p) => p.id === card.id);
       sayForm(pair.person, pair.right);
       if (state.matched === pairs.length) {
@@ -1037,6 +1095,7 @@ function renderMatch(set, tense, vosotros) {
       }
     } else {
       state.attemptedIds.add(card.id).add(a.card.id);
+      state.run = 0;
       for (const b of [a.btn, btn]) {
         b.classList.add("shake");
         setTimeout(() => b.classList.remove("shake"), 400);
@@ -1220,8 +1279,40 @@ function renderReport() {
 
 // ---------------------------------------------------------------- results
 
+// ---------------------------------------------------------------- nido (M18.2)
+
+function renderNido() {
+  const lola = createLola(64);
+  mount(
+    el("nav", { class: "crumbs" },
+      el("a", { href: "#/" }, "← Conjuga"),
+      menuButton()),
+    el("h1", { class: "nido-title" }, lola.el,
+      el("span", { class: "mode-icon mi-inline", "data-icon": "nido", "aria-hidden": "true" }, "🪺"),
+      "El Nido de Lola", infoButton("nido")),
+    el("p", { class: "nido-help" }, "Cada estrella nueva construye el nido. ",
+      el("span", { class: "h-en", lang: "en" }, "Every new star builds the nest.")),
+    m18demo() ? el("p", { class: "demo-banner" },
+      "Modo demo — datos de ejemplo, tu progreso no cambia. ",
+      el("span", { class: "h-en", lang: "en" }, "Demo mode — sample data, progress untouched.")) : null,
+    createNido(nestItems(), { canSpeak: audioAvailable(), speak: (t) => say(t) }),
+    renderFooter(),
+  );
+}
+
 function showResults(set, tense, mode, score, total, misses) {
-  const { stars } = store.recordResult(set.id, tense, mode, score, total);
+  // M18.2b nest-tier crossing detection: compare the group's tier before and
+  // after this round records. Ceremonies fire only on an upgrade (never
+  // re-fire on replays) and only for twig/flower — the first brizna is a
+  // quiet discovery in the nest, per the proposal. In demo mode the ceremony
+  // is forced and NOTHING is written to storage.
+  const demo = m18demo();
+  const prevTier = demo ? 1 : nestTier(nestFactsFor(set.id));
+  const stars = demo
+    ? store.starsFor(score, total)
+    : store.recordResult(set.id, tense, mode, score, total).stars;
+  const newTier = demo ? 2 : nestTier(nestFactsFor(set.id));
+  const ceremonyTier = newTier > prevTier && newTier >= 2 ? newTier : 0;
   const pct = Math.round((score / total) * 100);
   const msg = stars === 3 ? "¡Increíble! Lo dominas." :
     stars === 2 ? "¡Muy bien! Ya casi lo tienes." :
@@ -1241,6 +1332,37 @@ function showResults(set, tense, mode, score, total, misses) {
       el("div", { class: "big-stars" }, mode === LISTEN ? badgeRow(stars) : starRow(stars)),
       el("p", { class: "score-line" }, `${score} / ${total} · ${pct}%`),
       el("p", { class: "result-msg" }, msg),
+      // M18.3 flight invitation — every finished star-track round can fly
+      // (unexpected celebration, always optional; flair scales with stars but
+      // access never gates). Lazy module; offline it degrades to a message.
+      mode !== LISTEN ? el("button", {
+        class: "btn primary vuelo-invite", type: "button",
+        onclick: async (e) => {
+          const btn = e.currentTarget;
+          try {
+            const { createVuelo } = await import("./vuelo.js");
+            const { vosotros } = store.getSettings();
+            const overlay = createVuelo({
+              set, tense: isContrast ? "preterite" : tense, stars,
+              persons: vosotros ? [0, 1, 2, 3, 4, 5] : [0, 1, 2, 3, 5],
+              onSay: audioAvailable() ? (t) => say(t) : null,
+            });
+            document.body.append(overlay);
+            overlay.querySelector(".vuelo-cloud")?.focus();
+          } catch {
+            btn.disabled = true;
+            btn.textContent = "El vuelo necesita conexión. The flight needs a connection.";
+          }
+        },
+      }, "¡Vuela con Lola! ", el("span", { class: "h-en", lang: "en" }, "Fly with Lola")) : null,
+      ceremonyTier ? el("div", { class: `nido-ceremony tier-${ceremonyTier}` },
+        el("span", { class: "ceremony-glyph", "aria-hidden": "true" },
+          createNest(40), " ", tierMeta(ceremonyTier).emoji),
+        el("p", { class: "ceremony-msg" },
+          ceremonyTier === 3 ? "¡Una flor nueva para el nido! " : "¡Una ramita nueva para el nido! ",
+          el("span", { class: "h-en", lang: "en" },
+            ceremonyTier === 3 ? "A new flower for the nest!" : "A new twig for the nest!")),
+        el("a", { class: "btn", href: "#/nido" }, "Ver el nido")) : null,
       misses.length ? el("div", { class: "review" },
         el("h2", {}, "Para repasar:"),
         el("ul", {},
@@ -1259,8 +1381,17 @@ function showResults(set, tense, mode, score, total, misses) {
     ),
     renderFooter(),
   );
-  announce(`Resultados: ${score} de ${total}`);
+  announce(ceremonyTier
+    ? `Resultados: ${score} de ${total}. ${ceremonyTier === 3 ? "¡Una flor nueva para el nido!" : "¡Una ramita nueva para el nido!"}`
+    : `Resultados: ${score} de ${total}`);
 }
 
 // boot: learn whether clips exist, then paint (offline → instant fallback)
 initClips().finally(render);
+
+// M18.3b: warm the flight module's cache after first paint so the results-
+// screen surprise never waits on the network. Failures are silently ignored
+// — the invite button has its own offline fallback.
+const prefetchVuelo = () => { import("./vuelo.js").catch(() => {}); };
+if ("requestIdleCallback" in window) requestIdleCallback(prefetchVuelo, { timeout: 4000 });
+else setTimeout(prefetchVuelo, 2500);

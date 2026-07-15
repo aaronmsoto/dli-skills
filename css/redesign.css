@@ -486,3 +486,328 @@
   color: var(--ink);
   font-family: var(--font-body);
 }
+
+/* ---------------- M18.1 "Empareja con Chispa" — juice pass ----------------
+   Decorative only: state classes are applied synchronously in app.js, so the
+   existing e2e timing contracts (is-turn ≤1200ms etc.) are untouched. Counts
+   only ever go up; a run celebration appears in the feedback line when it
+   happens and nothing ever visibly resets. */
+:root[data-redesign] .match-card {
+  transition: transform 0.18s ease, border-color 0.18s ease,
+              background 0.18s ease, box-shadow 0.18s ease;
+}
+:root[data-redesign] .match-card.picked {
+  transform: translateY(-3px) scale(1.05) rotate(-1.5deg);
+  box-shadow: var(--shadow-pop);
+}
+:root[data-redesign] .match-card.done {
+  animation: chispa-pop 0.28s ease;
+}
+@keyframes chispa-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+:root[data-redesign] .pareja-count {
+  min-height: 1.4em;
+  margin: 2px 0 6px;
+  font-weight: var(--fw-extrabold);
+  font-variant-numeric: tabular-nums;
+  color: var(--brand);
+}
+:root[data-redesign] .review-water {
+  margin: -2px 0 8px;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-redesign] .match-card { transition: none; }
+  :root[data-redesign] .match-card.picked { transform: none; }
+  :root[data-redesign] .match-card.done { animation: none; }
+}
+
+/* ---------------- M18.2 "El Nido de Lola" — living-nest celebration layer */
+:root[data-redesign] .mode-icon[data-icon="nido"] {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12c0 4.4 3.6 8 8 8s8-3.6 8-8'/><path d='M4 12h16'/><path d='M6.5 12l3-3.4M11 12l3.4-3.8M15.6 12l2.6-3'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12c0 4.4 3.6 8 8 8s8-3.6 8-8'/><path d='M4 12h16'/><path d='M6.5 12l3-3.4M11 12l3.4-3.8M15.6 12l2.6-3'/></svg>");
+}
+:root[data-redesign] .nido-link {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 16px;
+  min-height: 44px;
+  line-height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-tint);
+  color: var(--brand);
+  font-weight: var(--fw-extrabold);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+}
+:root[data-redesign] .nido-link:hover,
+:root[data-redesign] .nido-link:focus-visible { box-shadow: var(--shadow-raised); }
+:root[data-redesign] .nido {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 18px 20px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+:root[data-redesign] .nido-summary {
+  font-weight: var(--fw-extrabold);
+  font-size: 1.06rem;
+  margin: 0 0 6px;
+}
+:root[data-redesign] .nido-scene {
+  display: block;
+  width: min(100%, 340px);
+  margin: 4px auto 10px;
+}
+:root[data-redesign] .nido-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+:root[data-redesign] .nido-item { margin: 0; }
+:root[data-redesign] .nido-say {
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+  padding: 8px 12px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--brand-tint);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+}
+:root[data-redesign] .nido-say:hover,
+:root[data-redesign] .nido-say:focus-visible { border-color: var(--brand); }
+:root[data-redesign] li.nido-plain {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--brand-tint);
+  font-weight: var(--fw-bold);
+}
+:root[data-redesign] .nido-glyph { margin-right: 8px; }
+:root[data-redesign] .nido-empty { color: var(--ink-soft); }
+:root[data-redesign] .nido-help { color: var(--ink-soft); margin: 0 0 12px; }
+
+/* ---------------- M18.2b — nest ceremonies, home badges, demo banner */
+:root[data-redesign] .nido-ceremony {
+  margin: 10px auto;
+  padding: 12px 16px;
+  max-width: 340px;
+  background: var(--brand-tint);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  animation: ceremony-in 0.6s ease;
+}
+:root[data-redesign] .ceremony-glyph { font-size: 1.3rem; }
+:root[data-redesign] .ceremony-msg { font-weight: var(--fw-extrabold); margin: 6px 0 10px; }
+@keyframes ceremony-in {
+  0% { opacity: 0; transform: translateY(10px) scale(0.94); }
+  60% { opacity: 1; transform: translateY(-2px) scale(1.03); }
+  100% { opacity: 1; transform: none; }
+}
+:root[data-redesign] .set-tier { font-size: 0.95em; }
+:root[data-redesign] .demo-banner {
+  max-width: 560px;
+  margin: 0 auto 10px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #fff;
+  font-weight: var(--fw-extrabold);
+  font-size: 0.9rem;
+  text-align: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-redesign] .nido-ceremony { animation: none; }
+}
+
+/* ---------------- M18.3 "El Vuelo de Lola" — celebration flight (core) ----
+   Reduced-motion-first: this layer is fully static (anchored cloud buttons,
+   instant state swaps). The motion garnish (bobbing, swoop) arrives in
+   M18.3b strictly inside a no-preference media query. */
+:root[data-redesign] .vuelo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: color-mix(in srgb, var(--ink) 38%, transparent);
+  height: 100vh;
+  height: 100dvh;
+}
+:root[data-redesign] .vuelo-card {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 92dvh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--brand-tint), var(--card) 70%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
+  padding: 16px 18px 20px;
+  text-align: center;
+}
+:root[data-redesign] .vuelo-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+:root[data-redesign] .vuelo-title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-extrabold);
+  margin: 0;
+}
+:root[data-redesign] .vuelo-skip { min-height: 44px; }
+:root[data-redesign] .vuelo-prompt {
+  display: inline-block;
+  min-height: 1.5em;
+  margin: 10px auto 2px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-display);
+  font-weight: var(--fw-extrabold);
+  font-size: 1.15rem;
+}
+:root[data-redesign] .vuelo-progress {
+  margin: 2px 0 8px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+:root[data-redesign] .vuelo-sky {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 8px 0 12px;
+}
+:root[data-redesign] .vuelo-cloud {
+  min-height: 64px;
+  padding: 12px 16px;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: var(--fw-extrabold);
+  font-size: 1.1rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+:root[data-redesign] .vuelo-cloud:hover,
+:root[data-redesign] .vuelo-cloud:focus-visible { border-color: var(--brand); }
+:root[data-redesign] .vuelo-cloud.vuelo-hit {
+  border-color: var(--good);
+  background: var(--good-bg);
+}
+:root[data-redesign] .vuelo-cloud.vuelo-nope { border-color: var(--brand-tint); }
+:root[data-redesign] .vuelo-lola { display: inline-block; margin-top: 2px; }
+:root[data-redesign] .vuelo-lola.vuelo-perched { transform: translateY(-6px); }
+:root[data-redesign] .vuelo-landing { margin-top: 8px; }
+:root[data-redesign] .vuelo-nest { font-size: 2.2rem; display: block; }
+:root[data-redesign] .vuelo-done {
+  font-family: var(--font-display);
+  font-weight: var(--fw-extrabold);
+  font-size: 1.2rem;
+  margin: 6px 0 10px;
+}
+:root[data-redesign] .vuelo-live { position: absolute; left: -9999px; }
+:root[data-redesign] .vuelo-invite { display: block; margin: 10px auto; }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-redesign] .vuelo-lola.vuelo-perched { transform: none; }
+}
+
+/* ---------------- M18.3b — flight garnish (motion + replay affordance) ----
+   EVERY rule with movement lives inside the no-preference query: with
+   reduced motion the flight is the identical game with instant state swaps. */
+:root[data-redesign] .vuelo-prompt-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+:root[data-redesign] .vuelo-replay {
+  min-width: 44px;
+  min-height: 44px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+:root[data-redesign] .vuelo-replay:hover,
+:root[data-redesign] .vuelo-replay:focus-visible { border-color: var(--brand); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* anchored clouds BOB IN PLACE (≤4px) — targets never travel */
+  :root[data-redesign] .vuelo-cloud {
+    animation: vuelo-bob 3.2s ease-in-out infinite;
+  }
+  :root[data-redesign] .vuelo-cloud:nth-child(2) { animation-delay: -0.9s; }
+  :root[data-redesign] .vuelo-cloud:nth-child(3) { animation-delay: -1.7s; }
+  :root[data-redesign] .vuelo-cloud:nth-child(4) { animation-delay: -2.4s; }
+  :root[data-redesign] .vuelo-cloud:nth-child(5) { animation-delay: -1.2s; }
+  :root[data-redesign] .vuelo-cloud.vuelo-hit,
+  :root[data-redesign] .vuelo-cloud.vuelo-nope { animation: none; }
+  :root[data-redesign] .vuelo-cloud.vuelo-nope { animation: vuelo-wobble 0.35s ease; }
+  :root[data-redesign] .vuelo-cloud.vuelo-hit { animation: chispa-pop 0.28s ease; }
+  /* Lola hovers gently and swoops upward when she perches on a hit */
+  :root[data-redesign] .vuelo-lola { animation: vuelo-hover 2.6s ease-in-out infinite; }
+  :root[data-redesign] .vuelo-lola.vuelo-perched {
+    animation: none;
+    transition: transform 0.5s ease;
+    transform: translateY(-14px) scale(1.06);
+  }
+  :root[data-redesign] .vuelo-lola .vuelo-wing-l,
+  :root[data-redesign] .vuelo-lola .vuelo-wing-r {
+    transform-origin: 30px 33px;
+    animation: vuelo-flap 1.4s ease-in-out infinite;
+  }
+  :root[data-redesign] .vuelo-lola .vuelo-wing-r { animation-direction: reverse; }
+  /* 3★ flair: sparkles drift up at the landing */
+  :root[data-redesign] .vuelo-flair .vuelo-landing .vuelo-nest::after {
+    content: "✨";
+    display: inline-block;
+    animation: vuelo-spark 1.2s ease-out;
+  }
+}
+@keyframes vuelo-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes vuelo-hover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes vuelo-flap {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(9deg); }
+}
+@keyframes vuelo-wobble {
+  0% { transform: rotate(0); }
+  30% { transform: rotate(-2.5deg); }
+  65% { transform: rotate(2.5deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes vuelo-spark {
+  0% { opacity: 0; transform: translateY(6px) scale(0.6); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(-4px) scale(1); }
+}
