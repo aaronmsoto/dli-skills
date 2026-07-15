@@ -28,11 +28,12 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue: M16 COMPLETE + live (Prado redesign shipped to main 2026-07-10).
-M17 COMPLETE on dev 2026-07-10 — round-2 audits, all auto-fixes, and both
-owner design-decisions (NN-7/DN-8 icon system + DN-6 imperfect badge, option
-a) landed. No loop-workable item is queued — the M17 a11y + icon fixes ride
-the next dev→main release, and the owner sets the next milestone.**
+**Queue: M17 LIVE (dev→main release PR #76 merged 2026-07-10). M18
+(gamification) is in PROPOSAL state — the owner-directed proposal doc
+(docs/games-proposal.html, 2026-07-15) pitches three vetted concepts and
+awaits the owner's pick + the non-goals amendment signature. NO loop-workable
+item is queued: loops must NOT implement any M18 phase until the owner
+records their pick and the amendment here.**
 M16 tasks R (design extraction), G (gate), T (theme selector, Light
 default), I\* (per-screen migration), RT (regression), and FLIP (default
 the gate on + retire the old look) all landed on `dev`; the go-live deploy
@@ -603,6 +604,61 @@ The queue line here — not milestone numbering — sets loop priority.
     users): CW-4 (theme/sound behind the unlabeled ☰), CW-5 (activity tiles
     equal visual weight), CW-6 (star-total pill reads tappable), NN-4
     (native `confirm()` for reset — carried, accepted).
+
+- [ ] **M18 — 🎮 Gamification (owner-directed 2026-07-15; PROPOSAL state —
+  awaiting owner pick, do NOT implement)**
+  The owner asked for real fun: game mechanics woven into existing exercises
+  and/or a reward for a job well done. Process ran 2026-07-15: three research
+  passes (learning-science evidence for ages 5-11, codebase/brand constraints,
+  vanilla-JS touch-game engineering) → 8 candidate concepts → three
+  adversarial critics (pedagogy, engineering, K-5 UX/a11y) → 3 finalists,
+  fully specced in **docs/games-proposal.html** (unlinked from app nav, per
+  standing rule 5). Evidence-based guardrails all finalists obey: rewards are
+  deterministic + effort-earned (no randomness/rarity), informational
+  surprises never announced contracts, nothing decays or is lost, no
+  streaks/leagues/timers/leaderboards, celebration access never gates on
+  perfection (flair scales instead), tap-tap on anchored ≥56px targets,
+  reduced-motion parity, and the Prodigy test (the fastest route to more fun
+  must be more Spanish). All three finalists are UNSCORED celebration layers
+  fully derived from existing `best` data — zero `recordResult`, zero new
+  scoring track, zero schema change.
+  Blocking owner decisions (record them here to unblock loops):
+  - [ ] **PICK** — which finalist(s) enter the queue: Idea 1 "El Vuelo al
+        Nido" (flight mini-game + living-nest meta-progression, one metaphor;
+        the critics' convergent recommendation), Idea 2 "Empareja con Chispa"
+        (juice pass on matching; S-size, ship-first), Idea 3 "Las Postales de
+        Lola" (culture postcard album; SME-gated, later phase).
+  - [ ] **AMEND** — sign the non-goals clarification proposed in the doc
+        (celebration layers derived from stars are allowed; currencies/shops/
+        loot/leaderboards/streak-guilt stay banned; stars + 🎧 badges remain
+        the only scorekeeping).
+  Phases as proposed (do not start until PICK + AMEND are recorded):
+  - [ ] **M18.1** — Empareja con Chispa + freebie F1 (Repasa-hoy droplet
+        visual). Up-only counts (no combo meter — a visible reset is a
+        punishment mechanic), decorative flip with synchronous state classes
+        (existing e2e timing contracts hold), lazy WebAudio chirps gated on
+        the sound setting, Lola `is-turn` on runs. ~1-2 KB gz. 1 iteration.
+  - [ ] **M18.2** — El Nido: `#/nido` scene (new module `js/nido.js`, NOT in
+        mascot.js — 8 KB cap), tiered growth derived from `best` (first star
+        = wisp, group all-≥1★ = twig ceremony, 30/30 = flower + `is-spin`),
+        never empty slots/counters, DOM-list a11y, home-card twig badges.
+        ~4-6 KB gz. 2 iterations.
+  - [ ] **M18.3** — El Vuelo: lazy `js/vuelo.js`, reduced-motion grid built
+        FIRST then drift garnish, anchored ≥64px bobbing clouds (never
+        moving-target taps), every finished round flies (skippable, flair
+        scales with stars), clouds sample the round's verbs (clips already
+        exist for conjugated forms), prefetch post-boot, silent offline
+        degrade. ~8-12 KB gz. 2 iterations.
+  - [ ] **M18.4** — Las Postales: 6 flat token-colored lazy SVG postcards
+        (NOT 20 — art is the payload bomb), tiles reveal on NEW best-stars
+        only (defuses stars-as-currency), album reached via the nest,
+        aria-live reveal narration, modest STANDARDS.md culture-exposure
+        claim. GATED on SME cultural review + owner clip run. 3 iterations.
+  Killed (do not resurrect): Viste a Lola (violates MASCOT.md spec; cosmetic
+  economy; shared-device loss mechanic) · Modo Rayo (streak in disguise;
+  rewards comfort-zone speed) · Mapa del Viaje (regresses the audited home;
+  lockstep path vs free choice) · Jardín de Verbos as pitched (no per-verb
+  data exists; 100-target overload; backlog guilt — salvaged as freebie F1).
 
 ## Non-goals (do not build)
 

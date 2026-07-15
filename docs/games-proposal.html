@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Propuesta de juegos (M18) · Conjuga</title>
+  <meta name="description" content="M18 gamification proposal: three researched, adversarially vetted game concepts for Conjuga — El Vuelo al Nido, Empareja con Chispa, and Las Postales de Lola." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦉</text></svg>" />
+  <script>(function(){try{var d=JSON.parse(localStorage.getItem("conjuga.v1")||"{}");var t=(d.settings&&d.settings.theme)||"light";if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <style>
+    :root {
+      --bg:#fbf6ea; --card:#ffffff; --ink:#243026; --soft:#5c6558;
+      --brand:#2f6b4f; --brand-tint:#e3f2df; --accent:#e37a4f;
+      --star:#b8770f; --line:rgba(36,48,38,.14);
+      --good:#2f8a52; --warn:#a16207; --bad:#c2492f;
+      --kill-bg:#f8e2da; --keep-bg:#dff2e2; --refine-bg:#fdf0d8;
+      --font-display:"Baloo 2", ui-rounded, "Segoe UI Rounded", system-ui, sans-serif;
+      --font-body:"Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) { :root {
+      --bg:#191e17; --card:#252c22; --ink:#eef1e9; --soft:#a3ad98;
+      --brand:#74c489; --brand-tint:#2c3a2b; --accent:#f0946a;
+      --star:#f3b750; --line:rgba(238,241,233,.16);
+      --good:#6cc888; --warn:#fde047; --bad:#ef8a6f;
+      --kill-bg:#3a231c; --keep-bg:#243a22; --refine-bg:#3a331c;
+    } }
+    :root[data-theme="dark"] {
+      --bg:#191e17; --card:#252c22; --ink:#eef1e9; --soft:#a3ad98;
+      --brand:#74c489; --brand-tint:#2c3a2b; --accent:#f0946a;
+      --star:#f3b750; --line:rgba(238,241,233,.16);
+      --good:#6cc888; --warn:#fde047; --bad:#ef8a6f;
+      --kill-bg:#3a231c; --keep-bg:#243a22; --refine-bg:#3a331c;
+    }
+    :root[data-theme="light"] {
+      --bg:#fbf6ea; --card:#ffffff; --ink:#243026; --soft:#5c6558;
+      --brand:#2f6b4f; --brand-tint:#e3f2df; --accent:#e37a4f;
+      --star:#b8770f; --line:rgba(36,48,38,.14);
+      --good:#2f8a52; --warn:#a16207; --bad:#c2492f;
+      --kill-bg:#f8e2da; --keep-bg:#dff2e2; --refine-bg:#fdf0d8;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; padding:28px 16px 56px; background:var(--bg); color:var(--ink);
+           font-family:var(--font-body); line-height:1.6; }
+    main { max-width:860px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
+    a { color:var(--brand); }
+    h1,h2,h3 { font-family:var(--font-display); line-height:1.15; text-wrap:balance; }
+    h1 { font-size:2.1rem; margin:.1em 0 .15em; }
+    h2 { font-size:1.35rem; margin:0 0 .5em; color:var(--brand); }
+    h3 { font-size:1.05rem; margin:1.2em 0 .35em; }
+    .eyebrow { text-transform:uppercase; letter-spacing:.09em; font-size:.78rem; font-weight:800; color:var(--accent); }
+    .sub { color:var(--soft); font-size:1.02rem; max-width:60ch; }
+    section, header.hero { background:var(--card); border-radius:22px; padding:22px 26px;
+      box-shadow:0 2px 10px rgba(30,40,30,.08); }
+    header.hero { padding:28px 30px; }
+    .meta-strip { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+    .pill { display:inline-block; border-radius:999px; padding:4px 12px; font-size:.8rem; font-weight:700;
+      background:var(--brand-tint); color:var(--brand); }
+    .pill.acc { background:transparent; border:1.5px solid var(--accent); color:var(--accent); }
+    .tablewrap { overflow-x:auto; }
+    table { border-collapse:collapse; width:100%; font-size:.9rem; }
+    th, td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { font-family:var(--font-display); font-size:.82rem; text-transform:uppercase; letter-spacing:.05em; color:var(--soft); }
+    td.num, th.num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .v { font-weight:800; border-radius:8px; padding:2px 8px; font-size:.8rem; white-space:nowrap; }
+    .v-kill { background:var(--kill-bg); color:var(--bad); }
+    .v-keep { background:var(--keep-bg); color:var(--good); }
+    .v-refine { background:var(--refine-bg); color:var(--warn); }
+    .idea { border:2px solid var(--line); }
+    .idea.flagship { border-color:var(--brand); }
+    .idea-head { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+    .idea-head svg { flex:0 0 108px; }
+    .idea-head .t { flex:1 1 320px; min-width:260px; }
+    .statgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:14px 0; }
+    .stat { background:var(--brand-tint); border-radius:14px; padding:10px 12px; }
+    .stat b { display:block; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--soft); font-weight:800; }
+    .stat span { font-weight:700; }
+    ul { padding-left:1.2em; } li { margin:.3em 0; }
+    .guards { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; }
+    .guard { border:1.5px solid var(--line); border-radius:14px; padding:10px 14px; font-size:.92rem; }
+    .guard b { font-family:var(--font-display); }
+    .callout { border-left:4px solid var(--accent); background:var(--brand-tint); border-radius:0 14px 14px 0;
+      padding:12px 16px; margin:14px 0; font-size:.95rem; }
+    blockquote.amend { margin:10px 0; padding:12px 16px; background:var(--bg); border-radius:14px;
+      font-size:.92rem; border:1.5px dashed var(--line); }
+    footer { text-align:center; color:var(--soft); font-size:.88rem; }
+    .es { font-weight:700; }
+    @media print { body { background:#fff; } section, header.hero { box-shadow:none; border:1px solid #ccc; } }
+  </style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">Conjuga · propuesta interna · M18</p>
+  <h1>Más juego, mismo corazón 🦉</h1>
+  <p class="sub"><span class="es" lang="es">Tres ideas de juego, investigadas y puestas a prueba.</span>
+  Three gamification concepts for Conjuga — researched against the learning-science evidence,
+  grounded in the Prado design system and Lola's character spec, and adversarially vetted by
+  three independent critics before making this page.</p>
+  <div class="meta-strip">
+    <span class="pill">2026-07-15</span>
+    <span class="pill">Estado: awaiting owner pick</span>
+    <span class="pill acc">3 research briefs</span>
+    <span class="pill acc">8 candidates</span>
+    <span class="pill acc">3 adversarial critics</span>
+    <span class="pill acc">3 finalists</span>
+  </div>
+</header>
+
+<section>
+  <h2>Cómo llegamos aquí · Process</h2>
+  <p>Three parallel research passes fed the ideation: (1) the <strong>learning-science evidence</strong> on
+  gamification for ages 5–11 (what motivates, what backfires); (2) a <strong>codebase &amp; brand
+  analysis</strong> (Lola's spec, Prado tokens, scoring tracks, storage schema, payload headroom);
+  (3) <strong>browser-game engineering</strong> for touch-first vanilla JS. Eight candidate concepts were
+  then attacked by three independent critics — <em>pedagogy</em>, <em>engineering</em>, and
+  <em>K-5 UX/accessibility</em> — and only ideas surviving all three lenses were refined into the
+  finalists below. Notably, all three critics independently converged on the same hybrid.</p>
+
+  <div class="tablewrap"><table>
+    <tr><th>Candidate</th><th>Pedagogy</th><th>Engineering</th><th>K-5 UX/a11y</th><th>Outcome</th></tr>
+    <tr><td>El Nido de Lola (nest meta-progression)</td><td><span class="v v-refine">REFINE</span></td><td><span class="v v-keep">KEEP</span></td><td><span class="v v-refine">REFINE</span></td><td><strong>Finalist 1</strong> (tiered growth, fused with flight)</td></tr>
+    <tr><td>El Vuelo de Lola (reward mini-game)</td><td><span class="v v-refine">REFINE</span></td><td><span class="v v-refine">REFINE</span></td><td><span class="v v-refine">REFINE</span></td><td><strong>Finalist 1</strong> (anchored clouds, every-round trigger)</td></tr>
+    <tr><td>Empareja con Chispa (juice pass)</td><td><span class="v v-refine">REFINE</span></td><td><span class="v v-keep">KEEP</span></td><td><span class="v v-keep">KEEP</span></td><td><strong>Finalist 2</strong> (combo meter deleted)</td></tr>
+    <tr><td>Postales de Lola (mystery album)</td><td><span class="v v-refine">REFINE</span></td><td><span class="v v-refine">REFINE</span></td><td><span class="v v-keep">KEEP</span></td><td><strong>Finalist 3</strong> (6 postcards, new-star reveals, SME-gated)</td></tr>
+    <tr><td>El Jardín de Verbos (100-plant garden)</td><td><span class="v v-refine">REFINE</span></td><td><span class="v v-refine">REFINE</span></td><td><span class="v v-refine">REFINE</span></td><td>Shrunk to a freebie (Repasa-hoy droplet)</td></tr>
+    <tr><td>Viste a Lola (dress-up)</td><td><span class="v v-kill">KILL</span></td><td><span class="v v-kill">KILL</span></td><td><span class="v v-kill">KILL</span></td><td>Killed — see below</td></tr>
+    <tr><td>Modo Rayo (personal-best flow)</td><td><span class="v v-kill">KILL</span></td><td><span class="v v-keep">KEEP</span></td><td><span class="v v-keep">KEEP</span></td><td>Killed — pedagogy veto</td></tr>
+    <tr><td>El Mapa del Viaje (journey-map home)</td><td><span class="v v-kill">KILL</span></td><td><span class="v v-refine">REFINE</span></td><td><span class="v v-kill">KILL</span></td><td>Killed — perch/twig badges salvaged into Finalist 1</td></tr>
+  </table></div>
+
+  <p class="sub" style="font-size:.9rem">Owner defaults taken to unblock the work (all reversible):
+  deliverable = this docs/ page + an artifact preview · a new reward <em>track</em> was allowed but the
+  finalists ended up needing <strong>none</strong> (everything derives from existing stars) · lazy-loaded
+  game modules OK, core app keeps its 100 KB gzip budget · a stub M18 milestone was added to GOAL.md.</p>
+</section>
+
+<section>
+  <h2>Las reglas del juego · Evidence-based guardrails</h2>
+  <p>Every finalist obeys these, derived from the research pass (citations at the end):</p>
+  <div class="guards">
+    <div class="guard"><b>Deterministic &amp; effort-earned.</b> No randomness, rarity, or chance — mystery <em>boxes</em> are gambling-adjacent; deterministic mystery <em>reveals</em> are the top-ranked engagement element.</div>
+    <div class="guard"><b>Informational, never contractual.</b> Rewards arrive as surprises celebrating what just happened. The UI never says "earn 3 stars to unlock X" — announced performance-contingent prizes crowd out intrinsic motivation most in young children (Deci).</div>
+    <div class="guard"><b>Nothing decays, nothing is lost.</b> No wilting, no hunger, no streak resets, no visible counter a mistake can destroy. Additive worlds only.</div>
+    <div class="guard"><b>The Prodigy test.</b> The fastest route to more fun must be more Spanish. Any toy that outcompetes the learning is cut.</div>
+    <div class="guard"><b>Equity of delight.</b> Rewards reach the child at 1 star, not just the 100% kid. Perfection upgrades celebrations; it never gates access.</div>
+    <div class="guard"><b>K-5 motor &amp; attention reality.</b> Tap-tap on ≥56 px anchored targets (never moving-target taps, no drag precision, no long-press); 60–90 s reward moments inside 3–5 min bursts.</div>
+    <div class="guard"><b>Reduced-motion parity.</b> The game must be the <em>same game</em> with motion replaced by state swaps — never a lesser one.</div>
+    <div class="guard"><b>No economy.</b> No currencies, shops, loot, leaderboards, or streak guilt — the existing non-goal stands; celebration layers derive from stars and are never scored.</div>
+  </div>
+</section>
+
+<!-- ============ IDEA 1 ============ -->
+<section class="idea flagship">
+  <div class="idea-head">
+    <svg viewBox="0 0 108 108" width="108" height="108" role="img" aria-label="Sketch: Lola flying past clouds toward her nest">
+      <circle cx="54" cy="54" r="52" fill="var(--brand-tint)"/>
+      <ellipse cx="30" cy="30" rx="16" ry="9" fill="var(--card)" stroke="var(--line)"/>
+      <ellipse cx="72" cy="22" rx="13" ry="8" fill="var(--card)" stroke="var(--line)"/>
+      <path d="M20 78 Q40 58 66 66" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="4 4"/>
+      <path d="M62 78 q12 -16 24 0 q-4 12 -12 12 q-8 0 -12 -12z" fill="var(--brand)"/>
+      <path d="M64 78 h20 M66 84 h16" stroke="var(--card)" stroke-width="2"/>
+      <circle cx="70" cy="62" r="7" fill="var(--star)"/>
+      <circle cx="68" cy="60" r="1.6" fill="var(--ink)"/>
+    </svg>
+    <div class="t">
+      <p class="eyebrow">Idea 1 · recomendada · la favorita de los tres críticos</p>
+      <h2 style="margin-bottom:.2em">El Vuelo al Nido — the flight home &amp; the living nest</h2>
+      <p class="sub" lang="es">Cada ronda termina con un vuelo. Cada estrella construye el nido.</p>
+    </div>
+  </div>
+
+  <p><strong>The pitch.</strong> Conjuga's one load-bearing metaphor — <em>ayuda a Lola a llegar a su
+  nido</em> — becomes the whole reward system. When a child finishes any scored round, Lola takes a
+  short celebratory <strong>flight</strong> (60–75 s, always skippable): four or five big clouds hold
+  conjugated forms from the round just played; a prompt speaks a form (audio when available, text pill
+  always) and the child taps its cloud; Lola swoops <em>to</em> the tapped cloud. Wrong clouds simply
+  drift on — no failure state. The flight ends with a landing at the <strong>nest</strong>, a persistent
+  scene (reached from home) that grows from the child's real mastery data: a straw wisp when a group earns
+  its first star, a twig when every activity in a group has at least one star, a flower on the twig at a
+  perfect 30/30 — that last one delivered as the twig-carried-home cutscene with Lola's signature
+  <code>is-spin</code>. Every nest item is tappable to hear its Spanish name.</p>
+
+  <div class="statgrid">
+    <div class="stat"><b>Shape</b><span>Reward mini-game + meta-progression, one metaphor</span></div>
+    <div class="stat"><b>Scoring track</b><span>Unscored celebration layer — zero <code>recordResult</code></span></div>
+    <div class="stat"><b>Storage</b><span>100% derived from existing <code>best</code> — no schema change</span></div>
+    <div class="stat"><b>Payload</b><span>Nest ~4–6 KB gz (module) · flight 8–12 KB gz lazy, prefetched</span></div>
+    <div class="stat"><b>Size</b><span>4 loop iterations (L)</span></div>
+    <div class="stat"><b>Audio</b><span>Cloud prompts = existing conjugation clips ✓ · nest nouns need one owner clip run</span></div>
+  </div>
+
+  <h3>Why the critics converged on it</h3>
+  <ul>
+    <li><strong>It passes the Prodigy test outright</strong> — the fun toy <em>is</em> recognition-mode
+    Spanish (an Elige/Escucha hybrid wearing a cape), sampling the round's own verbs as covert spaced
+    micro-review.</li>
+    <li><strong>Equity by design.</strong> Every finished round flies (celebration <em>scales</em> with
+    stars — more clouds, the loop-de-loop — but access never gates on perfection); every earned star
+    visibly builds the nest. The 28/30 child sees a full, growing nest, not an empty trophy case.</li>
+    <li><strong>Pre-sanctioned.</strong> docs/MASCOT.md already names "the nest gaining a twig per
+    fully-starred group" as the future direction; this proposal softens its gate and fills the app's
+    missing set-completion celebration moment.</li>
+    <li><strong>Motor-skill honest.</strong> Clouds are <em>anchored</em> ≥64 px buttons that bob in
+    place a few pixels; motion lives in Lola's feedback swoop, not in the targets. Under
+    <code>prefers-reduced-motion</code> only the garnish disappears — the game is pixel-identical.</li>
+    <li><strong>Screen-reader real.</strong> The nest is a DOM list of focusable items with a summary
+    sentence ("El nido tiene 7 ramitas"); clouds are real buttons whose accessible names are the forms;
+    reveals narrate via the existing live region.</li>
+  </ul>
+
+  <h3>Mechanics detail</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Event (derived, deterministic)</th><th>Celebration</th></tr>
+    <tr><td>Any scored round finished</td><td>Short flight (skippable); clouds sample the round's verbs/tense; 6–8 taps ≈ 60–75 s; "¡Qué vuelo!" landing</td></tr>
+    <tr><td>3-star round</td><td>Same flight + flair: extra clouds, the swoop-loop, sparkles (informational upgrade, not a gate)</td></tr>
+    <tr><td>First star in a group</td><td>A straw wisp appears in the nest (no announcement — the child discovers it)</td></tr>
+    <tr><td>Group complete — every activity ≥1★</td><td>Twig ceremony: Lola flies the twig home; nest gains the branch</td></tr>
+    <tr><td>Perfect group (30/30)</td><td>Flower on that twig + <code>is-spin</code> — the existing "signature move" moment, upgraded</td></tr>
+  </table></div>
+  <p>The nest renders only what exists — never empty slots, never an "X/20" counter. It is a mirror of
+  growth, not a checklist (the pedagogy critic's line: <em>safe as a mirror, dangerous as a
+  checklist</em>).</p>
+
+  <h3>Engineering plan</h3>
+  <ul>
+    <li><strong>New modules, not mascot growth:</strong> <code>js/nido.js</code> (scene + derivation from
+    <code>best</code>) and lazy <code>js/vuelo.js</code> (flight), keeping <code>js/mascot.js</code> under
+    its 8 KB cap — the twig is an SVG overlay near Lola, never a new body pose.</li>
+    <li><strong>Reduced-motion-first build order:</strong> the static cloud grid is built and e2e-tested
+    first; drift/swoop garnish layers on top. e2e runs under <code>reducedMotion: 'reduce'</code> and
+    seeds states (29/30 → one perfect round) via <code>addInitScript</code> to assert celebrations
+    deterministically.</li>
+    <li><strong>Lazy + resilient:</strong> flight module prefetched post-boot on idle; if the import fails
+    offline, results screen renders as today — the surprise degrades silently, never breaks.</li>
+    <li><strong>Audio honesty:</strong> cloud prompts reuse the existing 3,353-clip manifest (they are
+    conjugated forms — the only game concept whose audio already works). Nest nouns (la ramita, la flor…)
+    need a ~15-clip owner ElevenLabs run, or ship TTS-only gated on <code>audioAvailable()</code>.</li>
+    <li><strong>Routes:</strong> <code>#/nido</code> (a real screen with crumbs/☰/footer per standing rule
+    5); flight is an overlay state on results, not a route.</li>
+  </ul>
+
+  <h3>Risks &amp; mitigations</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Risk</th><th>Mitigation</th></tr>
+    <tr><td>Flight becomes a 75 s tax on every round</td><td>Always skippable in one tap; auto-shortens to ~40 s after first play of the day; never auto-repeats</td></tr>
+    <tr><td>e2e flake from animation timing</td><td>State classes applied synchronously; e2e asserts the reduced-motion variant; clouds pause on pointer-down</td></tr>
+    <tr><td>Choreography scope creep</td><td>Launch set capped: one flight scene, three nest item types (wisp/twig/flower) + 4 milestone decor items, max</td></tr>
+    <tr><td>Sibling shared-device disputes</td><td>The nest is communal by framing ("nuestro nido"); items never carry implied ownership</td></tr>
+    <tr><td>iOS audio autoplay block</td><td>First prompt plays only after a tap (gesture-gated), matching existing audio unlock conventions</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ IDEA 2 ============ -->
+<section class="idea">
+  <div class="idea-head">
+    <svg viewBox="0 0 108 108" width="108" height="108" role="img" aria-label="Sketch: two matching cards with a spark">
+      <circle cx="54" cy="54" r="52" fill="var(--brand-tint)"/>
+      <rect x="22" y="34" width="28" height="40" rx="6" fill="var(--card)" stroke="var(--brand)" stroke-width="2.5"/>
+      <rect x="58" y="34" width="28" height="40" rx="6" fill="var(--card)" stroke="var(--brand)" stroke-width="2.5"/>
+      <path d="M36 54 h0 M72 54 h0" stroke="var(--ink)"/>
+      <text x="36" y="59" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="sans-serif">yo</text>
+      <text x="72" y="59" text-anchor="middle" font-size="11" fill="var(--ink)" font-family="sans-serif">hablo</text>
+      <path d="M54 24 l3 7 7 1 -5 5 1 7 -6 -3 -6 3 1 -7 -5 -5 7 -1z" fill="var(--accent)"/>
+    </svg>
+    <div class="t">
+      <p class="eyebrow">Idea 2 · la victoria rápida · ship-first</p>
+      <h2 style="margin-bottom:.2em">Empareja con Chispa — make the matching game feel like a game</h2>
+      <p class="sub" lang="es">Cero pantallas nuevas. Cero datos nuevos. Pura chispa.</p>
+    </div>
+  </div>
+
+  <p><strong>The pitch.</strong> Empareja already has game bones; it's missing <em>juice</em>. Add a
+  satisfying card-flip on selection (decorative CSS only — state classes stay synchronous so existing e2e
+  timing contracts hold), a soft WebAudio chirp on match (two rising sine notes, synthesized — no files,
+  created lazily on first tap for iOS, gated on the sound setting, never the only success signal), Lola's
+  existing <code>is-turn</code> when the child hits a run, and a warm end-of-round moment within the
+  existing ≤900 ms celebration spec. The counter counts <strong>up only</strong> ("5 parejas");
+  runs are celebrated when they happen ("¡3 seguidas!") and the UI simply says nothing when they
+  don't — <em>no meter ever visibly resets</em>. The critics' one hard finding, the combo-reset (the app's
+  first would-be punishment mechanic), is deleted.</p>
+
+  <div class="statgrid">
+    <div class="stat"><b>Shape</b><span>Gamified existing exercise (juice pass)</span></div>
+    <div class="stat"><b>Scoring track</b><span>Unchanged — ⭐ stars as today</span></div>
+    <div class="stat"><b>Storage</b><span>None</span></div>
+    <div class="stat"><b>Payload</b><span>~1–2 KB gz across app.js/css</span></div>
+    <div class="stat"><b>Size</b><span>1 loop iteration (S)</span></div>
+    <div class="stat"><b>Audio</b><span>WebAudio oscillators — no clips needed</span></div>
+  </div>
+
+  <h3>Guardrail notes</h3>
+  <ul>
+    <li>Mismatch feedback stays deliberately quieter and slower than match feedback — the correction must
+    win attention (MASCOT.md rule), so the sparkle never outshouts the fix.</li>
+    <li>Reduced motion: flips become crossfades; the chirp still plays (audio isn't motion); the visual
+    match state alone must carry meaning for muted/deaf contexts.</li>
+    <li>Live region announces matches, never meter ticks — no <code>aria-live</code> spam.</li>
+  </ul>
+</section>
+
+<!-- ============ IDEA 3 ============ -->
+<section class="idea">
+  <div class="idea-head">
+    <svg viewBox="0 0 108 108" width="108" height="108" role="img" aria-label="Sketch: a postcard partially revealed in tiles">
+      <circle cx="54" cy="54" r="52" fill="var(--brand-tint)"/>
+      <rect x="22" y="30" width="64" height="46" rx="5" fill="var(--card)" stroke="var(--line)"/>
+      <rect x="22" y="30" width="21.3" height="23" fill="var(--accent)" opacity=".85"/>
+      <rect x="43.3" y="30" width="21.3" height="23" fill="var(--star)" opacity=".85"/>
+      <rect x="22" y="53" width="21.3" height="23" fill="var(--brand)" opacity=".85"/>
+      <path d="M70 40 l6 8 M70 48 l6 -8" stroke="var(--line)" stroke-width="1.5"/>
+      <rect x="74" y="62" width="9" height="11" rx="1.5" fill="var(--brand-tint)" stroke="var(--line)"/>
+      <text x="54" y="94" text-anchor="middle" font-size="9" fill="var(--soft)" font-family="sans-serif">¡Saludos!</text>
+    </svg>
+    <div class="t">
+      <p class="eyebrow">Idea 3 · la expansión cultural · SME-gated</p>
+      <h2 style="margin-bottom:.2em">Las Postales de Lola — a mystery postcard album from the Spanish-speaking world</h2>
+      <p class="sub" lang="es">Cada estrella nueva revela un pedacito del mundo.</p>
+    </div>
+  </div>
+
+  <p><strong>The pitch.</strong> Lola travels. Postcards from real places — un mercado en Oaxaca, el
+  Viejo San Juan, la Boca en Buenos Aires — arrive as mail at her nest (one world, no new home tile).
+  Each postcard is hidden behind 12 tiles, and a tile is revealed for every <strong>new</strong> star
+  earned (best-star increases only — re-grinding a mastered set reveals nothing, which defuses the
+  stars-as-currency risk the pedagogy critic flagged, while the UX critic's equity requirement holds:
+  a struggling child's single hard-won star still visibly moves the picture). A finished postcard joins
+  the album with a one-line bilingual caption — a genuine interpretive-culture micro-lesson, tappable to
+  hear — opening Conjuga's first honest on-ramp to the NCSSFL-ACTFL Cultures Can-Dos.</p>
+
+  <div class="statgrid">
+    <div class="stat"><b>Shape</b><span>Meta-reward collection (deterministic mystery reveal)</span></div>
+    <div class="stat"><b>Scoring track</b><span>Unscored — derived from total best-stars</span></div>
+    <div class="stat"><b>Storage</b><span>None — tiles = f(total stars); album = f(threshold crossings)</span></div>
+    <div class="stat"><b>Payload</b><span>6 postcards, flat token-colored SVG, 2–4 KB gz each, lazy per-card</span></div>
+    <div class="stat"><b>Size</b><span>3 loop iterations (M–L) + SME review gate</span></div>
+    <div class="stat"><b>Audio</b><span>Caption clips need an owner ElevenLabs run</span></div>
+  </div>
+
+  <h3>Hard conditions (from the critique)</h3>
+  <ul>
+    <li><strong>SME cultural review before ship</strong> — same pattern as the M2/M5 holds. Drive-by
+    culture is worse than none; every scene and caption needs a bilingual educator's eyes. This is why
+    Idea 3 is a <em>later phase</em>, not a first build.</li>
+    <li><strong>Six postcards, not twenty.</strong> Hand-drawn SVG scenes are the hidden payload bomb
+    (20 scenes ≈ 60–160 KB). Six flat scenes in Prado tokens (dark mode automatic), lazy-loaded from the
+    album route, stay inside a 15–25 KB total envelope.</li>
+    <li><strong>Non-visual parity:</strong> every reveal narrates via the live region ("Postal de Oaxaca:
+    7 de 12 piezas"); finished postcards carry real alt text and their caption as DOM text.</li>
+    <li><strong>Budget honesty:</strong> art must live where the payload test can see it, or the test's
+    scope gets an explicit owner-approved amendment — the loop must never park art in an untested
+    directory to dodge the budget.</li>
+    <li><strong>STANDARDS.md stays honest:</strong> the claim added is modest — "exposure to products and
+    practices," never "develops cultural competence."</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Lo que matamos · The kill list</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Idea</th><th>Why it died</th><th>What was salvaged</th></tr>
+    <tr><td>Viste a Lola (dress-up)</td><td>Violates the mascot spec outright (no clothes/accessories, one silhouette); star-unlocked cosmetics are the textbook motivation-crowding reward and Prodigy's actual failure mode; on shared tablets, one persisted outfit means siblings can take things from each other — the app's first loss mechanic.</td><td>Unlockable <em>nest decor</em> (communal, spec-legal) inside Idea 1.</td></tr>
+    <tr><td>Modo Rayo (personal-best flow)</td><td>A streak in disguise: the pause-on-miss counter is a loss event; its optimal strategy — farm your easiest set, answer fast — rewards the comfort zone and speed over deliberate person→ending mapping. Engineering and UX passed it; pedagogy's veto is fundamental to this product.</td><td>The "flow feeling" need is served by Idea 1's flight.</td></tr>
+    <tr><td>El Mapa del Viaje (journey home)</td><td>Replaces the app's most-audited, just-fixed screen (CW-1 resolved 07-08) with a spatial model that's <em>harder</em> for a 5-year-old than the grid; a path imposes lockstep sequence on deliberately free choice; forks home into two surfaces forever.</td><td>Perch marker + per-card twig badges on the existing home grid, inside Idea 1.</td></tr>
+    <tr><td>El Jardín de Verbos (100-plant garden)</td><td>Built on data that doesn't exist (storage has no per-verb grain — the plants would lie); 100 tap targets fail the 5-year-old parse test; a big "thirsty" backlog is Duolingo guilt reconstituted as world-state.</td><td><strong>Freebie F1:</strong> a droplet/plantita visual upgrade to the existing "🔁 Repasa hoy" pill — the spaced-repetition visibility win at 2% of the cost (~0.5 KB).</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Cambios que requieren tu firma · Owner sign-offs needed</h2>
+  <ul>
+    <li><strong>GOAL.md non-goals amendment.</strong> The current line excludes "economy-style
+    gamification" and says "stars/streaks remain the only scorekeeping." The finalists respect the
+    spirit (no currencies, shops, loot, leaderboards, or streak mechanics — still banned), but the letter
+    needs one clarifying sentence. Proposed replacement:
+    <blockquote class="amend">Accounts, servers, dashboards, analytics, other languages (until M5 is done
+    and a human re-scopes), external services, and economy-style gamification (currencies, shops,
+    random loot, competitive leaderboards, streak-guilt mechanics). ⭐ stars and 🎧 badges remain the only
+    <em>scorekeeping</em>; celebration layers (nest, flight, album) must be fully derived from them —
+    deterministic, unscored, and never a new currency.</blockquote></li>
+    <li><strong>Scoring-track declaration:</strong> all three finalists are <em>unscored celebration
+    layers</em> — zero <code>recordResult</code>, zero denominator changes. No new track is created
+    (the "third track allowed" default went unused — derivation beat currency).</li>
+    <li><strong>One ElevenLabs clip run</strong> (owner key): ~15 nest nouns for Idea 1; caption lines
+    for Idea 3 when it ships.</li>
+    <li><strong>SME cultural review</strong> for Idea 3's scenes and captions (M2/M5 pattern).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>El plan · Implementation queue (on approval)</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Phase</th><th>Ships</th><th class="num">Iterations</th><th>Gate</th></tr>
+    <tr><td>M18.1</td><td>Empareja con Chispa (Idea 2) + freebie F1 (Repasa-hoy droplet)</td><td class="num">1</td><td>None — loop-workable on approval</td></tr>
+    <tr><td>M18.2</td><td>El Nido: scene, derivation, tiered growth, home-card twig badges</td><td class="num">2</td><td>Non-goals amendment signed</td></tr>
+    <tr><td>M18.3</td><td>El Vuelo: reduced-motion grid first, then drift garnish, audio, prefetch</td><td class="num">2</td><td>M18.2 landed</td></tr>
+    <tr><td>M18.4</td><td>Las Postales (Idea 3): album route, 6 scenes, reveal engine</td><td class="num">3</td><td>SME review + clip run</td></tr>
+  </table></div>
+  <p>Every phase follows the house rules: e2e coverage in the same PR, <code>el()</code> DOM
+  construction, standard chrome, print styles, vosotros filtering, audio gating on
+  <code>audioAvailable()</code>, and the payload tests green.</p>
+</section>
+
+<section>
+  <h2>Fuentes · Key research</h2>
+  <ul style="font-size:.9rem">
+    <li>Sailer &amp; Homner (2019), <em>The Gamification of Learning</em> meta-analysis — gamification works best via goals + challenge + curiosity, not points/leaderboards; larger effects for elementary learners. <a href="https://link.springer.com/article/10.1007/s10648-019-09498-w">springer.com</a></li>
+    <li>Deci, Koestner &amp; Ryan (1999/2001) — expected tangible performance-contingent rewards undermine intrinsic motivation most in children; unexpected/informational rewards do not. <a href="https://www.selfdeterminationtheory.org/SDT/documents/2001_DeciKoestnerRyan.pdf">selfdeterminationtheory.org</a></li>
+    <li>Fairplay FTC complaint re: Prodigy Math — the cautionary tale of the game wrapper outcompeting the learning. <a href="https://fairplayforkids.org/pf/prodigy/">fairplayforkids.org</a></li>
+    <li>Vatavu et al. (2015), touch interaction in young children — taps on big targets and swipes easy; precise drag unreliable; no long-press/multi-touch. <a href="https://www.sciencedirect.com/science/article/abs/pii/S1071581914001426">sciencedirect.com</a> · <a href="https://www.nngroup.com/articles/children-ux-physical-development/">NN/g</a></li>
+    <li>Zendle et al. — randomized reward (loot-box) mechanics normalize gambling patterns in minors; deterministic earned reveals avoid this. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9295209/">pmc.ncbi.nlm.nih.gov</a></li>
+    <li>Duolingo streak/league research — engagement mechanics vs. learning; streak anxiety in kids. <a href="https://arxiv.org/pdf/2203.16175">arxiv.org</a></li>
+    <li>Teach Your Monster to Read — the gold-standard K-5 reward loop (earned customization feeding a world the child owns). <a href="https://www.commonsense.org/education/reviews/teach-your-monster-to-read">Common Sense</a></li>
+    <li>Schroeder et al., pedagogical-agent meta-analysis — expressive cartoon mascots yield small positive learning/motivation effects. <a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2025.1635465/full">frontiersin.org</a></li>
+    <li>js13kGames — complete games in 13 KB zipped; calibrates the 15–25 KB module budget as generous. <a href="https://en.wikipedia.org/wiki/Js13kGames">wikipedia.org</a></li>
+  </ul>
+</section>
+
+<footer>
+  <p lang="es">Borrador interno · 2026-07-15 · sin enlazar desde la app hasta que el dueño lo decida ·
+  <a href="./">Documentación</a> · <a href="../">Conjuga</a></p>
+</footer>
+
+</main>
+</body>
+</html>
