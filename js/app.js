@@ -1332,6 +1332,29 @@ function showResults(set, tense, mode, score, total, misses) {
       el("div", { class: "big-stars" }, mode === LISTEN ? badgeRow(stars) : starRow(stars)),
       el("p", { class: "score-line" }, `${score} / ${total} · ${pct}%`),
       el("p", { class: "result-msg" }, msg),
+      // M18.3 flight invitation — every finished star-track round can fly
+      // (unexpected celebration, always optional; flair scales with stars but
+      // access never gates). Lazy module; offline it degrades to a message.
+      mode !== LISTEN ? el("button", {
+        class: "btn primary vuelo-invite", type: "button",
+        onclick: async (e) => {
+          const btn = e.currentTarget;
+          try {
+            const { createVuelo } = await import("./vuelo.js");
+            const { vosotros } = store.getSettings();
+            const overlay = createVuelo({
+              set, tense: isContrast ? "preterite" : tense, stars,
+              persons: vosotros ? [0, 1, 2, 3, 4, 5] : [0, 1, 2, 3, 5],
+              onSay: audioAvailable() ? (t) => say(t) : null,
+            });
+            document.body.append(overlay);
+            overlay.querySelector(".vuelo-cloud")?.focus();
+          } catch {
+            btn.disabled = true;
+            btn.textContent = "El vuelo necesita conexión. The flight needs a connection.";
+          }
+        },
+      }, "¡Vuela con Lola! ", el("span", { class: "h-en", lang: "en" }, "Fly with Lola")) : null,
       ceremonyTier ? el("div", { class: `nido-ceremony tier-${ceremonyTier}` },
         el("span", { class: "ceremony-glyph", "aria-hidden": "true" },
           createNest(40), " ", tierMeta(ceremonyTier).emoji),

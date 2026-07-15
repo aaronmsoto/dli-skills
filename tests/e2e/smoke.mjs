@@ -1660,6 +1660,110 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M18.2b: ?m18demo=1 shows sample nest + forced ceremony and writes nothing");
 }
 
+// ---------- M18.3a "El Vuelo de Lola": core flight (static anchored grid) ----------
+{
+  const solveMatchRound = async (pg) => {
+    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.waitForSelector(".match-card");
+    const r = await pg.evaluate(async () => {
+      const { SETS } = await import("./js/verbs.js");
+      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+      for (const l of left) {
+        const [personLabel, inf] = l.textContent.split(" · ");
+        const verb = SETS[0].verbs.find((v) => v.inf === inf);
+        const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+        const rc = [...document.querySelectorAll(".match-col.right .match-card")]
+          .find((x) => x.textContent === form && !x.disabled);
+        if (!rc) return `no right card for ${form}`;
+        l.click(); rc.click();
+        await new Promise((res) => setTimeout(res, 40));
+      }
+      return "ok";
+    });
+    if (r !== "ok") fail(`vuelo setup: ${r}`);
+    await pg.waitForSelector(".results");
+  };
+
+  const fly = await browser.newPage();
+  trackErrors(fly);
+  await solveMatchRound(fly); // perfect → 3 stars
+  await fly.waitForSelector(".vuelo-invite");
+  await fly.click(".vuelo-invite");
+  await fly.waitForSelector(".vuelo .vuelo-cloud");
+  // 3★ flair = 5 clouds (flair scales; access never gated); ≥64px targets
+  if ((await fly.locator(".vuelo-cloud").count()) !== 5)
+    fail("vuelo: expected 5 clouds on a 3-star flight");
+  const cbb = await fly.locator(".vuelo-cloud").first().boundingBox();
+  if (cbb.height < 64) fail(`vuelo: cloud tap target ${cbb.height}px < 64px`);
+  // wrong tap: NO failure state — prompt unchanged, cloud stays tappable
+  const wrongTap = await fly.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const pill = document.querySelector(".vuelo-prompt");
+    const [personLabel, inf] = pill.textContent.split(" · ");
+    const verb = SETS[0].verbs.find((v) => v.inf === inf);
+    const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+    const wrong = [...document.querySelectorAll(".vuelo-cloud")].find((c) => c.textContent !== form);
+    const before = pill.textContent;
+    wrong.click();
+    return { before, after: pill.textContent, disabled: wrong.disabled };
+  });
+  if (wrongTap.before !== wrongTap.after) fail("vuelo: wrong tap must not advance the prompt");
+  if (wrongTap.disabled) fail("vuelo: wrong cloud must stay tappable (no failure state)");
+  // fly the whole route home
+  const flew = await fly.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    for (let k = 0; k < 7; k++) {
+      const pill = document.querySelector(".vuelo-prompt");
+      if (!pill || !pill.textContent.includes("·")) break;
+      const [personLabel, inf] = pill.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+      const cloud = [...document.querySelectorAll(".vuelo-cloud")].find((c) => c.textContent === form);
+      if (!cloud) return `no cloud for ${form}`;
+      cloud.click();
+      await new Promise((res) => setTimeout(res, 720));
+    }
+    return "ok";
+  });
+  if (flew !== "ok") fail(`vuelo: ${flew}`);
+  await fly.waitForSelector(".vuelo-landing");
+  if (!/Qué vuelo/.test(await fly.locator(".vuelo-done").innerText()))
+    fail("vuelo: landing message missing");
+  await fly.screenshot({ path: `${SHOTS}/m18-vuelo-landing.png` });
+  await fly.click(".vuelo-landing .btn.primary");
+  if (await fly.locator(".vuelo").count()) fail("vuelo: overlay must close on Seguir");
+  if (!(await fly.locator(".results").count())) fail("vuelo: results must remain underneath");
+  // reduced motion: the SAME game (structure identical), skip closes
+  await fly.emulateMedia({ reducedMotion: "reduce" });
+  await fly.click(".vuelo-invite");
+  await fly.waitForSelector(".vuelo .vuelo-cloud");
+  if ((await fly.locator(".vuelo-cloud").count()) !== 5)
+    fail("vuelo: reduced-motion flight must be the identical game");
+  await fly.click(".vuelo-skip");
+  if (await fly.locator(".vuelo").count()) fail("vuelo: Saltar must close the overlay");
+  await fly.close();
+  ok("M18.3a vuelo: invitation on results, 5-cloud 3★ flight, ≥64px anchored targets, no failure state, landing + skip, reduced-motion parity");
+
+  // offline degrade: UNTRACKED page — the blocked module fetch logs an
+  // EXPECTED console error; the app itself must not crash and the button
+  // must explain itself bilingually.
+  const off = await browser.newPage();
+  await off.route("**/js/vuelo.js", (r) => r.abort());
+  await solveMatchRound(off);
+  await off.waitForSelector(".vuelo-invite");
+  await off.click(".vuelo-invite");
+  await off.waitForTimeout(300);
+  const offBtn = off.locator(".vuelo-invite");
+  if (!(await offBtn.isDisabled())) fail("vuelo offline: button should disable");
+  if (!/conexión/.test(await offBtn.innerText())) fail("vuelo offline: bilingual fallback message missing");
+  if (!(await off.locator(".results").count())) fail("vuelo offline: results must survive");
+  await off.close();
+  ok("M18.3a vuelo: offline import degrades to a message, results intact");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();
