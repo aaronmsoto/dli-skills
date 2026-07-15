@@ -732,8 +732,69 @@
   background: var(--good-bg);
 }
 :root[data-redesign] .vuelo-cloud.vuelo-nope { border-color: var(--brand-tint); }
-:root[data-redesign] .vuelo-lola { display: inline-block; margin-top: 2px; }
-:root[data-redesign] .vuelo-lola.vuelo-perched { transform: translateY(-6px); }
+/* M21 A: the journey strip — Lola traverses left→nest as prompts land.
+   The strip is decorative (aria-hidden); progress meaning stays in text. */
+:root[data-redesign] .vuelo-card { position: relative; overflow: hidden; }
+:root[data-redesign] .vuelo-content { position: relative; z-index: 2; }
+:root[data-redesign] .vuelo-skyband {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.4;
+  background-color: var(--brand-tint);
+}
+/* C: the sky warms toward sunset as the journey progresses */
+:root[data-redesign] .vuelo-card[data-step="2"] .vuelo-skyband,
+:root[data-redesign] .vuelo-card[data-step="3"] .vuelo-skyband {
+  background-color: color-mix(in srgb, var(--star) 30%, var(--card));
+}
+:root[data-redesign] .vuelo-card[data-step="4"] .vuelo-skyband,
+:root[data-redesign] .vuelo-card[data-step="5"] .vuelo-skyband {
+  background-color: color-mix(in srgb, var(--accent) 30%, var(--card));
+}
+:root[data-redesign] .vuelo-card[data-step="6"] .vuelo-skyband {
+  background-color: color-mix(in srgb, var(--accent) 45%, var(--card));
+}
+:root[data-redesign] .vuelo-drift {
+  position: absolute;
+  left: -60px;
+  right: -60px;
+  z-index: 1;
+  pointer-events: none;
+  display: none; /* motion-gated: shown only under no-preference (below) */
+  background-image: radial-gradient(closest-side, rgba(255, 255, 255, 0.55), transparent);
+  background-repeat: repeat-x;
+}
+:root[data-redesign] .vuelo-drift-far { top: 12%; height: 18px; background-size: 90px 18px; opacity: 0.35; }
+:root[data-redesign] .vuelo-drift-near { top: 26%; height: 26px; background-size: 150px 26px; opacity: 0.5; }
+:root[data-redesign] .vuelo-journey {
+  --vuelo-progress: 0;
+  position: relative;
+  height: 58px;
+  margin: 6px 2px 2px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 44px 4px 6px;
+}
+:root[data-redesign] .vuelo-puff {
+  width: 18px;
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
+}
+:root[data-redesign] .vuelo-puff.vuelo-puff-done { background: var(--brand); }
+:root[data-redesign] .vuelo-journey-nest {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 1.5rem;
+}
+:root[data-redesign] .vuelo-lola {
+  position: absolute;
+  bottom: 6px;
+  left: calc(6px + (100% - 100px) * var(--vuelo-progress, 0));
+}
 :root[data-redesign] .vuelo-landing { margin-top: 8px; }
 :root[data-redesign] .vuelo-nest { font-size: 2.2rem; display: block; }
 :root[data-redesign] .vuelo-done {
@@ -744,8 +805,25 @@
 }
 :root[data-redesign] .vuelo-live { position: absolute; left: -9999px; }
 :root[data-redesign] .vuelo-invite { display: block; margin: 10px auto; }
+/* M21 B: listen-first — the written prompt hides until the ABC toggle */
+:root[data-redesign] .vuelo-prompt.vuelo-hidden { display: none; }
+:root[data-redesign] .vuelo-ear { font-size: 1.3rem; }
+:root[data-redesign] .vuelo-text-toggle {
+  min-width: 44px;
+  min-height: 44px;
+  font-weight: var(--fw-extrabold);
+  letter-spacing: 0.04em;
+  background: var(--card);
+  color: var(--ink);
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-card);
+}
+:root[data-redesign] .vuelo-text-toggle[aria-pressed="true"],
+:root[data-redesign] .vuelo-text-toggle:hover,
+:root[data-redesign] .vuelo-text-toggle:focus-visible { border-color: var(--brand); }
 @media (prefers-reduced-motion: reduce) {
-  :root[data-redesign] .vuelo-lola.vuelo-perched { transform: none; }
+  :root[data-redesign] .vuelo-lola { transition: none; }
+  :root[data-redesign] .vuelo-skyband { transition: none; }
 }
 
 /* ---------------- M18.3b — flight garnish (motion + replay affordance) ----
@@ -783,13 +861,18 @@
   :root[data-redesign] .vuelo-cloud.vuelo-nope { animation: none; }
   :root[data-redesign] .vuelo-cloud.vuelo-nope { animation: vuelo-wobble 0.35s ease; }
   :root[data-redesign] .vuelo-cloud.vuelo-hit { animation: chispa-pop 0.28s ease; }
-  /* Lola hovers gently and swoops upward when she perches on a hit */
-  :root[data-redesign] .vuelo-lola { animation: vuelo-hover 2.6s ease-in-out infinite; }
-  :root[data-redesign] .vuelo-lola.vuelo-perched {
-    animation: none;
-    transition: transform 0.5s ease;
-    transform: translateY(-14px) scale(1.06);
+  /* M21 A: the traversal is the flight — Lola glides to the next puff on a
+     hit, hovering gently between prompts; the skyband crossfades stages. */
+  :root[data-redesign] .vuelo-lola {
+    animation: vuelo-hover 2.6s ease-in-out infinite;
+    transition: left 0.6s ease;
   }
+  :root[data-redesign] .vuelo-lola.vuelo-swoop { animation: vuelo-swoop-arc 0.6s ease; }
+  :root[data-redesign] .vuelo-skyband { transition: background-color 1.2s ease; }
+  /* C: parallax cloud bands drift BEHIND the anchored targets */
+  :root[data-redesign] .vuelo-drift { display: block; }
+  :root[data-redesign] .vuelo-drift-far { animation: vuelo-drift-x 46s linear infinite; }
+  :root[data-redesign] .vuelo-drift-near { animation: vuelo-drift-x 28s linear infinite; }
   :root[data-redesign] .vuelo-lola .vuelo-wing-l,
   :root[data-redesign] .vuelo-lola .vuelo-wing-r {
     transform-origin: 30px 33px;
@@ -810,6 +893,15 @@
 @keyframes vuelo-hover {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
+}
+@keyframes vuelo-swoop-arc {
+  0% { transform: translateY(0); }
+  45% { transform: translateY(-16px) rotate(-6deg); }
+  100% { transform: translateY(0); }
+}
+@keyframes vuelo-drift-x {
+  from { background-position-x: 0; }
+  to { background-position-x: -600px; }
 }
 @keyframes vuelo-flap {
   0%, 100% { transform: rotate(0deg); }

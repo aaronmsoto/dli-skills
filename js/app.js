@@ -1363,7 +1363,10 @@ function showResults(set, tense, mode, score, total, misses) {
             const overlay = createVuelo({
               set, tense: isContrast ? "preterite" : tense, stars,
               persons: vosotros ? [0, 1, 2, 3, 4, 5] : [0, 1, 2, 3, 5],
-              onSay: audioAvailable() ? (t) => say(t) : null,
+              // M21 B: listen-first only when the ear can actually play —
+              // audio backend present AND sound unmuted; otherwise the
+              // flight falls back to text prompts (onSay null).
+              onSay: audioAvailable() && store.getSettings().sound ? (t) => say(t) : null,
             });
             document.body.append(overlay);
             overlay.querySelector(".vuelo-cloud")?.focus();

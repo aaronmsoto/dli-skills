@@ -1,16 +1,28 @@
 /**
- * El Vuelo de Lola (M18.3) — the 60-90s celebration flight, lazy-loaded from
- * the results screen. UNSCORED: no recordResult, no storage, no failure
- * state — wrong clouds simply stay in the sky. The reward IS recognition-mode
- * Spanish: clouds carry conjugated forms sampled from the round just played
- * (the Prodigy test: the fastest route to more fun is more Spanish).
+ * El Vuelo de Lola (M18.3; rebuilt M21 "La Travesía", owner pick A+B+C
+ * 2026-07-15) — the 60-90s celebration flight, lazy-loaded from the results
+ * screen. UNSCORED: no recordResult, no storage, no failure state — wrong
+ * clouds simply stay in the sky. The reward IS recognition-mode Spanish:
+ * clouds carry conjugated forms sampled from the round just played (the
+ * Prodigy test: the fastest route to more fun is more Spanish).
  *
- * Built reduced-motion-FIRST (docs/games-proposal.html engineering plan):
- * this core is a static anchored-cloud grid — clouds are big fixed buttons
- * (≥64px, never moving tap targets; K-2 motor-skill rule) and Lola flies TO
- * the tapped cloud via a CSS class the motion layer (M18.3b) animates;
- * with reduced motion the same class swaps state instantly. The game is
- * pixel-identical either way.
+ * M21 shape:
+ *  A. TRAVERSAL — progress is physical: Lola visibly flies puff-to-puff
+ *     along the journey strip toward the nest; arrival is the finish line
+ *     ("help Lola get home" is the mechanic, not a metaphor about one).
+ *  B. LISTEN-FIRST — when the caller wires audio (available AND unmuted),
+ *     the prompt is heard, not read: an ear game, distinct from Elige.
+ *     The ABC toggle reveals the written prompt (equity escape hatch for
+ *     deaf/hard-of-hearing learners); voiceless or muted contexts get the
+ *     text prompt by default.
+ *  C. ATMOSPHERE — parallax cloud drift behind the anchored targets and a
+ *     sky that warms toward sunset as the journey progresses. All motion is
+ *     CSS gated on prefers-reduced-motion; state swaps stay instant and the
+ *     game is identical without it.
+ *
+ * Constraints (non-negotiable, from the M18 critique): anchored ≥64px tap
+ * targets that never travel, no timer, no failure state, reduced-motion
+ * parity, flair scales with stars but access never gates.
  */
 
 import { conjugate, PERSONS } from "./conjugator.js";
@@ -32,7 +44,7 @@ function h(tag, attrs = {}, ...children) {
   return node;
 }
 
-function lolaSvg(size = 56) {
+function lolaSvg(size = 48) {
   const wrap = h("span", { class: "vuelo-lola", "aria-hidden": "true" });
   wrap.innerHTML = `
 <svg width="${size}" height="${size}" viewBox="0 0 60 60">
@@ -68,12 +80,15 @@ function buildFlightPrompts(set, tense, persons, promptCount, cloudCount) {
  * createVuelo({ set, tense, stars, persons, onSay, onDone }) → overlay element.
  * stars only scales the flair (cloud count / sparkles) — access never gates.
  * onSay(text) is injected by the caller (audio backend + mute rules live
- * there); pass null when no audio backend exists.
+ * there); pass null when no audio backend exists OR sound is muted — that
+ * flips the flight from listen-first to text prompts.
  */
 export function createVuelo({ set, tense, stars = 1, persons, onSay = null, onDone = null }) {
   const cloudCount = stars === 3 ? 5 : 4; // flair scales, access doesn't
   const prompts = buildFlightPrompts(set, tense, persons, 6, cloudCount);
+  const listenMode = !!onSay; // B: hear-first whenever the ear can play
   let i = 0;
+  let textShown = !listenMode;
 
   const live = h("p", { class: "vuelo-live", role: "status", "aria-live": "polite" });
   const promptPill = h("p", { class: "vuelo-prompt" });
@@ -81,21 +96,60 @@ export function createVuelo({ set, tense, stars = 1, persons, onSay = null, onDo
   const lola = lolaSvg();
   const progress = h("p", { class: "vuelo-progress", "aria-hidden": "true" });
   const spoken = (q) => `${["yo", "tú", "él", "nosotros", "vosotros", "ellos"][q.person]} ${q.form}`;
-  // 🔊 replay (M18.3b): the target form is deliberately not on screen, so the
-  // ear gets its own affordance — rendered only when an audio backend exists.
+  // 🔊 replay: in listen mode the target lives in the ear — replay is the
+  // primary affordance; rendered only when the caller wired audio.
   const replay = onSay ? h("button", {
     class: "vuelo-replay", type: "button",
     "aria-label": "Escuchar otra vez",
     onclick: () => { if (i < prompts.length) onSay(spoken(prompts[i])); },
   }, "🔊") : null;
+  // B: ABC toggle — reveals the written prompt in listen mode. Equity escape
+  // hatch: a deaf or hard-of-hearing learner (or a noisy classroom) flips to
+  // text in one tap; not persisted, the next flight starts by ear again.
+  const textToggle = listenMode ? h("button", {
+    class: "vuelo-text-toggle btn", type: "button", "aria-pressed": "false",
+    "aria-label": "Ver el texto / Show the text",
+    onclick: () => {
+      textShown = !textShown;
+      textToggle.setAttribute("aria-pressed", String(textShown));
+      promptPill.classList.toggle("vuelo-hidden", !textShown);
+    },
+  }, "ABC") : null;
+  promptPill.classList.toggle("vuelo-hidden", !textShown);
 
-  const overlay = h("div", { class: `vuelo ${stars === 3 ? "vuelo-flair" : ""}`, role: "dialog", "aria-modal": "true", "aria-label": "El vuelo de Lola" },
-    h("div", { class: "vuelo-card" },
+  // A: the journey strip — one puff per prompt, the nest at the end, Lola
+  // traversing via --vuelo-progress. CSS transitions the flight; reduced
+  // motion repositions her instantly. Decorative: the real progress lives
+  // in the aria announcements + the n/6 text.
+  const puffs = prompts.map(() => h("span", { class: "vuelo-puff" }));
+  const journey = h("div", { class: "vuelo-journey", "aria-hidden": "true" },
+    puffs,
+    h("span", { class: "vuelo-journey-nest" }, "🪺"),
+    lola);
+
+  const card = h("div", { class: "vuelo-card", "data-step": "0" },
+    h("div", { class: "vuelo-skyband" }),
+    h("div", { class: "vuelo-drift vuelo-drift-far", "aria-hidden": "true" }),
+    h("div", { class: "vuelo-drift vuelo-drift-near", "aria-hidden": "true" }),
+    h("div", { class: "vuelo-content" },
       h("div", { class: "vuelo-top" },
         h("h2", { class: "vuelo-title" }, "El vuelo de Lola"),
         h("button", { class: "vuelo-skip btn", type: "button", onclick: close }, "Saltar ✕")),
-      h("div", { class: "vuelo-prompt-row" }, promptPill, replay),
-      progress, sky, lola, live));
+      journey,
+      h("div", { class: "vuelo-prompt-row" },
+        listenMode ? h("span", { class: "vuelo-ear", "aria-hidden": "true" }, "🎧") : null,
+        promptPill, replay, textToggle),
+      progress, sky, live));
+
+  const overlay = h("div", {
+    class: `vuelo ${stars === 3 ? "vuelo-flair" : ""}${listenMode ? " vuelo-listen" : ""}`,
+    role: "dialog", "aria-modal": "true", "aria-label": "El vuelo de Lola",
+  }, card);
+
+  function setStep(n) {
+    card.dataset.step = String(n);
+    journey.style.setProperty("--vuelo-progress", String(n / prompts.length));
+  }
 
   function close() {
     overlay.remove();
@@ -114,7 +168,7 @@ export function createVuelo({ set, tense, stars = 1, persons, onSay = null, onDo
     // freshly dealt cloud under it would paint :hover as a phantom selection.
     sky.classList.add("no-hover");
     sky.addEventListener("pointermove", () => sky.classList.remove("no-hover"), { once: true });
-    lola.classList.remove("vuelo-perched");
+    lola.classList.remove("vuelo-swoop");
     onSay?.(spoken(q));
   }
 
@@ -127,27 +181,30 @@ export function createVuelo({ set, tense, stars = 1, persons, onSay = null, onDo
       return;
     }
     btn.classList.add("vuelo-hit");
-    lola.classList.add("vuelo-perched");
-    live.textContent = `¡Sí! ${PERSONS[q.person]} ${q.form}`;
+    puffs[i].classList.add("vuelo-puff-done");
     i++;
-    setTimeout(showPrompt, 650);
+    setStep(i); // A: Lola flies one puff closer to home
+    lola.classList.add("vuelo-swoop");
+    live.textContent = `¡Sí! ${PERSONS[q.person]} ${q.form}`;
+    setTimeout(showPrompt, 700);
   }
 
   function land() {
-    const nest = h("span", { class: "vuelo-nest", "aria-hidden": "true" }, "🪺");
     sky.replaceChildren();
     promptPill.textContent = "";
     progress.textContent = "";
     replay?.remove();
-    overlay.querySelector(".vuelo-card").append(
+    textToggle?.remove();
+    card.querySelector(".vuelo-content").append(
       h("div", { class: "vuelo-landing" },
-        nest,
+        h("span", { class: "vuelo-nest", "aria-hidden": "true" }, "🪺"),
         h("p", { class: "vuelo-done" }, "¡Qué vuelo! ",
           h("span", { class: "h-en", lang: "en" }, "What a flight!")),
         h("button", { class: "btn primary", type: "button", onclick: close }, "Seguir")));
     live.textContent = "¡Qué vuelo! Lola llegó al nido.";
   }
 
+  setStep(0);
   showPrompt();
   return overlay;
 }
