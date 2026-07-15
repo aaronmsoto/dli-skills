@@ -12,7 +12,7 @@ import { SETS } from "./verbs.js";
 import { conjugate, PERSONS, TENSES, TENSE_LABELS, normalizeAnswer, stripAccents } from "./conjugator.js";
 import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
 import * as store from "./storage.js";
-import { speak, ttsAvailable, audioAvailable, initClips } from "./audio.js";
+import { speak, ttsAvailable, audioAvailable, initClips, chirp } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
 import { STANDARDS_INFO } from "./standards-info.js";
 
@@ -391,6 +391,11 @@ function renderReviewQueue() {
   if (!due.length) return null;
   return el("section", { class: "review-queue", "aria-label": "Repaso de hoy" },
     el("h2", {}, "🔁 Repasa hoy ", el("span", { class: "h-en", lang: "en" }, "(today's review)")),
+    // F1 (M18.1): the garden metaphor at 2% of the cost — review as watering,
+    // an invitation, never a backlog count (docs/games-proposal.html kill list)
+    el("p", { class: "review-water" }, "Un poquito de repaso riega lo aprendido.",
+      el("span", { class: "h-en", lang: "en" }, " A little review waters what you've learned."),
+      el("span", { "aria-hidden": "true" }, " 💧")),
     el("div", { class: "review-list" },
       due.map((item) =>
         el("a", { class: "review-item", href: reviewHref(item) },
@@ -971,10 +976,15 @@ function renderPlay(setId, tense, mode) {
 
 function renderMatch(set, tense, vosotros) {
   const pairs = buildMatchPairs(set.verbs, tense, vosotros);
-  const state = { matched: 0, firstTryHits: 0, attemptedIds: new Set(), selected: null };
+  // M18.1 "Chispa": `run` counts consecutive first-try matches. It resets
+  // internally on a miss but is NEVER displayed as a reset — runs are
+  // celebrated only when they happen (a visible reset would be the app's
+  // first punishment mechanic; see docs/games-proposal.html).
+  const state = { matched: 0, firstTryHits: 0, attemptedIds: new Set(), selected: null, run: 0 };
   const lola = createLola(52);
 
   const feedback = el("div", { class: "feedback", role: "status" });
+  const counter = el("p", { class: "pareja-count" });
   const board = el("div", { class: "match-board" });
   mount(
     el("nav", { class: "crumbs" },
@@ -983,7 +993,7 @@ function renderMatch(set, tense, vosotros) {
       menuButton()),
     el("h1", { class: "match-title" }, lola.el, modeIcon("match", "🧩"), `Empareja — ${TENSE_LABELS[tense].es}`, infoButton("match")),
     el("p", { class: "match-help" }, "Une cada persona con su forma. Match each person with its form."),
-    board, feedback,
+    counter, board, feedback,
     renderFooter(),
   );
 
@@ -1023,13 +1033,19 @@ function renderMatch(set, tense, vosotros) {
     a.btn.classList.remove("picked");
     suppressHover(board);
     if (a.card.id === card.id) {
-      if (!state.attemptedIds.has(card.id)) state.firstTryHits++;
+      const firstTry = !state.attemptedIds.has(card.id);
+      if (firstTry) state.firstTryHits++;
       state.attemptedIds.add(card.id);
       for (const b of [a.btn, btn]) { b.classList.add("done"); b.disabled = true; }
       state.matched++;
+      state.run = firstTry ? state.run + 1 : 0;
+      // up-only count — the number only ever grows (never a visible reset)
+      counter.textContent = `${state.matched} ${state.matched === 1 ? "pareja" : "parejas"}`;
       lola.setState("is-turn");
       feedback.className = "feedback good";
-      feedback.textContent = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+      const praise = PRAISE[Math.floor(Math.random() * PRAISE.length)];
+      feedback.textContent = state.run >= 3 ? `¡${state.run} seguidas! ${praise}` : praise;
+      if (store.getSettings().sound) chirp(state.run >= 3 ? "run" : "match");
       const pair = pairs.find((p) => p.id === card.id);
       sayForm(pair.person, pair.right);
       if (state.matched === pairs.length) {
@@ -1037,6 +1053,7 @@ function renderMatch(set, tense, vosotros) {
       }
     } else {
       state.attemptedIds.add(card.id).add(a.card.id);
+      state.run = 0;
       for (const b of [a.btn, btn]) {
         b.classList.add("shake");
         setTimeout(() => b.classList.remove("shake"), 400);

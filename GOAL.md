@@ -645,11 +645,17 @@ The queue line here — not milestone numbering — sets loop priority.
     touching stored progress. Pattern follows the retired `?redesign=1`
     preview gate; document it in the journal + PR body, keep it unlinked.
   Phases (loop-workable in order):
-  - [ ] **M18.1** — Empareja con Chispa + freebie F1 (Repasa-hoy droplet
-        visual). Up-only counts (no combo meter — a visible reset is a
-        punishment mechanic), decorative flip with synchronous state classes
-        (existing e2e timing contracts hold), lazy WebAudio chirps gated on
-        the sound setting, Lola `is-turn` on runs. ~1-2 KB gz. 1 iteration.
+  - [x] **M18.1** — Empareja con Chispa + freebie F1 · complete on dev
+        2026-07-15 (loop/20260715-m18-chispa). Up-only "parejas" count (no
+        combo meter — a visible reset is a punishment mechanic), run
+        celebrations only-when-they-happen ("¡3 seguidas!"), pick-lift +
+        match-pop juice (decorative CSS, synchronous state classes — existing
+        e2e timing contracts hold, reduced-motion strips it), lazy WebAudio
+        chirps (`chirp()` in audio.js, gesture-created context, gated on the
+        sound setting, never the only signal), F1 watering line on the review
+        queue (invitation, never a backlog count), about.html "Game design,
+        grounded in research" section with citations (+ stray ⭐🌙 icon fixed
+        per M17 rules), e2e "M18.1 chispa" block.
   - [ ] **M18.2** — El Nido: `#/nido` scene (new module `js/nido.js`, NOT in
         mascot.js — 8 KB cap), tiered growth derived from `best` (first star
         = wisp, group all-≥1★ = twig ceremony, 30/30 = flower + `is-spin`),

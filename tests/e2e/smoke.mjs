@@ -1395,6 +1395,101 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("redesign axe: zero critical/serious violations in the forest-night (dark) preview");
 }
 
+// ---------- M18.1 "Empareja con Chispa": up-only counts, run celebration, F1 droplet ----------
+{
+  const chispa = await browser.newPage();
+  trackErrors(chispa);
+  await chispa.goto(`${BASE}/#/play/1/present/match`);
+  await chispa.waitForSelector(".match-card");
+  // counter starts empty (no "0 parejas" — nothing to celebrate yet)
+  if ((await chispa.locator(".pareja-count").innerText()).trim() !== "")
+    fail("chispa: pareja counter should start empty");
+  // deliberate miss: counter stays empty, no visible reset artifact anywhere.
+  // Miss against the LAST left pair's card — the solve loop below excludes
+  // that pair, so exactly one solved pair is non-first-try and the run
+  // deterministically reaches 3+ ("seguidas") regardless of shuffle order.
+  await chispa.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const formOf = (cardEl) => {
+      const [personLabel, inf] = cardEl.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      return conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+    };
+    const left = [...document.querySelectorAll(".match-col.left .match-card")];
+    const lastForm = formOf(left[left.length - 1]);
+    const wrong = [...document.querySelectorAll(".match-col.right .match-card")]
+      .find((x) => x.textContent === lastForm);
+    left[0].click(); wrong.click();
+  });
+  if ((await chispa.locator(".pareja-count").innerText()).trim() !== "")
+    fail("chispa: counter must not change on a miss");
+  if (!(await chispa.locator(".feedback.bad").count())) fail("chispa: miss feedback missing");
+  // solve all but ONE pair (results render 700ms after the last match would
+  // tear down the board mid-assertion); counter must only ever go up and a
+  // run must get celebrated along the way
+  const chispaRun = await chispa.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const seen = [];
+    const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+    for (const l of left.slice(0, -1)) {
+      const [personLabel, inf] = l.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+      const r = [...document.querySelectorAll(".match-col.right .match-card")]
+        .find((x) => x.textContent === form && !x.disabled);
+      if (!r) return { err: `no right card for ${form}` };
+      l.click(); r.click();
+      seen.push(parseInt(document.querySelector(".pareja-count").textContent, 10));
+      await new Promise((res) => setTimeout(res, 40));
+    }
+    return { seen, feedback: document.querySelector(".feedback").textContent };
+  });
+  if (chispaRun.err) fail(`chispa: ${chispaRun.err}`);
+  const upOnly = chispaRun.seen.every((n, i) => n === i + 1);
+  if (!upOnly) fail(`chispa: counter not up-only (${chispaRun.seen.join(",")})`);
+  if (!/seguidas/.test(chispaRun.feedback)) fail("chispa: run celebration missing after consecutive matches");
+  // pop animation is wired (decorative; reduced-motion removes it)
+  const popAnim = await chispa.evaluate(() =>
+    getComputedStyle(document.querySelector(".match-card.done")).animationName);
+  if (popAnim !== "chispa-pop") fail(`chispa: expected chispa-pop animation, got ${popAnim}`);
+  // reduced motion strips transform/animation juice but the game is identical
+  await chispa.emulateMedia({ reducedMotion: "reduce" });
+  const rmAnim = await chispa.evaluate(() =>
+    getComputedStyle(document.querySelector(".match-card.done")).animationName);
+  if (rmAnim === "chispa-pop") fail("chispa: pop animation must be removed under reduced motion");
+  await chispa.emulateMedia({ reducedMotion: null });
+  // finish the round so the result records, then verify F1 on home
+  await chispa.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const l = document.querySelector(".match-col.left .match-card:not(.done)");
+    const [personLabel, inf] = l.textContent.split(" · ");
+    const verb = SETS[0].verbs.find((v) => v.inf === inf);
+    const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+    const r = [...document.querySelectorAll(".match-col.right .match-card")]
+      .find((x) => x.textContent === form && !x.disabled);
+    l.click(); r.click();
+  });
+  await chispa.waitForSelector(".results");
+  // F1 droplet: the review queue reads as watering, not backlog
+  await chispa.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("conjuga.v1"));
+    for (const k of Object.keys(s.best)) s.best[k].at = Date.now() - 8 * 24 * 3600 * 1000;
+    localStorage.setItem("conjuga.v1", JSON.stringify(s));
+  });
+  await chispa.goto(`${BASE}/#/`);
+  await chispa.reload();
+  await chispa.waitForSelector(".review-queue");
+  const water = await chispa.locator(".review-water").innerText();
+  if (!/riega/.test(water)) fail("chispa F1: watering line missing from review queue");
+  if (/\d/.test(water)) fail("chispa F1: watering line must never show a backlog count");
+  await chispa.screenshot({ path: `${SHOTS}/m18-chispa-home.png` });
+  await chispa.close();
+  ok("M18.1 chispa: up-only pareja count, run celebration, pop juice (motion-gated), F1 watering line");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();
