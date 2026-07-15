@@ -91,6 +91,7 @@
   --good-ink: #1f6b3c;     /* WCAG-7/8 (M17): success text on --good-bg (5.56:1) and --bg (6.03:1) */
   --bad-ink: #a13318;      /* WCAG-7 (M17): error text on --bad-bg (5.62:1) */
   --almost-ink: #7d5200;   /* WCAG-7 (M17): almost-retry text on the star tint (6.04:1) */
+  --btn-primary-ink: #fff; /* M20: text on --brand buttons — white on #2f6b4f = 5.85:1 */
 
   /* ---- Color: tense hues (star-free triad; sun / flag / loop) ---- */
   --tense-present: #e0982f;    /* sun — ahora */
@@ -125,6 +126,7 @@
     --star: #f3b750;
     --star-glyph: #f3b750;   /* dark ★ glyph already 8:1 — no darkening needed */
     --good-ink: var(--good); --bad-ink: var(--bad); --almost-ink: var(--star); /* dark feedback text all ≥4.5:1 */
+    --btn-primary-ink: #243026; /* M20: dark ink on the light dark-theme brand green #74c489 = 6.55:1 (white was 2.10:1) */
 
     --tense-present: #f3b750;
     --tense-preterite: #f0946a;
@@ -162,6 +164,7 @@
   --star: #f3b750;
   --star-glyph: #f3b750;
   --good-ink: var(--good); --bad-ink: var(--bad); --almost-ink: var(--star);
+  --btn-primary-ink: #243026; /* M20: see the media-query dark block */
 
   --tense-present: #f3b750;
   --tense-preterite: #f0946a;

@@ -309,7 +309,12 @@
   font-family: var(--font-display);
   font-weight: var(--fw-bold);
 }
-:root[data-redesign] .btn.primary { background: var(--brand); color: #fff; }
+/* M20: primary-button ink is a token — white passes only on the LIGHT brand
+   green (6.29:1); the dark theme's #74c489 needs dark ink (6.55:1; white was
+   2.10:1). Bilingual .h-en support copy inherits the same ink instead of the
+   gray --ink-soft (1.04-1.11:1 on the greens — invisible). */
+:root[data-redesign] .btn.primary { background: var(--brand); color: var(--btn-primary-ink); }
+:root[data-redesign] .btn.primary .h-en { color: inherit; }
 
 /* ---------- Play (all modes): prompt, progress, answers ---------- */
 :root[data-redesign] .prompt {
@@ -449,7 +454,7 @@
 }
 :root[data-redesign] .result-actions .btn.primary {
   background: var(--brand);
-  color: #fff; /* --brand #2f6b4f: 5.85:1 vs white */
+  color: var(--btn-primary-ink); /* M20: theme-aware — see .btn.primary */
 }
 :root[data-redesign] .result-actions .btn:not(.primary) {
   background: var(--card);
@@ -502,6 +507,13 @@
 }
 :root[data-redesign] .match-card.done {
   animation: chispa-pop 0.28s ease;
+  /* M20: styles.css fades done cards to opacity .75, which washes the ink
+     below 4.5:1 on the tinted background in both themes. Keep the settled
+     look via the success ink token instead of transparency. */
+  opacity: 1;
+  border-color: var(--good);
+  background: var(--good-bg);
+  color: var(--good-ink); /* 5.56:1 light · 6.02:1 dark on --good-bg */
 }
 @keyframes chispa-pop {
   0% { transform: scale(1); }
@@ -712,6 +724,9 @@
 }
 :root[data-redesign] .vuelo-cloud:hover,
 :root[data-redesign] .vuelo-cloud:focus-visible { border-color: var(--brand); }
+/* M20 sticky-hover guard — mirrors the .no-hover pattern on the answer
+   grids: fresh clouds never show a phantom hover under a parked pointer. */
+:root[data-redesign] .vuelo-sky.no-hover .vuelo-cloud:hover { border-color: transparent; }
 :root[data-redesign] .vuelo-cloud.vuelo-hit {
   border-color: var(--good);
   background: var(--good-bg);
