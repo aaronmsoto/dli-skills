@@ -1388,3 +1388,10 @@ function showResults(set, tense, mode, score, total, misses) {
 
 // boot: learn whether clips exist, then paint (offline → instant fallback)
 initClips().finally(render);
+
+// M18.3b: warm the flight module's cache after first paint so the results-
+// screen surprise never waits on the network. Failures are silently ignored
+// — the invite button has its own offline fallback.
+const prefetchVuelo = () => { import("./vuelo.js").catch(() => {}); };
+if ("requestIdleCallback" in window) requestIdleCallback(prefetchVuelo, { timeout: 4000 });
+else setTimeout(prefetchVuelo, 2500);

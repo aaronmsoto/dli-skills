@@ -28,14 +28,14 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue: M18 ACTIVE (owner approved 2026-07-15 — "Ideas 1 and 2 should be
-immediate go-live targets"; PICK + AMEND recorded in the M18 entry, non-goals
-amended accordingly). Loop-workable order, one iteration per `loop/*` branch,
-SEQUENTIAL (they share the app.js surface): M18.1 (Chispa + F1) → M18.2
-(Nido, two iterations) → M18.3 (Vuelo, two iterations). Every phase's
-go-live content must include its research rationale in docs + about.html and
-support the `?m18demo=1` testing flag (owner directives 2026-07-15). M18.4
-(Postales) stays BLOCKED on SME review + clip run — do not start it.**
+**Queue: M18 Ideas 1+2 COMPLETE on dev 2026-07-15 (five iterations, PRs
+#79-#83: Chispa + F1, Nido scene, Nido ceremonies + `?m18demo=1`, Vuelo core,
+Vuelo garnish) — they ship on the next dev→main release a human merges.
+M18.4 (Postales) stays BLOCKED on SME review + owner clip run — loops must
+not start it. No other loop-workable item is queued; the owner sets the next
+milestone. Post-release owner checklist: verify celebrations on the live
+site via `?m18demo=1`, and optionally run tools/generate-audio.mjs for the
+nest nouns (la brizna / la ramita / la flor) so they get premium clips.**
 M16 tasks R (design extraction), G (gate), T (theme selector, Light
 default), I\* (per-screen migration), RT (regression), and FLIP (default
 the gate on + retire the old look) all landed on `dev`; the go-live deploy
@@ -667,12 +667,18 @@ The queue line here — not milestone numbering — sets loop priority.
         never re-fire; brizna stays a quiet discovery), `?m18demo=1` demo flag
         (sample nest + forced ceremony, zero storage writes), about.html nest
         row + equity note, STANDARDS_INFO.nido ℹ️ panel.
-  - [ ] **M18.3** — El Vuelo: lazy `js/vuelo.js`, reduced-motion grid built
-        FIRST then drift garnish, anchored ≥64px bobbing clouds (never
-        moving-target taps), every finished round flies (skippable, flair
-        scales with stars), clouds sample the round's verbs (clips already
-        exist for conjugated forms), prefetch post-boot, silent offline
-        degrade. ~8-12 KB gz. 2 iterations.
+  - [x] **M18.3** — El Vuelo · complete on dev 2026-07-15 (two iterations:
+        loop/20260715-m18-vuelo-core + loop/20260715-m18-vuelo-garnish).
+        Lazy `js/vuelo.js` built reduced-motion-FIRST (static anchored grid,
+        then all motion inside a no-preference query): ≥64px clouds that bob
+        IN PLACE (targets never travel), every star-track results screen gets
+        the "¡Vuela con Lola!" invitation (skippable by design; Escucha
+        excluded to keep the 🎧 track's identity), flair scales with stars
+        (5th cloud, sparkles) but access never gates, clouds sample the
+        round's own verbs, spoken prompts + 🔊 replay affordance only when
+        `audioAvailable()`, wrong taps have no failure state, landing at the
+        nest, `requestIdleCallback` prefetch post-boot, silent offline
+        degrade with a bilingual fallback, about.html flight row.
   - [ ] **M18.4** — Las Postales: 6 flat token-colored lazy SVG postcards
         (NOT 20 — art is the payload bomb), tiles reveal on NEW best-stars
         only (defuses stars-as-currency), album reached via the nest,

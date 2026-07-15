@@ -732,3 +732,82 @@
 @media (prefers-reduced-motion: reduce) {
   :root[data-redesign] .vuelo-lola.vuelo-perched { transform: none; }
 }
+
+/* ---------------- M18.3b — flight garnish (motion + replay affordance) ----
+   EVERY rule with movement lives inside the no-preference query: with
+   reduced motion the flight is the identical game with instant state swaps. */
+:root[data-redesign] .vuelo-prompt-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+:root[data-redesign] .vuelo-replay {
+  min-width: 44px;
+  min-height: 44px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+:root[data-redesign] .vuelo-replay:hover,
+:root[data-redesign] .vuelo-replay:focus-visible { border-color: var(--brand); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* anchored clouds BOB IN PLACE (≤4px) — targets never travel */
+  :root[data-redesign] .vuelo-cloud {
+    animation: vuelo-bob 3.2s ease-in-out infinite;
+  }
+  :root[data-redesign] .vuelo-cloud:nth-child(2) { animation-delay: -0.9s; }
+  :root[data-redesign] .vuelo-cloud:nth-child(3) { animation-delay: -1.7s; }
+  :root[data-redesign] .vuelo-cloud:nth-child(4) { animation-delay: -2.4s; }
+  :root[data-redesign] .vuelo-cloud:nth-child(5) { animation-delay: -1.2s; }
+  :root[data-redesign] .vuelo-cloud.vuelo-hit,
+  :root[data-redesign] .vuelo-cloud.vuelo-nope { animation: none; }
+  :root[data-redesign] .vuelo-cloud.vuelo-nope { animation: vuelo-wobble 0.35s ease; }
+  :root[data-redesign] .vuelo-cloud.vuelo-hit { animation: chispa-pop 0.28s ease; }
+  /* Lola hovers gently and swoops upward when she perches on a hit */
+  :root[data-redesign] .vuelo-lola { animation: vuelo-hover 2.6s ease-in-out infinite; }
+  :root[data-redesign] .vuelo-lola.vuelo-perched {
+    animation: none;
+    transition: transform 0.5s ease;
+    transform: translateY(-14px) scale(1.06);
+  }
+  :root[data-redesign] .vuelo-lola .vuelo-wing-l,
+  :root[data-redesign] .vuelo-lola .vuelo-wing-r {
+    transform-origin: 30px 33px;
+    animation: vuelo-flap 1.4s ease-in-out infinite;
+  }
+  :root[data-redesign] .vuelo-lola .vuelo-wing-r { animation-direction: reverse; }
+  /* 3★ flair: sparkles drift up at the landing */
+  :root[data-redesign] .vuelo-flair .vuelo-landing .vuelo-nest::after {
+    content: "✨";
+    display: inline-block;
+    animation: vuelo-spark 1.2s ease-out;
+  }
+}
+@keyframes vuelo-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes vuelo-hover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes vuelo-flap {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(9deg); }
+}
+@keyframes vuelo-wobble {
+  0% { transform: rotate(0); }
+  30% { transform: rotate(-2.5deg); }
+  65% { transform: rotate(2.5deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes vuelo-spark {
+  0% { opacity: 0; transform: translateY(6px) scale(0.6); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(-4px) scale(1); }
+}

@@ -80,13 +80,22 @@ export function createVuelo({ set, tense, stars = 1, persons, onSay = null, onDo
   const sky = h("div", { class: "vuelo-sky" });
   const lola = lolaSvg();
   const progress = h("p", { class: "vuelo-progress", "aria-hidden": "true" });
+  const spoken = (q) => `${["yo", "tú", "él", "nosotros", "vosotros", "ellos"][q.person]} ${q.form}`;
+  // 🔊 replay (M18.3b): the target form is deliberately not on screen, so the
+  // ear gets its own affordance — rendered only when an audio backend exists.
+  const replay = onSay ? h("button", {
+    class: "vuelo-replay", type: "button",
+    "aria-label": "Escuchar otra vez",
+    onclick: () => { if (i < prompts.length) onSay(spoken(prompts[i])); },
+  }, "🔊") : null;
 
   const overlay = h("div", { class: `vuelo ${stars === 3 ? "vuelo-flair" : ""}`, role: "dialog", "aria-modal": "true", "aria-label": "El vuelo de Lola" },
     h("div", { class: "vuelo-card" },
       h("div", { class: "vuelo-top" },
         h("h2", { class: "vuelo-title" }, "El vuelo de Lola"),
         h("button", { class: "vuelo-skip btn", type: "button", onclick: close }, "Saltar ✕")),
-      promptPill, progress, sky, lola, live));
+      h("div", { class: "vuelo-prompt-row" }, promptPill, replay),
+      progress, sky, lola, live));
 
   function close() {
     overlay.remove();
@@ -101,7 +110,7 @@ export function createVuelo({ set, tense, stars = 1, persons, onSay = null, onDo
     sky.replaceChildren(...q.clouds.map((form) =>
       h("button", { class: "vuelo-cloud", type: "button", onclick: (e) => pick(form, e.currentTarget) }, form)));
     lola.classList.remove("vuelo-perched");
-    onSay?.(`${["yo", "tú", "él", "nosotros", "vosotros", "ellos"][q.person]} ${q.form}`);
+    onSay?.(spoken(q));
   }
 
   function pick(form, btn) {
@@ -124,6 +133,7 @@ export function createVuelo({ set, tense, stars = 1, persons, onSay = null, onDo
     sky.replaceChildren();
     promptPill.textContent = "";
     progress.textContent = "";
+    replay?.remove();
     overlay.querySelector(".vuelo-card").append(
       h("div", { class: "vuelo-landing" },
         nest,
