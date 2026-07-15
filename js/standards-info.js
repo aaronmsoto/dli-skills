@@ -51,4 +51,9 @@ export const STANDARDS_INFO = {
     en: "A printable snapshot of stars and 🎧 badges per group — students share progress with teachers and families on paper. No accounts, no data collection; everything lives on this device.",
     cites: ["NBPTS Std IV (progress over time)", "COPPA/FERPA-friendly by design"],
   },
+  nido: {
+    kid: "El nido crece con tus estrellas. ¡Toca lo que hay dentro para escucharlo!",
+    en: "An unscored celebration of progress: every earned star adds to Lola's nest — nothing is ever lost or taken away, and rewards are earned, never random. A low-anxiety mirror of growth, with tap-to-hear Spanish nouns for interpretive listening.",
+    cites: ["NBPTS ECYA-WL Std V (low-anxiety environment)", "NCSSFL-ACTFL Interpretive Listening (Novice Low)"],
+  },
 };

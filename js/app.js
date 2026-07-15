@@ -14,6 +14,7 @@ import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildC
 import * as store from "./storage.js";
 import { speak, ttsAvailable, audioAvailable, initClips, chirp } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
+import { createNido, nestTier } from "./nido.js";
 import { STANDARDS_INFO } from "./standards-info.js";
 
 const MODES = ["choice", "type", "match"];
@@ -322,6 +323,7 @@ function parseRoute() {
   if (parts[0] === "play" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]) && (MODES.includes(parts[3]) || parts[3] === LISTEN))
     return { screen: "play", setId: +parts[1], tense: parts[2], mode: parts[3] };
   if (parts[0] === "informe") return { screen: "report" };
+  if (parts[0] === "nido") return { screen: "nido" };
   return { screen: "home" };
 }
 
@@ -331,6 +333,18 @@ function earnedStars(setId) {
     store.setStars(setId, TENSES, MODES) +
     (store.getBest(setId, CONTRAST_KEY.tense, CONTRAST_KEY.mode)?.stars ?? 0)
   );
+}
+
+/** M18.2 nest derivation — per-group tier facts, 100% from existing `best`
+ *  data (unscored celebration layer; see GOAL.md M18 + docs/games-proposal.html). */
+function nestItems() {
+  return SETS.map((s) => {
+    const earned = earnedStars(s.id);
+    const starActivities = TENSES.flatMap((t) => MODES.map((m) => [t, m]))
+      .concat([[CONTRAST_KEY.tense, CONTRAST_KEY.mode]]);
+    const allStarred = starActivities.every(([t, m]) => (store.getBest(s.id, t, m)?.stars ?? 0) >= 1);
+    return { setId: s.id, tier: nestTier({ earned, allStarred, perfect: earned === STARS_PER_SET }) };
+  });
 }
 
 function go(hash) {
@@ -348,6 +362,7 @@ function routeTitle(r) {
     return `${label} ${TENSE_LABELS[r.tense].es} · Grupo ${r.setId} · Conjuga`;
   }
   if (r.screen === "report") return "Informe / Status · Conjuga";
+  if (r.screen === "nido") return "El Nido de Lola · Conjuga";
   return "Conjuga — Spanish Verb Skills Builder (K-5 DLI)";
 }
 
@@ -362,6 +377,7 @@ function render() {
   else if (route.screen === "practica") renderPractica(route.setId, route.tense);
   else if (route.screen === "contrast") renderContrast(route.setId);
   else if (route.screen === "report") renderReport();
+  else if (route.screen === "nido") renderNido();
   else renderPlay(route.setId, route.tense, route.mode);
 }
 
@@ -416,6 +432,9 @@ function renderHome() {
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
       el("p", { class: "tagline-en", lang: "en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
       el("p", { class: "total-stars" }, `⭐ ${totalEarned} / ${SETS.length * STARS_PER_SET} estrellas`),
+      el("a", { class: "nido-link", href: "#/nido" },
+        el("span", { class: "mode-icon mi-inline", "data-icon": "nido", "aria-hidden": "true" }, "🪺"),
+        "El nido de Lola"),
     ),
     renderReviewQueue(),
     el("section", { class: "set-grid", "aria-label": "Grupos de verbos" },
@@ -1236,6 +1255,24 @@ function renderReport() {
 }
 
 // ---------------------------------------------------------------- results
+
+// ---------------------------------------------------------------- nido (M18.2)
+
+function renderNido() {
+  const lola = createLola(64);
+  mount(
+    el("nav", { class: "crumbs" },
+      el("a", { href: "#/" }, "← Conjuga"),
+      menuButton()),
+    el("h1", { class: "nido-title" }, lola.el,
+      el("span", { class: "mode-icon mi-inline", "data-icon": "nido", "aria-hidden": "true" }, "🪺"),
+      "El Nido de Lola", infoButton("nido")),
+    el("p", { class: "nido-help" }, "Cada estrella nueva construye el nido. ",
+      el("span", { class: "h-en", lang: "en" }, "Every new star builds the nest.")),
+    createNido(nestItems(), { canSpeak: audioAvailable(), speak: (t) => say(t) }),
+    renderFooter(),
+  );
+}
 
 function showResults(set, tense, mode, score, total, misses) {
   const { stars } = store.recordResult(set.id, tense, mode, score, total);

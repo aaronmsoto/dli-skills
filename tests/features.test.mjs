@@ -78,7 +78,7 @@ test("práctica bank: respects the vosotros setting via the persons argument", (
 
 test("standards info: every screen has a bilingual, cited entry (M9 I2)", async () => {
   const { STANDARDS_INFO } = await import("../js/standards-info.js");
-  const screens = ["study", "practica", "choice", "type", "match", "listen", "contrast", "report"]; // home/group have no ℹ️ (owner, 2026-07-08)
+  const screens = ["study", "practica", "choice", "type", "match", "listen", "contrast", "report", "nido"]; // home/group have no ℹ️ (owner, 2026-07-08); nido added M18.2
   for (const key of screens) {
     const info = STANDARDS_INFO[key];
     assert.ok(info, `missing entry for screen "${key}"`);
@@ -106,4 +106,20 @@ test("spaced repetition: isDue respects interval and tolerates legacy entries", 
   assert.equal(isDue({ stars: 0, at: now }, now), true); // 0★ → practice again today
   assert.equal(isDue({ stars: 2, at: undefined }, now), false); // pre-`at` legacy entry
   assert.equal(isDue(null, now), false);
+});
+
+test("nido (M18.2): tier derivation is additive and perfection only upgrades", async () => {
+  const { nestTier, nestSummary } = await import("../js/nido.js");
+  assert.equal(nestTier({ earned: 0, allStarred: false, perfect: false }), 0, "no stars → not in the nest");
+  assert.equal(nestTier({ earned: 1, allStarred: false, perfect: false }), 1, "first star → brizna");
+  assert.equal(nestTier({ earned: 29, allStarred: false, perfect: false }), 1, "high stars but a zero activity stays brizna");
+  assert.equal(nestTier({ earned: 10, allStarred: true, perfect: false }), 2, "every activity ≥1★ → ramita (any star level — no perfection gate)");
+  assert.equal(nestTier({ earned: 30, allStarred: true, perfect: true }), 3, "30/30 upgrades the twig with a flower");
+  // summary is an invitation, never a backlog/deficit count
+  assert.match(nestSummary([]), /espera su primera brizna/);
+  const s = nestSummary([{ setId: 1, tier: 2 }, { setId: 2, tier: 2 }, { setId: 3, tier: 3 }, { setId: 4, tier: 1 }]);
+  assert.match(s, /2 ramitas/);
+  assert.match(s, /1 flor/);
+  assert.match(s, /1 brizna/);
+  assert.ok(!/20|falta|quedan/.test(s), "never says what's missing");
 });

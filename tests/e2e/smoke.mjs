@@ -1490,6 +1490,77 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M18.1 chispa: up-only pareja count, run celebration, pop juice (motion-gated), F1 watering line");
 }
 
+// ---------- M18.2a "El Nido de Lola": derived tiers, a11y list, voiceless parity ----------
+{
+  const nido = await browser.newPage();
+  trackErrors(nido);
+  // fresh visitor: inviting empty state, no list, no counters of what's missing
+  await nido.goto(`${BASE}/#/nido`);
+  await nido.waitForSelector(".nido");
+  const emptyText = await nido.locator(".nido").innerText();
+  if (!/espera su primera brizna/.test(emptyText)) fail("nido: inviting empty state missing");
+  if (await nido.locator(".nido-list").count()) fail("nido: fresh nest must not render a list");
+  if (/\/\s*20|faltan/.test(emptyText)) fail("nido: empty state must never show a deficit count");
+  if ((await nido.title()) !== "El Nido de Lola · Conjuga") fail("nido: page title missing");
+  // seed three groups at the three tiers: wisp (one star), twig (all ≥1★), flower (30/30)
+  await nido.evaluate(() => {
+    const best = {};
+    const entry = (stars) => ({ score: 6, total: 6, stars, plays: 1, at: Date.now() });
+    best["1.present.choice"] = entry(1); // group 1 → brizna
+    for (const t of ["present", "preterite", "imperfect"])
+      for (const m of ["choice", "type", "match"]) {
+        best[`2.${t}.${m}`] = entry(1); // group 2 → ramita (all ≥1★, far from perfect)
+        best[`3.${t}.${m}`] = entry(3); // group 3 → flor (30/30)
+      }
+    best["2.past.contrast"] = entry(1);
+    best["3.past.contrast"] = entry(3);
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
+  });
+  await nido.reload();
+  await nido.waitForSelector(".nido-list");
+  const items = await nido.locator(".nido-list .nido-item").allInnerTexts();
+  if (items.length !== 3) fail(`nido: expected 3 items, got ${items.length}`);
+  if (!items.some((t) => /Grupo 1 · la brizna/.test(t))) fail("nido: group 1 should be a brizna");
+  if (!items.some((t) => /Grupo 2 · la ramita/.test(t))) fail("nido: group 2 (all ≥1★, imperfect) should be a ramita — no perfection gate");
+  if (!items.some((t) => /Grupo 3 · la flor/.test(t))) fail("nido: group 3 (30/30) should be a flor");
+  const summary = await nido.locator(".nido-summary").innerText();
+  if (!/1 ramita, 1 flor y 1 brizna/.test(summary)) fail(`nido: summary wrong: ${summary}`);
+  // scene is decorative; the list is the semantic surface
+  if ((await nido.locator(".nido-scene").getAttribute("aria-hidden")) !== "true")
+    fail("nido: scene svg must be aria-hidden");
+  // clips are served in this context → audio affordance renders as buttons
+  if ((await nido.locator(".nido-say").count()) !== 3) fail("nido: expected tap-to-hear buttons with audio available");
+  // home hero links into the nest
+  await nido.goto(`${BASE}/#/`);
+  await nido.waitForSelector(".nido-link");
+  await nido.click(".nido-link");
+  await nido.waitForSelector(".nido-summary");
+  ok("M18.2a nido: tiers derive correctly (no perfection gate), semantic list + aria-hidden scene, home link works");
+  await nido.screenshot({ path: `${SHOTS}/m18-nido.png` });
+  await nido.close();
+
+  // voiceless device: same nest, plain list items, zero broken affordances
+  const mute = await browser.newPage();
+  trackErrors(mute);
+  await mute.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await mute.addInitScript(() => {
+    // voiceless: speechSynthesis exists but reports no voices (matches real
+    // devices; a bare `undefined` would crash audio.js's boot listener)
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: { getVoices: () => [], addEventListener: () => {}, cancel: () => {} },
+    });
+    const best = { "1.present.choice": { score: 6, total: 6, stars: 1, plays: 1, at: Date.now() } };
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
+  });
+  await mute.goto(`${BASE}/#/nido`);
+  await mute.waitForSelector(".nido-list");
+  if (await mute.locator(".nido-say").count()) fail("nido voiceless: audio buttons must hide");
+  if ((await mute.locator(".nido-plain").count()) !== 1) fail("nido voiceless: plain items expected");
+  await mute.close();
+  ok("M18.2a nido: voiceless device gets the same nest with no audio affordance");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();
