@@ -28,12 +28,14 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue: M17 LIVE (dev→main release PR #76 merged 2026-07-10). M18
-(gamification) is in PROPOSAL state — the owner-directed proposal doc
-(docs/games-proposal.html, 2026-07-15) pitches three vetted concepts and
-awaits the owner's pick + the non-goals amendment signature. NO loop-workable
-item is queued: loops must NOT implement any M18 phase until the owner
-records their pick and the amendment here.**
+**Queue: M18 ACTIVE (owner approved 2026-07-15 — "Ideas 1 and 2 should be
+immediate go-live targets"; PICK + AMEND recorded in the M18 entry, non-goals
+amended accordingly). Loop-workable order, one iteration per `loop/*` branch,
+SEQUENTIAL (they share the app.js surface): M18.1 (Chispa + F1) → M18.2
+(Nido, two iterations) → M18.3 (Vuelo, two iterations). Every phase's
+go-live content must include its research rationale in docs + about.html and
+support the `?m18demo=1` testing flag (owner directives 2026-07-15). M18.4
+(Postales) stays BLOCKED on SME review + clip run — do not start it.**
 M16 tasks R (design extraction), G (gate), T (theme selector, Light
 default), I\* (per-screen migration), RT (regression), and FLIP (default
 the gate on + retire the old look) all landed on `dev`; the go-live deploy
@@ -622,17 +624,27 @@ The queue line here — not milestone numbering — sets loop priority.
   must be more Spanish). All three finalists are UNSCORED celebration layers
   fully derived from existing `best` data — zero `recordResult`, zero new
   scoring track, zero schema change.
-  Blocking owner decisions (record them here to unblock loops):
-  - [ ] **PICK** — which finalist(s) enter the queue: Idea 1 "El Vuelo al
-        Nido" (flight mini-game + living-nest meta-progression, one metaphor;
-        the critics' convergent recommendation), Idea 2 "Empareja con Chispa"
-        (juice pass on matching; S-size, ship-first), Idea 3 "Las Postales de
-        Lola" (culture postcard album; SME-gated, later phase).
-  - [ ] **AMEND** — sign the non-goals clarification proposed in the doc
-        (celebration layers derived from stars are allowed; currencies/shops/
-        loot/leaderboards/streak-guilt stay banned; stars + 🎧 badges remain
-        the only scorekeeping).
-  Phases as proposed (do not start until PICK + AMEND are recorded):
+  Blocking owner decisions — RESOLVED 2026-07-15:
+  - [x] **PICK (owner, 2026-07-15)** — Ideas 1 AND 2 approved as immediate
+        go-live targets: Idea 1 "El Vuelo al Nido" (flight mini-game +
+        living-nest meta-progression) and Idea 2 "Empareja con Chispa"
+        (juice pass on matching, ship-first). Idea 3 "Las Postales de Lola"
+        stays parked pending SME review (M18.4 blocked).
+  - [x] **AMEND (owner, 2026-07-15)** — non-goals clarification signed and
+        applied below (celebration layers derived from stars are allowed;
+        currencies/shops/loot/leaderboards/streak-guilt stay banned; stars +
+        🎧 badges remain the only scorekeeping).
+  Additional owner directives (2026-07-15, apply to every M18 phase):
+  - Each addition's go-live content includes its research rationale in the
+    docs (docs/games-proposal.html is the source; link or summarize) and a
+    short parent-facing note on the public about.html page (why the game is
+    designed this way, with the key citations).
+  - A querystring testing flag: `?m18demo=1` forces the new celebration
+    states (flight offer, nest tiers) with sample data so the owner can
+    verify them on the published site without grinding stars and WITHOUT
+    touching stored progress. Pattern follows the retired `?redesign=1`
+    preview gate; document it in the journal + PR body, keep it unlinked.
+  Phases (loop-workable in order):
   - [ ] **M18.1** — Empareja con Chispa + freebie F1 (Repasa-hoy droplet
         visual). Up-only counts (no combo meter — a visible reset is a
         punishment mechanic), decorative flip with synchronous state classes
@@ -665,8 +677,11 @@ The queue line here — not milestone numbering — sets loop priority.
 
 Accounts, servers, dashboards, analytics, other languages (until M5 is done
 and a human re-scopes), external services, and economy-style gamification
-(coins, shops, loot, competitive leaderboards). The mascot companion (M6) is
-explicitly IN scope; stars/streaks remain the only scorekeeping.
+(currencies, shops, random loot, competitive leaderboards, streak-guilt
+mechanics). The mascot companion (M6) is explicitly IN scope. ⭐ stars and
+🎧 badges remain the only *scorekeeping*; celebration layers (nest, flight,
+album) must be fully derived from them — deterministic, unscored, and never
+a new currency (owner-amended 2026-07-15 for M18).
 
 ## Definition of done (any milestone item)
 
