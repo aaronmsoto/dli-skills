@@ -44,10 +44,12 @@ Novice High as its working ceiling**.
 | 🧱 Práctica (rebuild the table, unscored) | Interpretive active recall inside the chart's visual scaffold — the NBPTS Std IV bridge between studying and quizzing; pressure-free by design |
 | 🧩 Empareja (form ↔ person matching) | Interpretive Reading, Novice Low — recognition of familiar written chunks with strong visual scaffolding |
 | ✏️ Escribe (typed production) | Presentational Writing, Novice Mid–High — write memorized words and phrases accurately |
-| ⭐/🌙 Preterite & imperfect practice | Scaffolding toward Novice High storytelling and, beyond Novice, the Intermediate across-time-frames Can-Dos |
+| Preterite & imperfect practice | Scaffolding toward Novice High storytelling and, beyond Novice, the Intermediate across-time-frames Can-Dos |
 | ⚔️ ¿Pretérito o imperfecto? (time-cue contrast) | The storytelling contrast behind Novice High narration, practiced with the conventional novice cue-word scaffold (una vez vs. muchas veces) |
 | 🔊 Audio (clips + TTS on forms) | Interpretive Listening, Novice Low–Mid — pairs each written form with its sound, essential for K-2 pre-readers |
-| 🎧 Escucha (listening mode) | Interpretive Listening, Novice Low–Mid — the target is heard, never shown |
+| 🎧 Escucha (listening mode) | Interpretive Listening, Novice Low–Mid — the target is heard, never shown. Badges on a deliberately separate track: progress never requires hearing (accessibility guarantee, M19), so deaf/hard-of-hearing learners reach every star |
+| 🪺 El Nido de Lola (celebration layer) | Unscored mirror of mastery (NBPTS Std V low-anxiety environment): every earned star adds to the nest; nothing decays, nothing is random, no deficit counters. Full 🎧 badges add a 🪶 pluma |
+| 🌤️ El Vuelo de Lola (celebration flight) | Optional post-round Interpretive Listening/Reading replay of the round's own forms — the reward is more Spanish (M18 design guardrail); listen-first with a text toggle, no timer, no failure state |
 | 🔁 Repasa hoy (spaced review) | Operationalizes "extensive exposure over time" — practiced material resurfaces at expanding intervals |
 | 🖨️ Progress report (printable) | Student-mediated progress reporting to teachers/families without accounts or data collection |
 | 5-verbs-at-a-time groups, frequency-ordered | Research-based, spiraling curriculum; Novice Can-Dos are built on "memorized and practiced" material |
@@ -105,6 +107,7 @@ it; update both together, enforced by a unit test on the module's shape):
 | ✅ Elige | Lee y elige la forma correcta. | Interpretive Reading, Novice Low–Mid, with informed distractors |
 | ✏️ Escribe | Escribe la forma del verbo. | Presentational Writing, Novice Mid–High |
 | 🧩 Empareja | Une cada persona con su forma. | Interpretive Reading, Novice Low, visual support |
-| 🎧 Escucha | Escucha y elige lo que oyes. | Interpretive Listening, Novice Low–Mid (badges, not stars) |
+| 🎧 Escucha | Escucha y elige lo que oyes. | Interpretive Listening, Novice Low–Mid (badges, not stars — progress never requires hearing) |
+| 🪺 Nido | El nido crece con tus estrellas. | Unscored celebration layer — NBPTS Std V |
 | ⚔️ Contraste | La palabra del tiempo es tu pista. | Toward Novice High storytelling — NBPTS Std IV |
 | 📄 Informe | Tu progreso, listo para compartir. | Paper progress sharing, no data collection — NBPTS Std IV |

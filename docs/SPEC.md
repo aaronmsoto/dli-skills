@@ -128,18 +128,23 @@ tokens, full prefers-reduced-motion static fallback, hidden in print,
 budget-tested (tests/payload.test.mjs).
 
 ### 4.3g Listening mode (🎧 Escucha, M3 — recognition v1)
-Per group × tense, shown only when a Spanish TTS voice exists (direct
-routes redirect otherwise). The target form is spoken, never shown; the
-learner picks from 4 written options built by the existing distractor
-engine — which naturally forces person-ending discrimination
-(tiene/tienes/tienen) and the stress-as-tense contrast (hablo/habló).
-Unlimited 🔊 replay plus 🐢 slow replay (rate 0.65); listening prompts
-bypass the mute setting (entering the mode is explicit audio intent).
+Per group × tense, shown whenever an audio backend exists — recorded
+clips online or a device Spanish voice (M12; direct routes redirect
+otherwise). The target form is spoken, never shown; the learner picks
+from 4 written options built by the existing distractor engine — which
+naturally forces person-ending discrimination (tiene/tienes/tienen) and
+the stress-as-tense contrast (hablo/habló). Unlimited 🔊 replay plus 🐢
+slow replay (rate 0.65); listening prompts bypass the mute setting
+(entering the mode is explicit audio intent).
 **Badges, not stars:** results record under `<set>.<tense>.listen` on a
 parallel 🎧 track (same 60/80/100% tiers) shown on group cards, home,
-results, review queue, and the report — never counted in star totals, so
-voiceless devices are not penalized. Typed variant deferred (owner
-decision) pending SME input.
+results, review queue, and the report — never counted in star totals.
+The split is an ACCESSIBILITY guarantee (owner reframe 2026-07-15, M19):
+progress never requires hearing, so deaf/hard-of-hearing learners and
+muted or audio-less devices can reach every star; nest tiers (4.3l) never
+depend on listen results. Full badges in a group (9/9) add a 🪶 pluma to
+that group's nest item. Typed variant deferred (owner decision) pending
+SME input.
 
 ### 4.3h Hint mode (🔍 Pistas, M7 — from direct K-5 user feedback)
 A 🔍 Pista button on quiz prompt cards (Elige, Escribe, ⚔️ Contrast) opens
@@ -203,10 +208,53 @@ focused on open; Esc and click-outside close and focus returns to ☰.
 The footer also links /docs, and its standards links read NBPTS-first.
 Hidden in print.
 
+### 4.3l Gamification — celebration layers (M18-M21, owner-directed 2026-07-15)
+Design source: docs/games-proposal.html (research → 8 candidates → three
+adversarial critics → finalists; owner picked Ideas 1+2). All layers are
+UNSCORED and fully DERIVED from existing `best` data — no `recordResult`,
+no new storage, no currencies (see the amended non-goals in GOAL.md).
+Shared guardrails: rewards deterministic and effort-earned; informational
+surprises, never announced contracts; nothing decays or resets; no
+timers/streaks/leaderboards; celebration access never gates on perfection
+(flair scales instead); the Prodigy test (more fun = more Spanish).
+- **Empareja con Chispa (M18.1):** juice pass on the matching game —
+  pick-lift/match-pop CSS (reduced-motion stripped), synthesized WebAudio
+  chirps (`chirp()` in audio.js, gesture-created, sound-setting gated),
+  up-only "N parejas" count, run celebrations only when they happen
+  ("¡3 seguidas!" — no visible reset, ever). F1: the review queue's
+  watering line (garden metaphor as invitation, never a backlog count).
+- **El Nido de Lola (M18.2):** `#/nido` (module js/nido.js) — the nest
+  grows from mastery: first star in a group = brizna, every star activity
+  ≥1★ = ramita (NO perfection gate), 30/30 = flor upgrade; 🎧 9/9 = 🪶
+  pluma (M19). Never empty slots or "X/20" counters — a mirror of growth,
+  not a checklist. Semantic focusable list first, decorative procedural
+  SVG scene aria-hidden, tap-to-hear nouns gated on `audioAvailable()`.
+  Results screens fire tier-crossing ceremonies (upgrade-only, never
+  re-fired; brizna/pluma stay quiet discoveries); home cards carry
+  🌾/🪵/🌼/🪶 status glyphs.
+- **El Vuelo de Lola (M18.3, rebuilt M21 "La Travesía"):** lazy module
+  js/vuelo.js (idle-prefetched; offline degrade), offered on every
+  star-track results screen ("¡Vuela con Lola!", always skippable). Six
+  prompts sampled from the round's own verbs; anchored ≥64px cloud
+  buttons (5 at 3★ — flair scales, access doesn't); NO failure state.
+  A journey strip traverses Lola puff-by-puff to the nest (progress is
+  physical; arrival is the landing). LISTEN-FIRST when audio can play
+  (backend + sound on): the prompt is heard, not read, with an ABC toggle
+  revealing the text (deaf/HoH equity hatch); text prompts otherwise.
+  Atmosphere: parallax drift behind targets + a sky that warms toward
+  sunset per `data-step` — all motion inside prefers-reduced-motion:
+  no-preference; the reduced game is identical.
+- **Testing flag:** `?m18demo=1` (querystring before the hash) forces the
+  celebration surfaces with sample data and suppresses ALL progress
+  writes — owner verification on production without grinding stars.
+  Unlinked; pattern follows the retired `?redesign=1` gate.
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +
   tense), actions: retry / next mode / back to group.
+- M18+: the results screen also hosts the flight invitation (4.3l) and
+  nest tier-crossing ceremonies; both derived, neither affects scoring.
 - Best score and stars persist per (group, tense, mode).
 
 ### 4.5 Non-functional
