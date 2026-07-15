@@ -32,8 +32,11 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 #79-#83: Chispa + F1, Nido scene, Nido ceremonies + `?m18demo=1`, Vuelo core,
 Vuelo garnish) — they ship on the next dev→main release a human merges.
 M18.4 (Postales) stays BLOCKED on SME review + owner clip run — loops must
-not start it. M19 (🎧 accessibility reframe + 🪶 nest feather) COMPLETE on
-dev 2026-07-15 — rides the same release. No loop-workable item is queued;
+not start it. M19 (🎧 accessibility reframe + 🪶 nest feather) and M20 (a11y
+sprint: owner-reported contrast + phantom-selection fixes) COMPLETE on dev
+2026-07-15 — both ride the next release. OPEN OWNER QUESTION (M21 candidate):
+make El Vuelo feel more like a flight and less like Elige — proposal options
+sent to the owner 2026-07-15; do not start without the owner's pick. No loop-workable item is queued;
 the owner sets the next milestone. Post-release owner checklist: verify
 celebrations on the live site via `?m18demo=1`, and optionally run
 tools/generate-audio.mjs for the nest nouns (la brizna / la ramita /
@@ -720,6 +723,27 @@ The queue line here — not milestone numbering — sets loop priority.
   - [x] **V** — unit 52/52 (new pluma test) · e2e PASS with three M19 blocks
         (9/9 → feather everywhere; 8/9 → nothing; listening-only → pluma;
         about.html carries the new rationale and not the stale claim).
+
+- [x] **M20 — 🔍 A11y sprint: owner-reported contrast + phantom-selection
+  fixes (owner-directed 2026-07-15; complete on dev 2026-07-15)**
+  Three findings from the owner's live review of the M18 release:
+  - [x] **M20-1 (contrast, both themes)** — Empareja done-card text washed
+        out: styles.css fades done cards to opacity .75, dropping ink below
+        4.5:1 on the tinted background. Fixed in the Prado layer: opacity 1 +
+        `--good-ink` text (5.56:1 light · 6.02:1 dark on `--good-bg`).
+  - [x] **M20-2 (contrast, dark worst)** — bilingual `.h-en` support copy on
+        green primary buttons was `--ink-soft` gray: 1.04:1 (light) / 1.11:1
+        (dark) — invisible. Root cause exposed a PRE-EXISTING failure: dark
+        theme painted white on `--brand #74c489` = 2.10:1 on every primary
+        button. Fixed with a new `--btn-primary-ink` token (light `#fff`
+        6.29:1, dark `#243026` 6.55:1) + `.h-en { color: inherit }` on
+        primary buttons.
+  - [x] **M20-3 (phantom selection)** — El Vuelo clouds re-rendered under a
+        touch-parked pointer painted `:hover` as a lingering "selection" on
+        the next prompt. Fixed with the app's established `.no-hover`
+        sticky-hover guard on the sky (cleared on real pointer movement).
+  - [x] **V** — e2e asserts computed colors for M20-1/2 in BOTH themes and
+        replays the sticky-hover scenario for M20-3; suites green.
 
 ## Non-goals (do not build)
 

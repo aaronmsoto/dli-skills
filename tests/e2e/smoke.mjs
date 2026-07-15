@@ -1885,6 +1885,107 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M19 reframe: demo nest has plumas; about.html states the accessibility rationale");
 }
 
+// ---------- M20 a11y sprint: done-card ink, primary-button ink, cloud sticky-hover ----------
+{
+  const matchOnePair = async (pg) => pg.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const l = document.querySelector(".match-col.left .match-card");
+    const [personLabel, inf] = l.textContent.split(" · ");
+    const verb = SETS[0].verbs.find((v) => v.inf === inf);
+    const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+    const r = [...document.querySelectorAll(".match-col.right .match-card")]
+      .find((x) => x.textContent === form);
+    l.click(); r.click();
+  });
+  const fullSolve = async (pg) => {
+    const r = await pg.evaluate(async () => {
+      const { SETS } = await import("./js/verbs.js");
+      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+      for (const l of left) {
+        const [personLabel, inf] = l.textContent.split(" · ");
+        const verb = SETS[0].verbs.find((v) => v.inf === inf);
+        const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+        const rc = [...document.querySelectorAll(".match-col.right .match-card")]
+          .find((x) => x.textContent === form && !x.disabled);
+        if (!rc) return "missing card";
+        l.click(); rc.click();
+        await new Promise((res) => setTimeout(res, 40));
+      }
+      return "ok";
+    });
+    if (r !== "ok") fail(`m20 setup: ${r}`);
+    await pg.waitForSelector(".results");
+  };
+  const doneStyle = (pg) => pg.evaluate(() => {
+    const s = getComputedStyle(document.querySelector(".match-card.done"));
+    return { color: s.color, opacity: s.opacity };
+  });
+
+  for (const theme of ["light", "dark"]) {
+    const pg = await browser.newPage();
+    trackErrors(pg);
+    if (theme === "dark") {
+      await pg.addInitScript(() => {
+        localStorage.setItem("conjuga.v1", JSON.stringify({ settings: { theme: "dark" }, best: {} }));
+      });
+    }
+    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.waitForSelector(".match-card");
+    // M20-1: done-card ink is the success ink at full opacity
+    await matchOnePair(pg);
+    await pg.waitForSelector(".match-card.done");
+    const ds = await doneStyle(pg);
+    const wantInk = theme === "light" ? "rgb(31, 107, 60)" : "rgb(108, 200, 136)";
+    if (ds.color !== wantInk) fail(`m20-1 ${theme}: done-card ink ${ds.color}, expected ${wantInk}`);
+    if (ds.opacity !== "1") fail(`m20-1 ${theme}: done card still faded (opacity ${ds.opacity})`);
+    // M20-2: primary-button ink + .h-en inherit (results screen)
+    await fullSolve(pg);
+    await pg.waitForSelector(".vuelo-invite");
+    const btnInk = await pg.evaluate(() => {
+      const b = document.querySelector(".vuelo-invite");
+      return { btn: getComputedStyle(b).color, en: getComputedStyle(b.querySelector(".h-en")).color };
+    });
+    const wantBtn = theme === "light" ? "rgb(255, 255, 255)" : "rgb(36, 48, 38)";
+    if (btnInk.btn !== wantBtn) fail(`m20-2 ${theme}: primary ink ${btnInk.btn}, expected ${wantBtn}`);
+    if (btnInk.en !== wantBtn) fail(`m20-2 ${theme}: .h-en on primary is ${btnInk.en}, expected ${wantBtn}`);
+    await pg.screenshot({ path: `${SHOTS}/m20-results-${theme}.png` });
+    // M20-3: cloud sticky-hover guard (light run only — theme-independent)
+    if (theme === "light") {
+      await pg.click(".vuelo-invite");
+      await pg.waitForSelector(".vuelo .vuelo-cloud");
+      // click the CORRECT cloud with the real mouse so the pointer stays parked
+      const target = await pg.evaluate(async () => {
+        const { SETS } = await import("./js/verbs.js");
+        const { conjugate, PERSONS } = await import("./js/conjugator.js");
+        const [personLabel, inf] = document.querySelector(".vuelo-prompt").textContent.split(" · ");
+        const verb = SETS[0].verbs.find((v) => v.inf === inf);
+        const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+        return [...document.querySelectorAll(".vuelo-cloud")].findIndex((c) => c.textContent === form);
+      });
+      const box = await pg.locator(".vuelo-cloud").nth(target).boundingBox();
+      const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+      await pg.mouse.click(cx, cy);
+      await pg.waitForTimeout(750); // next prompt deals fresh clouds
+      if (!(await pg.locator(".vuelo-sky.no-hover").count()))
+        fail("m20-3: fresh sky missing the no-hover guard");
+      const border = await pg.evaluate(([x, y]) => {
+        const c = document.elementFromPoint(x, y)?.closest(".vuelo-cloud");
+        return c ? getComputedStyle(c).borderTopColor : "none";
+      }, [cx, cy]);
+      if (border !== "none" && border !== "rgba(0, 0, 0, 0)")
+        fail(`m20-3: cloud under parked pointer shows phantom border ${border}`);
+      await pg.mouse.move(cx + 120, cy + 60);
+      await pg.waitForTimeout(60);
+      if (await pg.locator(".vuelo-sky.no-hover").count())
+        fail("m20-3: no-hover must clear on real pointer movement");
+    }
+    await pg.close();
+    ok(`M20 a11y sprint (${theme}): done-card ink + primary-button ink${theme === "light" ? " + cloud sticky-hover guard" : ""} verified`);
+  }
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();

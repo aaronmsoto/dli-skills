@@ -109,6 +109,11 @@ export function createVuelo({ set, tense, stars = 1, persons, onSay = null, onDo
     progress.textContent = `${i + 1} / ${prompts.length}`;
     sky.replaceChildren(...q.clouds.map((form) =>
       h("button", { class: "vuelo-cloud", type: "button", onclick: (e) => pick(form, e.currentTarget) }, form)));
+    // M20 sticky-hover guard (same pattern as the answer grids): a touch
+    // leaves the virtual pointer parked where the tapped cloud was, so a
+    // freshly dealt cloud under it would paint :hover as a phantom selection.
+    sky.classList.add("no-hover");
+    sky.addEventListener("pointermove", () => sky.classList.remove("no-hover"), { once: true });
     lola.classList.remove("vuelo-perched");
     onSay?.(spoken(q));
   }
