@@ -38,7 +38,7 @@ export const STANDARDS_INFO = {
   },
   listen: {
     kid: "Escucha y elige lo que oyes.",
-    en: "Interpretive LISTENING: the target is heard, never shown — person endings and stress-as-tense (hablo/habló) by ear. Earns 🎧 badges, separate from stars, so devices without a Spanish voice are never penalized.",
+    en: "Interpretive LISTENING: the target is heard, never shown — person endings and stress-as-tense (hablo/habló) by ear. Earns 🎧 badges on a deliberately separate track: progress never requires hearing, so deaf/hard-of-hearing learners and audio-less devices can reach every star. Full badges add a feather to Lola's nest.",
     cites: ["NCSSFL-ACTFL Interpretive Listening (Novice Low–Mid)"],
   },
   contrast: {

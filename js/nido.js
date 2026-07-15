@@ -23,6 +23,11 @@ const TIER_NAMES = [null,
   { es: "flor", article: "la flor", emoji: "🌼" },
 ];
 
+// 🪶 (M19): full listening badges (🎧 9/9) add a feather to the group's nest
+// item — the parallel track's own quiet discovery, same category as the
+// brizna. A group with ONLY listening progress still appears, as a pluma.
+export const PLUMA = { es: "pluma", article: "la pluma", emoji: "🪶" };
+
 /** Display metadata for a tier (glyph + Spanish names) — status-glyph
  *  category per the M17 icon rules, shared by the nest list, the results
  *  ceremony, and the home-card badges. */
@@ -40,15 +45,18 @@ export function nestTier({ earned, allStarred, perfect }) {
 
 /** One-line Spanish summary for the top of the scene and the live region. */
 export function nestSummary(items) {
-  // a flower is an upgraded twig — count each item once, by its own tier
+  // a flower is an upgraded twig — count each item once, by its own tier;
+  // feathers stack on any tier (or none) and are counted separately
   const twigs = items.filter((i) => i.tier === 2).length;
   const flowers = items.filter((i) => i.tier === 3).length;
   const wisps = items.filter((i) => i.tier === 1).length;
+  const feathers = items.filter((i) => i.feather).length;
   if (!items.length) return "El nido de Lola espera su primera brizna. ¡Tú puedes!";
   const parts = [];
   if (twigs) parts.push(`${twigs} ramita${twigs === 1 ? "" : "s"}`);
   if (flowers) parts.push(`${flowers} flor${flowers === 1 ? "" : "es"}`);
   if (wisps) parts.push(`${wisps} brizna${wisps === 1 ? "" : "s"}`);
+  if (feathers) parts.push(`${feathers} pluma${feathers === 1 ? "" : "s"}`);
   const list = parts.length > 2
     ? `${parts.slice(0, -1).join(", ")} y ${parts[parts.length - 1]}`
     : parts.join(" y ");
@@ -98,20 +106,36 @@ function nestScene(items) {
     const rot = -24 + t * 48;
     const g = document.createElementNS(NS, "g");
     g.setAttribute("transform", `translate(${x} ${y}) rotate(${rot})`);
-    g.setAttribute("class", `nido-item-g tier-${item.tier}`);
-    const p = document.createElementNS(NS, "path");
-    if (item.tier === 1) {
-      p.setAttribute("d", "M0 8 Q1 -6 -2 -14");
-      p.setAttribute("stroke", "var(--lola-chest)");
-      p.setAttribute("stroke-width", "2.5");
-    } else {
-      p.setAttribute("d", "M-9 8 Q0 -4 9 -12");
-      p.setAttribute("stroke", "var(--lola-body)");
-      p.setAttribute("stroke-width", "4");
+    g.setAttribute("class", `nido-item-g tier-${item.tier}${item.feather ? " has-pluma" : ""}`);
+    if (item.tier > 0) {
+      const p = document.createElementNS(NS, "path");
+      if (item.tier === 1) {
+        p.setAttribute("d", "M0 8 Q1 -6 -2 -14");
+        p.setAttribute("stroke", "var(--lola-chest)");
+        p.setAttribute("stroke-width", "2.5");
+      } else {
+        p.setAttribute("d", "M-9 8 Q0 -4 9 -12");
+        p.setAttribute("stroke", "var(--lola-body)");
+        p.setAttribute("stroke-width", "4");
+      }
+      p.setAttribute("fill", "none");
+      p.setAttribute("stroke-linecap", "round");
+      g.append(p);
     }
-    p.setAttribute("fill", "none");
-    p.setAttribute("stroke-linecap", "round");
-    g.append(p);
+    if (item.feather) {
+      // 🪶 (M19): a small quill — vane + spine — tucked beside the item
+      const vane = document.createElementNS(NS, "path");
+      vane.setAttribute("d", "M-6 4 Q-12 -6 -5 -13 Q-2 -5 -6 4 Z");
+      vane.setAttribute("fill", "var(--lola-face)");
+      vane.setAttribute("stroke", "var(--lola-body)");
+      vane.setAttribute("stroke-width", "1.2");
+      const spine = document.createElementNS(NS, "path");
+      spine.setAttribute("d", "M-6 5 Q-8 -5 -5.5 -12");
+      spine.setAttribute("stroke", "var(--lola-body)");
+      spine.setAttribute("stroke-width", "1.2");
+      spine.setAttribute("fill", "none");
+      g.append(vane, spine);
+    }
     if (item.tier === 3) {
       const c = document.createElementNS(NS, "circle");
       c.setAttribute("cx", "9"); c.setAttribute("cy", "-12"); c.setAttribute("r", "5");
@@ -133,7 +157,7 @@ function nestScene(items) {
  * renders only when a backend exists; the list is fully usable without it.
  */
 export function createNido(items, opts = {}) {
-  const shown = items.filter((i) => i.tier > 0);
+  const shown = items.filter((i) => i.tier > 0 || i.feather);
   const wrap = h("div", { class: "nido" });
   wrap.append(h("p", { class: "nido-summary" }, nestSummary(shown)));
   wrap.append(nestScene(shown));
@@ -141,14 +165,18 @@ export function createNido(items, opts = {}) {
     wrap.append(h("ul", { class: "nido-list", "aria-label": "Lo que hay en el nido" },
       shown.map((item) => {
         const t = TIER_NAMES[item.tier];
-        const label = `Grupo ${item.setId} · ${t.article}`;
-        const glyph = h("span", { class: "nido-glyph", "aria-hidden": "true" }, t.emoji);
-        if (!opts.canSpeak) return h("li", { class: `nido-item nido-plain tier-${item.tier}` }, glyph, label);
-        return h("li", { class: `nido-item tier-${item.tier}` },
+        const names = [t?.article, item.feather ? PLUMA.article : null].filter(Boolean);
+        const spokenNames = names.join(" y ");
+        const label = `Grupo ${item.setId} · ${spokenNames}`;
+        const glyph = h("span", { class: "nido-glyph", "aria-hidden": "true" },
+          `${t ? t.emoji : ""}${item.feather ? PLUMA.emoji : ""}`);
+        const cls = `nido-item tier-${item.tier}${item.feather ? " has-pluma" : ""}`;
+        if (!opts.canSpeak) return h("li", { class: `${cls} nido-plain` }, glyph, label);
+        return h("li", { class: cls },
           h("button", {
             class: "nido-say", type: "button",
             "aria-label": `${label} — toca para escuchar`,
-            onclick: () => opts.speak(t.article),
+            onclick: () => opts.speak(spokenNames),
           }, glyph, label, h("span", { class: "nido-speaker", "aria-hidden": "true" }, " 🔊")));
       })));
   } else {
