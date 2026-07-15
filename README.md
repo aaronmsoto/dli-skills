@@ -21,8 +21,9 @@ zero-setup, and usable from any browser without registration or data collection.
 
 - **100 highest-frequency verbs** in 20 groups of 5, ordered so the most useful
   (and most irregular) verbs come first: *ser, estar, tener, hacer, ir…*
-- **Three tenses** with kid-friendly framing: Presente ☀️ (*ahora*),
-  Pretérito ⭐ (*ayer, una vez*), Imperfecto 🌙 (*antes, muchas veces*)
+- **Three tenses** with kid-friendly framing and a color/icon triad
+  (sun / flag / loop): Presente (*ahora*), Pretérito (*ayer, una vez*),
+  Imperfecto (*antes, muchas veces*)
 - **Four activities per group × tense:**
   - 📖 **Estudia** — full conjugation tables for the group (tap any form to
     hear it)
@@ -32,7 +33,9 @@ zero-setup, and usable from any browser without registration or data collection.
     (including "naive regularizations" like \*teno for *tengo*)
   - ✏️ **Escribe** — typed production with on-screen accent keys and
     accent-tolerant retry ("¡Casi! Revisa la tilde")
-  - 🧩 **Empareja** — match each person to its verb form
+  - 🧩 **Empareja** — match each person to its verb form, with satisfying
+    card-flip juice, up-only counts, and run celebrations that never
+    punish a miss
 - **⚔️ ¿Pretérito o imperfecto?** — a per-group challenge mode where a time
   cue (*ayer, una vez / siempre, todos los días…*) signals which past tense
   fits — the storytelling contrast, practiced head-to-head
@@ -41,10 +44,21 @@ zero-setup, and usable from any browser without registration or data collection.
   built-in Web Speech voice as the offline fallback: correct answers and
   study-table taps are spoken; one-tap mute; controls hide only when
   neither source is available
-- **🎧 Escucha** — listening mode (on devices with a Spanish voice): the
-  form is spoken, never shown; pick what you heard from four options, with
-  unlimited replay and a 🐢 slow button. Earns a parallel track of 🎧
-  badges that never count toward stars, so voiceless devices lose nothing
+- **🎧 Escucha** — listening mode (whenever Spanish audio is available —
+  recorded clips online or a device voice): the form is spoken, never
+  shown; pick what you heard from four options, with unlimited replay and
+  a 🐢 slow button. Earns a parallel track of 🎧 badges that never count
+  toward stars — **progress never requires hearing**, so deaf and
+  hard-of-hearing learners (and muted devices) can reach every star
+- **🪺 El Nido de Lola** — an unscored celebration layer: every earned star
+  builds Lola's nest (first star = straw wisp, a fully-started group = twig,
+  a perfect group = flower, full listening badges = feather). Nothing
+  decays, nothing is random, and there's no counter of what's missing
+- **🌤️ El Vuelo de Lola** — an optional 60-90 s celebration flight after
+  any round: Lola visibly flies home across the sky, one cloud closer to
+  her nest per correct answer. Plays *by ear* when audio is on (an ABC
+  button shows the text for anyone who prefers to read); no timer, no
+  failure state, fully playable with reduced motion
 - **🔍 Pistas (hints)** — kid-requested: a magnifying-glass button on quiz
   questions opens the Estudia column for that verb (both past columns in
   the contrast challenge); Lola raises her own magnifying glass while you
@@ -87,6 +101,7 @@ No build step — it's a static site with ES modules.
 ```bash
 npm start          # python3 -m http.server 8080 → http://localhost:8080
 npm test           # accuracy + feature-logic + budget tests (Node ≥ 18)
+npm run e2e        # headless-Chromium end-to-end suite (see tests/e2e/smoke.mjs header)
 ```
 
 ## Project structure
@@ -101,8 +116,12 @@ js/conjugator.js      Conjugation engine (regular paradigms + irregularity flags
 js/verbs.js           The 100-verb dataset with irregularity flags
 js/game.js            Question sampling, distractors, match pairs, contrast cues
 js/storage.js         localStorage progress + spaced-repetition scheduling
-js/audio.js           Web Speech TTS wrapper (Spanish voice pick + fallback)
-js/app.js             Screens: home / set / study / play / contrast / report
+js/audio.js           Recorded-clip player + Web Speech fallback + game SFX
+js/mascot.js          Lola la Lechuza (inline SVG states; docs/MASCOT.md)
+js/nido.js            El Nido celebration layer (derived nest tiers)
+js/vuelo.js           El Vuelo celebration flight (lazy-loaded)
+js/standards-info.js  Per-screen ℹ️ standards panel copy
+js/app.js             Screens: home / set / study / play / contrast / nido / report
 tests/                Node test suite (hand-verified RAE forms)
 docs/SPEC.md          Product & technical specification
 docs/STANDARDS.md     Full standards-alignment document
@@ -123,7 +142,9 @@ hand-verified against RAE conjugation tables. Found an error? Please
 ## Roadmap ideas
 
 - Sentence-context questions ("Ayer yo ___ a la escuela") and story-retell mode
-- Listening comprehension mode (hear a form, pick or type what you heard)
+- Las Postales de Lola — a culture postcard album (designed and vetted in
+  docs/games-proposal.html; awaiting educator review)
+- A typed Escucha variant (hear a form, type what you heard)
 - Additional tenses (ir a + infinitive, present progressive) and languages
 
 ## License

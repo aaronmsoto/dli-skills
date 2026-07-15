@@ -1976,7 +1976,12 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
       }, [cx, cy]);
       if (border !== "none" && border !== "rgba(0, 0, 0, 0)")
         fail(`m20-3: cloud under parked pointer shows phantom border ${border}`);
-      await pg.mouse.move(cx + 120, cy + 60);
+      // move WITHIN the sky (to another cloud's center — a fixed offset was
+      // flaky: depending on which shuffled cloud was correct it could exit
+      // the sky, where the pointermove listener never fires). Same semantics
+      // as the .choice grid test: hover restores on movement within the grid.
+      const other = await pg.locator(".vuelo-cloud").nth(1).boundingBox();
+      await pg.mouse.move(other.x + other.width / 2, other.y + other.height / 2);
       await pg.waitForTimeout(60);
       if (await pg.locator(".vuelo-sky.no-hover").count())
         fail("m20-3: no-hover must clear on real pointer movement");
