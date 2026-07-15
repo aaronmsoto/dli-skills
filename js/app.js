@@ -14,7 +14,7 @@ import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildC
 import * as store from "./storage.js";
 import { speak, ttsAvailable, audioAvailable, initClips, chirp } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
-import { createNido, nestTier } from "./nido.js";
+import { createNido, nestTier, tierMeta } from "./nido.js";
 import { STANDARDS_INFO } from "./standards-info.js";
 
 const MODES = ["choice", "type", "match"];
@@ -335,16 +335,29 @@ function earnedStars(setId) {
   );
 }
 
+/** M18 testing flag (owner directive 2026-07-15): `?m18demo=1` on the URL
+ *  (before the hash) forces the celebration surfaces with sample data and
+ *  suppresses all progress writes, so the owner can verify ceremonies on the
+ *  published site without grinding stars. Pattern follows the retired
+ *  `?redesign=1` preview gate; deliberately unlinked. */
+function m18demo() {
+  return new URLSearchParams(location.search).get("m18demo") === "1";
+}
+
 /** M18.2 nest derivation — per-group tier facts, 100% from existing `best`
  *  data (unscored celebration layer; see GOAL.md M18 + docs/games-proposal.html). */
+function nestFactsFor(setId) {
+  const earned = earnedStars(setId);
+  const starActivities = TENSES.flatMap((t) => MODES.map((m) => [t, m]))
+    .concat([[CONTRAST_KEY.tense, CONTRAST_KEY.mode]]);
+  const allStarred = starActivities.every(([t, m]) => (store.getBest(setId, t, m)?.stars ?? 0) >= 1);
+  return { earned, allStarred, perfect: earned === STARS_PER_SET };
+}
+
 function nestItems() {
-  return SETS.map((s) => {
-    const earned = earnedStars(s.id);
-    const starActivities = TENSES.flatMap((t) => MODES.map((m) => [t, m]))
-      .concat([[CONTRAST_KEY.tense, CONTRAST_KEY.mode]]);
-    const allStarred = starActivities.every(([t, m]) => (store.getBest(s.id, t, m)?.stars ?? 0) >= 1);
-    return { setId: s.id, tier: nestTier({ earned, allStarred, perfect: earned === STARS_PER_SET }) };
-  });
+  if (m18demo()) // sample nest, storage untouched
+    return SETS.map((s) => ({ setId: s.id, tier: s.id <= 3 ? 3 : s.id <= 9 ? 2 : s.id <= 13 ? 1 : 0 }));
+  return SETS.map((s) => ({ setId: s.id, tier: nestTier(nestFactsFor(s.id)) }));
 }
 
 function go(hash) {
@@ -422,6 +435,7 @@ function renderReviewQueue() {
 
 function renderHome() {
   const totalEarned = SETS.reduce((sum, s) => sum + earnedStars(s.id), 0);
+  const tierById = new Map(nestItems().map((i) => [i.setId, i.tier]));
 
   mount(
     el("header", { class: "hero" },
@@ -449,7 +463,16 @@ function renderHome() {
           el("span", { class: "set-verbs" }, s.verbs.map((v) => v.inf).join(" · ")),
           el("span", { class: "set-progress" },
             `⭐ ${earned}/${STARS_PER_SET}`,
-            listenBadges(s.id) ? ` · 🎧 ${listenBadges(s.id)}/9` : ""),
+            listenBadges(s.id) ? ` · 🎧 ${listenBadges(s.id)}/9` : "",
+            (() => { // M18.2b: nest-tier status glyph (🌾/🪵/🌼 — same category as ⭐/🎧)
+              const t = tierById.get(s.id);
+              return t ? el("span", {
+                class: `set-tier tier-${t}`,
+                role: "img",
+                "aria-label": `${tierMeta(t).article} en el nido`,
+                title: `${tierMeta(t).article} en el nido`,
+              }, ` ${tierMeta(t).emoji}`) : null;
+            })()),
           s.id === firstFresh
             ? el("span", { class: "start-here" }, "¡Empieza aquí! ", el("span", { class: "h-en", lang: "en" }, "Start here"))
             : null,
@@ -1269,13 +1292,27 @@ function renderNido() {
       "El Nido de Lola", infoButton("nido")),
     el("p", { class: "nido-help" }, "Cada estrella nueva construye el nido. ",
       el("span", { class: "h-en", lang: "en" }, "Every new star builds the nest.")),
+    m18demo() ? el("p", { class: "demo-banner" },
+      "Modo demo — datos de ejemplo, tu progreso no cambia. ",
+      el("span", { class: "h-en", lang: "en" }, "Demo mode — sample data, progress untouched.")) : null,
     createNido(nestItems(), { canSpeak: audioAvailable(), speak: (t) => say(t) }),
     renderFooter(),
   );
 }
 
 function showResults(set, tense, mode, score, total, misses) {
-  const { stars } = store.recordResult(set.id, tense, mode, score, total);
+  // M18.2b nest-tier crossing detection: compare the group's tier before and
+  // after this round records. Ceremonies fire only on an upgrade (never
+  // re-fire on replays) and only for twig/flower — the first brizna is a
+  // quiet discovery in the nest, per the proposal. In demo mode the ceremony
+  // is forced and NOTHING is written to storage.
+  const demo = m18demo();
+  const prevTier = demo ? 1 : nestTier(nestFactsFor(set.id));
+  const stars = demo
+    ? store.starsFor(score, total)
+    : store.recordResult(set.id, tense, mode, score, total).stars;
+  const newTier = demo ? 2 : nestTier(nestFactsFor(set.id));
+  const ceremonyTier = newTier > prevTier && newTier >= 2 ? newTier : 0;
   const pct = Math.round((score / total) * 100);
   const msg = stars === 3 ? "¡Increíble! Lo dominas." :
     stars === 2 ? "¡Muy bien! Ya casi lo tienes." :
@@ -1295,6 +1332,14 @@ function showResults(set, tense, mode, score, total, misses) {
       el("div", { class: "big-stars" }, mode === LISTEN ? badgeRow(stars) : starRow(stars)),
       el("p", { class: "score-line" }, `${score} / ${total} · ${pct}%`),
       el("p", { class: "result-msg" }, msg),
+      ceremonyTier ? el("div", { class: `nido-ceremony tier-${ceremonyTier}` },
+        el("span", { class: "ceremony-glyph", "aria-hidden": "true" },
+          createNest(40), " ", tierMeta(ceremonyTier).emoji),
+        el("p", { class: "ceremony-msg" },
+          ceremonyTier === 3 ? "¡Una flor nueva para el nido! " : "¡Una ramita nueva para el nido! ",
+          el("span", { class: "h-en", lang: "en" },
+            ceremonyTier === 3 ? "A new flower for the nest!" : "A new twig for the nest!")),
+        el("a", { class: "btn", href: "#/nido" }, "Ver el nido")) : null,
       misses.length ? el("div", { class: "review" },
         el("h2", {}, "Para repasar:"),
         el("ul", {},
@@ -1313,7 +1358,9 @@ function showResults(set, tense, mode, score, total, misses) {
     ),
     renderFooter(),
   );
-  announce(`Resultados: ${score} de ${total}`);
+  announce(ceremonyTier
+    ? `Resultados: ${score} de ${total}. ${ceremonyTier === 3 ? "¡Una flor nueva para el nido!" : "¡Una ramita nueva para el nido!"}`
+    : `Resultados: ${score} de ${total}`);
 }
 
 // boot: learn whether clips exist, then paint (offline → instant fallback)

@@ -656,11 +656,17 @@ The queue line here — not milestone numbering — sets loop priority.
         queue (invitation, never a backlog count), about.html "Game design,
         grounded in research" section with citations (+ stray ⭐🌙 icon fixed
         per M17 rules), e2e "M18.1 chispa" block.
-  - [ ] **M18.2** — El Nido: `#/nido` scene (new module `js/nido.js`, NOT in
-        mascot.js — 8 KB cap), tiered growth derived from `best` (first star
-        = wisp, group all-≥1★ = twig ceremony, 30/30 = flower + `is-spin`),
-        never empty slots/counters, DOM-list a11y, home-card twig badges.
-        ~4-6 KB gz. 2 iterations.
+  - [x] **M18.2** — El Nido · complete on dev 2026-07-15 (two iterations:
+        loop/20260715-m18-nido-scene + loop/20260715-m18-nido-celebra).
+        `#/nido` scene (new module `js/nido.js`, mascot.js untouched), tiered
+        growth derived from `best` (first star = brizna, group all-≥1★ =
+        ramita ceremony — no perfection gate, 30/30 = flor upgrade), never
+        empty slots/counters, semantic DOM-list a11y + aria-hidden procedural
+        scene, voiceless parity, home hero nest link, home-card tier status
+        glyphs (🌾/🪵/🌼), results-screen tier-crossing ceremonies (upgrade-only,
+        never re-fire; brizna stays a quiet discovery), `?m18demo=1` demo flag
+        (sample nest + forced ceremony, zero storage writes), about.html nest
+        row + equity note, STANDARDS_INFO.nido ℹ️ panel.
   - [ ] **M18.3** — El Vuelo: lazy `js/vuelo.js`, reduced-motion grid built
         FIRST then drift garnish, anchored ≥64px bobbing clouds (never
         moving-target taps), every finished round flies (skippable, flair
