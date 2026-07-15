@@ -28,11 +28,14 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue: M16 COMPLETE + live (Prado redesign shipped to main 2026-07-10).
-M17 COMPLETE on dev 2026-07-10 — round-2 audits, all auto-fixes, and both
-owner design-decisions (NN-7/DN-8 icon system + DN-6 imperfect badge, option
-a) landed. No loop-workable item is queued — the M17 a11y + icon fixes ride
-the next dev→main release, and the owner sets the next milestone.**
+**Queue: M18 ACTIVE (owner approved 2026-07-15 — "Ideas 1 and 2 should be
+immediate go-live targets"; PICK + AMEND recorded in the M18 entry, non-goals
+amended accordingly). Loop-workable order, one iteration per `loop/*` branch,
+SEQUENTIAL (they share the app.js surface): M18.1 (Chispa + F1) → M18.2
+(Nido, two iterations) → M18.3 (Vuelo, two iterations). Every phase's
+go-live content must include its research rationale in docs + about.html and
+support the `?m18demo=1` testing flag (owner directives 2026-07-15). M18.4
+(Postales) stays BLOCKED on SME review + clip run — do not start it.**
 M16 tasks R (design extraction), G (gate), T (theme selector, Light
 default), I\* (per-screen migration), RT (regression), and FLIP (default
 the gate on + retire the old look) all landed on `dev`; the go-live deploy
@@ -604,13 +607,81 @@ The queue line here — not milestone numbering — sets loop priority.
     equal visual weight), CW-6 (star-total pill reads tappable), NN-4
     (native `confirm()` for reset — carried, accepted).
 
+- [ ] **M18 — 🎮 Gamification (owner-directed 2026-07-15; PROPOSAL state —
+  awaiting owner pick, do NOT implement)**
+  The owner asked for real fun: game mechanics woven into existing exercises
+  and/or a reward for a job well done. Process ran 2026-07-15: three research
+  passes (learning-science evidence for ages 5-11, codebase/brand constraints,
+  vanilla-JS touch-game engineering) → 8 candidate concepts → three
+  adversarial critics (pedagogy, engineering, K-5 UX/a11y) → 3 finalists,
+  fully specced in **docs/games-proposal.html** (unlinked from app nav, per
+  standing rule 5). Evidence-based guardrails all finalists obey: rewards are
+  deterministic + effort-earned (no randomness/rarity), informational
+  surprises never announced contracts, nothing decays or is lost, no
+  streaks/leagues/timers/leaderboards, celebration access never gates on
+  perfection (flair scales instead), tap-tap on anchored ≥56px targets,
+  reduced-motion parity, and the Prodigy test (the fastest route to more fun
+  must be more Spanish). All three finalists are UNSCORED celebration layers
+  fully derived from existing `best` data — zero `recordResult`, zero new
+  scoring track, zero schema change.
+  Blocking owner decisions — RESOLVED 2026-07-15:
+  - [x] **PICK (owner, 2026-07-15)** — Ideas 1 AND 2 approved as immediate
+        go-live targets: Idea 1 "El Vuelo al Nido" (flight mini-game +
+        living-nest meta-progression) and Idea 2 "Empareja con Chispa"
+        (juice pass on matching, ship-first). Idea 3 "Las Postales de Lola"
+        stays parked pending SME review (M18.4 blocked).
+  - [x] **AMEND (owner, 2026-07-15)** — non-goals clarification signed and
+        applied below (celebration layers derived from stars are allowed;
+        currencies/shops/loot/leaderboards/streak-guilt stay banned; stars +
+        🎧 badges remain the only scorekeeping).
+  Additional owner directives (2026-07-15, apply to every M18 phase):
+  - Each addition's go-live content includes its research rationale in the
+    docs (docs/games-proposal.html is the source; link or summarize) and a
+    short parent-facing note on the public about.html page (why the game is
+    designed this way, with the key citations).
+  - A querystring testing flag: `?m18demo=1` forces the new celebration
+    states (flight offer, nest tiers) with sample data so the owner can
+    verify them on the published site without grinding stars and WITHOUT
+    touching stored progress. Pattern follows the retired `?redesign=1`
+    preview gate; document it in the journal + PR body, keep it unlinked.
+  Phases (loop-workable in order):
+  - [ ] **M18.1** — Empareja con Chispa + freebie F1 (Repasa-hoy droplet
+        visual). Up-only counts (no combo meter — a visible reset is a
+        punishment mechanic), decorative flip with synchronous state classes
+        (existing e2e timing contracts hold), lazy WebAudio chirps gated on
+        the sound setting, Lola `is-turn` on runs. ~1-2 KB gz. 1 iteration.
+  - [ ] **M18.2** — El Nido: `#/nido` scene (new module `js/nido.js`, NOT in
+        mascot.js — 8 KB cap), tiered growth derived from `best` (first star
+        = wisp, group all-≥1★ = twig ceremony, 30/30 = flower + `is-spin`),
+        never empty slots/counters, DOM-list a11y, home-card twig badges.
+        ~4-6 KB gz. 2 iterations.
+  - [ ] **M18.3** — El Vuelo: lazy `js/vuelo.js`, reduced-motion grid built
+        FIRST then drift garnish, anchored ≥64px bobbing clouds (never
+        moving-target taps), every finished round flies (skippable, flair
+        scales with stars), clouds sample the round's verbs (clips already
+        exist for conjugated forms), prefetch post-boot, silent offline
+        degrade. ~8-12 KB gz. 2 iterations.
+  - [ ] **M18.4** — Las Postales: 6 flat token-colored lazy SVG postcards
+        (NOT 20 — art is the payload bomb), tiles reveal on NEW best-stars
+        only (defuses stars-as-currency), album reached via the nest,
+        aria-live reveal narration, modest STANDARDS.md culture-exposure
+        claim. GATED on SME cultural review + owner clip run. 3 iterations.
+  Killed (do not resurrect): Viste a Lola (violates MASCOT.md spec; cosmetic
+  economy; shared-device loss mechanic) · Modo Rayo (streak in disguise;
+  rewards comfort-zone speed) · Mapa del Viaje (regresses the audited home;
+  lockstep path vs free choice) · Jardín de Verbos as pitched (no per-verb
+  data exists; 100-target overload; backlog guilt — salvaged as freebie F1).
+
 ## Non-goals (do not build)
 
 
 Accounts, servers, dashboards, analytics, other languages (until M5 is done
 and a human re-scopes), external services, and economy-style gamification
-(coins, shops, loot, competitive leaderboards). The mascot companion (M6) is
-explicitly IN scope; stars/streaks remain the only scorekeeping.
+(currencies, shops, random loot, competitive leaderboards, streak-guilt
+mechanics). The mascot companion (M6) is explicitly IN scope. ⭐ stars and
+🎧 badges remain the only *scorekeeping*; celebration layers (nest, flight,
+album) must be fully derived from them — deterministic, unscored, and never
+a new currency (owner-amended 2026-07-15 for M18).
 
 ## Definition of done (any milestone item)
 
