@@ -1561,6 +1561,105 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M18.2a nido: voiceless device gets the same nest with no audio affordance");
 }
 
+// ---------- M18.2b: tier-crossing ceremonies, home badges, ?m18demo=1 ----------
+{
+  const solveMatch = async (pg) => pg.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+    for (const l of left) {
+      const [personLabel, inf] = l.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+      const r = [...document.querySelectorAll(".match-col.right .match-card")]
+        .find((x) => x.textContent === form && !x.disabled);
+      if (!r) return `no right card for ${form}`;
+      l.click(); r.click();
+      await new Promise((res) => setTimeout(res, 40));
+    }
+    return "ok";
+  });
+  const seed = (pg, matchStars, otherStars) => pg.addInitScript(([ms, os]) => {
+    const best = {};
+    const entry = (stars) => ({ score: 6, total: 6, stars, plays: 1, at: Date.now() });
+    for (const t of ["present", "preterite", "imperfect"])
+      for (const m of ["choice", "type", "match"]) best[`1.${t}.${m}`] = entry(os);
+    best["1.past.contrast"] = entry(os);
+    if (ms === null) delete best["1.present.match"]; else best["1.present.match"] = entry(ms);
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
+  }, [matchStars, otherStars]);
+
+  // twig crossing: group 1 all ≥1★ EXCEPT present/match unplayed → perfect
+  // match makes every activity starred → ramita ceremony (no perfection gate)
+  const twig = await browser.newPage();
+  trackErrors(twig);
+  await seed(twig, null, 1);
+  await twig.goto(`${BASE}/#/play/1/present/match`);
+  await twig.waitForSelector(".match-card");
+  const tw = await solveMatch(twig);
+  if (tw !== "ok") fail(`nido-celebra twig: ${tw}`);
+  await twig.waitForSelector(".results");
+  await twig.waitForSelector(".nido-ceremony.tier-2");
+  const twigMsg = await twig.locator(".ceremony-msg").innerText();
+  if (!/ramita nueva/.test(twigMsg)) fail(`nido-celebra: expected twig ceremony, got: ${twigMsg}`);
+  // ceremony links into the nest; group 1 shows as ramita there
+  await twig.click(".nido-ceremony a");
+  await twig.waitForSelector(".nido-list");
+  if (!(await twig.locator(".nido-item", { hasText: "Grupo 1 · la ramita" }).count()))
+    fail("nido-celebra: group 1 missing as ramita after ceremony");
+  // home card shows the tier status glyph with an accessible name
+  await twig.goto(`${BASE}/#/`);
+  await twig.waitForSelector(".set-card");
+  const tierBadge = twig.locator(".set-card .set-tier").first();
+  if (!(await tierBadge.count())) fail("nido-celebra: home set-card tier glyph missing");
+  if (!/en el nido/.test(await tierBadge.getAttribute("aria-label")))
+    fail("nido-celebra: tier glyph needs an accessible name");
+  // replaying the same round must NOT re-fire the ceremony (upgrade-only)
+  await twig.goto(`${BASE}/#/play/1/present/match`);
+  await twig.waitForSelector(".match-card");
+  const re = await solveMatch(twig);
+  if (re !== "ok") fail(`nido-celebra replay: ${re}`);
+  await twig.waitForSelector(".results");
+  if (await twig.locator(".nido-ceremony").count()) fail("nido-celebra: ceremony re-fired on replay");
+  await twig.close();
+  ok("M18.2b: twig ceremony on all-starred crossing (1★ everywhere — equity), upgrade-only, home badge + nest link");
+
+  // flower crossing: all 3★ except present/match at 1★ → perfect match → 30/30
+  const flor = await browser.newPage();
+  trackErrors(flor);
+  await seed(flor, 1, 3);
+  await flor.goto(`${BASE}/#/play/1/present/match`);
+  await flor.waitForSelector(".match-card");
+  const fl = await solveMatch(flor);
+  if (fl !== "ok") fail(`nido-celebra flor: ${fl}`);
+  await flor.waitForSelector(".results");
+  await flor.waitForSelector(".nido-ceremony.tier-3");
+  if (!/flor nueva/.test(await flor.locator(".ceremony-msg").innerText()))
+    fail("nido-celebra: expected flower ceremony at 30/30");
+  await flor.screenshot({ path: `${SHOTS}/m18-flor-ceremony.png` });
+  await flor.close();
+  ok("M18.2b: flower ceremony fires on the 30/30 crossing");
+
+  // ?m18demo=1 — sample nest + forced ceremony, ZERO storage writes
+  const demo = await browser.newPage();
+  trackErrors(demo);
+  await demo.goto(`${BASE}/?m18demo=1#/nido`);
+  await demo.waitForSelector(".nido-list");
+  if (!(await demo.locator(".demo-banner").count())) fail("m18demo: banner missing");
+  if ((await demo.locator(".nido-item").count()) < 10) fail("m18demo: sample nest looks empty");
+  await demo.goto(`${BASE}/?m18demo=1#/play/1/present/match`);
+  await demo.waitForSelector(".match-card");
+  const dm = await solveMatch(demo);
+  if (dm !== "ok") fail(`m18demo: ${dm}`);
+  await demo.waitForSelector(".results");
+  await demo.waitForSelector(".nido-ceremony.tier-2");
+  const stored = await demo.evaluate(() => localStorage.getItem("conjuga.v1"));
+  if (stored !== null && JSON.stringify(JSON.parse(stored).best ?? {}) !== "{}")
+    fail(`m18demo: demo mode wrote progress: ${stored}`);
+  await demo.close();
+  ok("M18.2b: ?m18demo=1 shows sample nest + forced ceremony and writes nothing");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();

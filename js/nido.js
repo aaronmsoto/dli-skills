@@ -23,6 +23,13 @@ const TIER_NAMES = [null,
   { es: "flor", article: "la flor", emoji: "🌼" },
 ];
 
+/** Display metadata for a tier (glyph + Spanish names) — status-glyph
+ *  category per the M17 icon rules, shared by the nest list, the results
+ *  ceremony, and the home-card badges. */
+export function tierMeta(tier) {
+  return TIER_NAMES[tier] ?? null;
+}
+
 /** tier from a group's derived star facts (pure, unit-testable). */
 export function nestTier({ earned, allStarred, perfect }) {
   if (perfect) return 3;
