@@ -486,3 +486,42 @@
   color: var(--ink);
   font-family: var(--font-body);
 }
+
+/* ---------------- M18.1 "Empareja con Chispa" — juice pass ----------------
+   Decorative only: state classes are applied synchronously in app.js, so the
+   existing e2e timing contracts (is-turn ≤1200ms etc.) are untouched. Counts
+   only ever go up; a run celebration appears in the feedback line when it
+   happens and nothing ever visibly resets. */
+:root[data-redesign] .match-card {
+  transition: transform 0.18s ease, border-color 0.18s ease,
+              background 0.18s ease, box-shadow 0.18s ease;
+}
+:root[data-redesign] .match-card.picked {
+  transform: translateY(-3px) scale(1.05) rotate(-1.5deg);
+  box-shadow: var(--shadow-pop);
+}
+:root[data-redesign] .match-card.done {
+  animation: chispa-pop 0.28s ease;
+}
+@keyframes chispa-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+:root[data-redesign] .pareja-count {
+  min-height: 1.4em;
+  margin: 2px 0 6px;
+  font-weight: var(--fw-extrabold);
+  font-variant-numeric: tabular-nums;
+  color: var(--brand);
+}
+:root[data-redesign] .review-water {
+  margin: -2px 0 8px;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-redesign] .match-card { transition: none; }
+  :root[data-redesign] .match-card.picked { transform: none; }
+  :root[data-redesign] .match-card.done { animation: none; }
+}
