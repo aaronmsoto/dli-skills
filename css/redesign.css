@@ -633,3 +633,102 @@
 @media (prefers-reduced-motion: reduce) {
   :root[data-redesign] .nido-ceremony { animation: none; }
 }
+
+/* ---------------- M18.3 "El Vuelo de Lola" — celebration flight (core) ----
+   Reduced-motion-first: this layer is fully static (anchored cloud buttons,
+   instant state swaps). The motion garnish (bobbing, swoop) arrives in
+   M18.3b strictly inside a no-preference media query. */
+:root[data-redesign] .vuelo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: color-mix(in srgb, var(--ink) 38%, transparent);
+  height: 100vh;
+  height: 100dvh;
+}
+:root[data-redesign] .vuelo-card {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 92dvh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--brand-tint), var(--card) 70%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop);
+  padding: 16px 18px 20px;
+  text-align: center;
+}
+:root[data-redesign] .vuelo-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+:root[data-redesign] .vuelo-title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-extrabold);
+  margin: 0;
+}
+:root[data-redesign] .vuelo-skip { min-height: 44px; }
+:root[data-redesign] .vuelo-prompt {
+  display: inline-block;
+  min-height: 1.5em;
+  margin: 10px auto 2px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-display);
+  font-weight: var(--fw-extrabold);
+  font-size: 1.15rem;
+}
+:root[data-redesign] .vuelo-progress {
+  margin: 2px 0 8px;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+:root[data-redesign] .vuelo-sky {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 8px 0 12px;
+}
+:root[data-redesign] .vuelo-cloud {
+  min-height: 64px;
+  padding: 12px 16px;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: var(--fw-extrabold);
+  font-size: 1.1rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+:root[data-redesign] .vuelo-cloud:hover,
+:root[data-redesign] .vuelo-cloud:focus-visible { border-color: var(--brand); }
+:root[data-redesign] .vuelo-cloud.vuelo-hit {
+  border-color: var(--good);
+  background: var(--good-bg);
+}
+:root[data-redesign] .vuelo-cloud.vuelo-nope { border-color: var(--brand-tint); }
+:root[data-redesign] .vuelo-lola { display: inline-block; margin-top: 2px; }
+:root[data-redesign] .vuelo-lola.vuelo-perched { transform: translateY(-6px); }
+:root[data-redesign] .vuelo-landing { margin-top: 8px; }
+:root[data-redesign] .vuelo-nest { font-size: 2.2rem; display: block; }
+:root[data-redesign] .vuelo-done {
+  font-family: var(--font-display);
+  font-weight: var(--fw-extrabold);
+  font-size: 1.2rem;
+  margin: 6px 0 10px;
+}
+:root[data-redesign] .vuelo-live { position: absolute; left: -9999px; }
+:root[data-redesign] .vuelo-invite { display: block; margin: 10px auto; }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-redesign] .vuelo-lola.vuelo-perched { transform: none; }
+}
