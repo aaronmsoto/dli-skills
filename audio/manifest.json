@@ -13410,5 +13410,33 @@
  "intentó": {
   "n": "clips/intento-wds0d3-n.mp3",
   "s": "clips/intento-wds0d3-s.mp3"
+ },
+ "la brizna": {
+  "s": "clips/la-brizna-ec3rwf-s.mp3",
+  "n": "clips/la-brizna-ec3rwf-n.mp3"
+ },
+ "la ramita": {
+  "n": "clips/la-ramita-lnjflv-n.mp3",
+  "s": "clips/la-ramita-lnjflv-s.mp3"
+ },
+ "la flor": {
+  "n": "clips/la-flor-1wz7nck-n.mp3",
+  "s": "clips/la-flor-1wz7nck-s.mp3"
+ },
+ "la pluma": {
+  "n": "clips/la-pluma-7jpiw2-n.mp3",
+  "s": "clips/la-pluma-7jpiw2-s.mp3"
+ },
+ "la brizna y la pluma": {
+  "n": "clips/la-brizna-y-la-pluma-b7n622-n.mp3",
+  "s": "clips/la-brizna-y-la-pluma-b7n622-s.mp3"
+ },
+ "la ramita y la pluma": {
+  "n": "clips/la-ramita-y-la-pluma-fahpnq-n.mp3",
+  "s": "clips/la-ramita-y-la-pluma-fahpnq-s.mp3"
+ },
+ "la flor y la pluma": {
+  "n": "clips/la-flor-y-la-pluma-nw3k9h-n.mp3",
+  "s": "clips/la-flor-y-la-pluma-nw3k9h-s.mp3"
  }
 }

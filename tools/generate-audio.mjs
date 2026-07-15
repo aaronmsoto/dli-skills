@@ -80,6 +80,14 @@ const SAMPLES = [
   "Hola", // the 🔊 toggle's unmute greeting
 ];
 
+// M18.2/M19 nest nouns (El Nido tap-to-hear): the EXACT strings js/nido.js
+// speaks — single items and the "tier y pluma" combinations. Keep in sync
+// with TIER_NAMES/PLUMA in js/nido.js; run with --nest.
+const NEST_PHRASES = [
+  "la brizna", "la ramita", "la flor", "la pluma",
+  "la brizna y la pluma", "la ramita y la pluma", "la flor y la pluma",
+];
+
 // ---- filenames: diacritic-stripped slug + hash (hablo vs habló) ----
 function slug(text) {
   return text.normalize("NFD").replace(/[̀-ͯ]/g, "")
@@ -116,15 +124,18 @@ async function tts(text, speed) {
 async function run() {
   const args = process.argv.slice(2);
   const samplesOnly = args.includes("--samples");
+  const nestOnly = args.includes("--nest");
   const setsArg = args[args.indexOf("--sets") + 1];
   let texts;
   if (samplesOnly) {
     texts = SAMPLES;
+  } else if (nestOnly) {
+    texts = NEST_PHRASES;
   } else if (setsArg) {
     const ids = setsArg === "all" ? SETS.map((s) => s.id) : setsArg.split(",").map(Number);
     texts = phrasesForSets(ids);
   } else {
-    console.error("Pass --samples or --sets 1,2 | --sets all");
+    console.error("Pass --samples, --nest, or --sets 1,2 | --sets all");
     process.exit(1);
   }
 

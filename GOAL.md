@@ -35,11 +35,10 @@ M18.4 (Postales) stays BLOCKED on SME review + owner clip run — loops must
 not start it. M19 (🎧 reframe + 🪶 feather), M20 (a11y sprint), and M21
 (La Travesía — owner picked options A+B+C 2026-07-15) COMPLETE on dev
 2026-07-15 — all ride the next release a human merges. No loop-workable item
-is queued; the owner sets the next milestone. No loop-workable item is queued;
-the owner sets the next milestone. Post-release owner checklist: verify
-celebrations on the live site via `?m18demo=1`, and optionally run
-tools/generate-audio.mjs for the nest nouns (la brizna / la ramita /
-la flor / la pluma) so they get premium clips.**
+is queued; the owner sets the next milestone. Nest-noun clips GENERATED 2026-07-15
+(`--nest` flag: 7 phrases x 2 speeds, 60 pre-hash orphan mp3s cleaned,
+manifest integrity now unit-tested). Post-release owner checklist: verify
+celebrations on the live site via `?m18demo=1`.**
 M16 tasks R (design extraction), G (gate), T (theme selector, Light
 default), I\* (per-screen migration), RT (regression), and FLIP (default
 the gate on + retire the old look) all landed on `dev`; the go-live deploy
