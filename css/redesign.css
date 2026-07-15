@@ -525,3 +525,78 @@
   :root[data-redesign] .match-card.picked { transform: none; }
   :root[data-redesign] .match-card.done { animation: none; }
 }
+
+/* ---------------- M18.2 "El Nido de Lola" — living-nest celebration layer */
+:root[data-redesign] .mode-icon[data-icon="nido"] {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12c0 4.4 3.6 8 8 8s8-3.6 8-8'/><path d='M4 12h16'/><path d='M6.5 12l3-3.4M11 12l3.4-3.8M15.6 12l2.6-3'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12c0 4.4 3.6 8 8 8s8-3.6 8-8'/><path d='M4 12h16'/><path d='M6.5 12l3-3.4M11 12l3.4-3.8M15.6 12l2.6-3'/></svg>");
+}
+:root[data-redesign] .nido-link {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 8px 16px;
+  min-height: 44px;
+  line-height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-tint);
+  color: var(--brand);
+  font-weight: var(--fw-extrabold);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+}
+:root[data-redesign] .nido-link:hover,
+:root[data-redesign] .nido-link:focus-visible { box-shadow: var(--shadow-raised); }
+:root[data-redesign] .nido {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 18px 20px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+:root[data-redesign] .nido-summary {
+  font-weight: var(--fw-extrabold);
+  font-size: 1.06rem;
+  margin: 0 0 6px;
+}
+:root[data-redesign] .nido-scene {
+  display: block;
+  width: min(100%, 340px);
+  margin: 4px auto 10px;
+}
+:root[data-redesign] .nido-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+:root[data-redesign] .nido-item { margin: 0; }
+:root[data-redesign] .nido-say {
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+  padding: 8px 12px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--brand-tint);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+}
+:root[data-redesign] .nido-say:hover,
+:root[data-redesign] .nido-say:focus-visible { border-color: var(--brand); }
+:root[data-redesign] li.nido-plain {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--brand-tint);
+  font-weight: var(--fw-bold);
+}
+:root[data-redesign] .nido-glyph { margin-right: 8px; }
+:root[data-redesign] .nido-empty { color: var(--ink-soft); }
+:root[data-redesign] .nido-help { color: var(--ink-soft); margin: 0 0 12px; }
