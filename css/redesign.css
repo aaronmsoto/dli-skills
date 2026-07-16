@@ -705,33 +705,75 @@
 :root[data-redesign] .vuelo-sky {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
+  gap: 26px 14px;
   margin: 8px 0 12px;
+  /* M22: soft sky wash so the white cloud silhouettes pop */
+  padding: 30px 12px 14px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--brand-tint) 62%, transparent);
 }
+/* M22 (prado-visual-craft): a bare pill does not read as a cloud. The
+   silhouette = base pill + two puff circles (::before/::after) that
+   inherit the background so every state recolors the WHOLE cloud; the
+   drop-shadow wraps the combined alpha shape (box-shadow would betray the
+   rectangle). `filter` creates the stacking context that lets z-index:-1
+   tuck the puff bottoms behind the pill body. States signal via
+   background+ink (M20 lesson): hover ink 11.8:1 light / 10.5:1 dark,
+   hit ink 5.56:1 / 6.02:1 — measured 2026-07-16. */
 :root[data-redesign] .vuelo-cloud {
+  position: relative;
   min-height: 64px;
-  padding: 12px 16px;
-  border: 3px solid transparent;
+  /* cap the width so a single-column phone layout keeps cloud proportions
+     (a full-width pill degrades back into a bar — M22 360px screenshot) */
+  width: 100%;
+  max-width: 230px;
+  justify-self: center;
+  padding: 12px 22px;
+  border: none;
   border-radius: 999px;
   background: var(--card);
-  box-shadow: var(--shadow-card);
   color: var(--ink);
+  filter: drop-shadow(0 3px 4px rgba(25, 30, 23, 0.30));
   font-family: var(--font-body);
   font-weight: var(--fw-extrabold);
   font-size: 1.1rem;
   cursor: pointer;
   touch-action: manipulation;
 }
-:root[data-redesign] .vuelo-cloud:hover,
-:root[data-redesign] .vuelo-cloud:focus-visible { border-color: var(--brand); }
+:root[data-redesign] .vuelo-cloud::before,
+:root[data-redesign] .vuelo-cloud::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  background: inherit;
+  border-radius: 50%;
+}
+:root[data-redesign] .vuelo-cloud::before {
+  width: 44px;
+  height: 44px;
+  left: 18%;
+  bottom: 42%;
+}
+:root[data-redesign] .vuelo-cloud::after {
+  width: 30px;
+  height: 30px;
+  left: 52%;
+  bottom: 58%;
+}
+:root[data-redesign] .vuelo-cloud:hover:not(:disabled),
+:root[data-redesign] .vuelo-cloud:focus-visible { background: var(--brand-tint); }
+:root[data-redesign] .vuelo-cloud:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+}
 /* M20 sticky-hover guard — mirrors the .no-hover pattern on the answer
    grids: fresh clouds never show a phantom hover under a parked pointer. */
-:root[data-redesign] .vuelo-sky.no-hover .vuelo-cloud:hover { border-color: transparent; }
+:root[data-redesign] .vuelo-sky.no-hover .vuelo-cloud:hover { background: var(--card); }
 :root[data-redesign] .vuelo-cloud.vuelo-hit {
-  border-color: var(--good);
   background: var(--good-bg);
+  color: var(--good-ink);
 }
-:root[data-redesign] .vuelo-cloud.vuelo-nope { border-color: var(--brand-tint); }
+:root[data-redesign] .vuelo-cloud.vuelo-nope { background: var(--brand-tint); }
 /* M21 A: the journey strip — Lola traverses left→nest as prompts land.
    The strip is decorative (aria-hidden); progress meaning stays in text. */
 :root[data-redesign] .vuelo-card { position: relative; overflow: hidden; }
