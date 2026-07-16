@@ -35,7 +35,9 @@ M18.4 (Postales) stays BLOCKED on SME review + owner clip run — loops must
 not start it. M19 (🎧 reframe + 🪶 feather), M20 (a11y sprint), and M21
 (La Travesía — owner picked options A+B+C 2026-07-15) COMPLETE on dev
 2026-07-15 — all ride the next release a human merges. No loop-workable item
-is queued; the owner sets the next milestone. Nest-noun clips GENERATED 2026-07-15
+is queued; the owner sets the next milestone. M22 (prado-visual-craft skill +
+cloud redesign) COMPLETE on dev 2026-07-16 — future visual work must load the
+skill. Nest-noun clips GENERATED 2026-07-15
 (`--nest` flag: 7 phrases x 2 speeds, 60 pre-hash orphan mp3s cleaned,
 manifest integrity now unit-tested). Post-release owner checklist: verify
 celebrations on the live site via `?m18demo=1`.**
@@ -722,7 +724,31 @@ The queue line here — not milestone numbering — sets loop priority.
         (9/9 → feather everywhere; 8/9 → nothing; listening-only → pluma;
         about.html carries the new rationale and not the stale claim).
 
-- [x] **M21 — 🌤️ La Travesía: the flight becomes a journey (owner picked
+- [x] **M22 — 🎨 Visual craft: a design skill + the cloud fix (owner-directed
+  2026-07-16; complete on dev 2026-07-16, loop/20260716-m22-visual-craft)**
+  Owner feedback: the flight's "clouds" don't read as clouds, and the repo
+  needs a visual-design capability for graphics work going forward. Search
+  found no fitting external skill (poster-art and React/Tailwind builders
+  don't match the no-build Prado system), so we vendor our own, following
+  the .claude/skills audit-skill pattern.
+  Acceptance criteria:
+  - [x] **SKILL** — `.claude/skills/prado-visual-craft/SKILL.md`: the Prado
+        token system + personality, the two icon languages, procedural
+        shape craft (CSS silhouettes, SVG scenes), state-signaling patterns
+        (incl. the sticky-hover contract and the M20 opacity lesson),
+        motion/contrast/payload rules, a runnable contrast checker, and the
+        MANDATORY screenshot-verify loop (render → look at the PNG → iterate
+        → lock with e2e assertions). Loops must load it for any future
+        visual work.
+  - [x] **CLOUDS** — redesign `.vuelo-cloud` from a bare pill into a real
+        cloud silhouette (pseudo-element puffs + drop-shadow), states moved
+        from borders to background+ink tokens (contrast measured), a soft
+        sky wash behind the grid, sticky-hover guard preserved, e2e
+        assertions updated from border-color to background-color.
+  - [x] **V** — screenshots reviewed in both themes at desktop + 360px
+        (360px exposed a bar regression → width cap added and re-verified);
+        suites green (56/56 unit; e2e incl. the new "M22 clouds" lock);
+        journal.
   A+B+C 2026-07-15; complete on dev 2026-07-15,
   loop/20260715-m21-travesia)**
   Owner feedback on the shipped M18.3: the flight felt mechanically like

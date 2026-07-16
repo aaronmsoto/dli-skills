@@ -1970,21 +1970,36 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
       await pg.waitForTimeout(750); // next prompt deals fresh clouds
       if (!(await pg.locator(".vuelo-sky.no-hover").count()))
         fail("m20-3: fresh sky missing the no-hover guard");
-      const border = await pg.evaluate(([x, y]) => {
-        const c = document.elementFromPoint(x, y)?.closest(".vuelo-cloud");
-        return c ? getComputedStyle(c).borderTopColor : "none";
+      // M22: cloud states signal via BACKGROUND (not borders). Under the
+      // guard, the cloud beneath the parked pointer must match its
+      // unhovered siblings — no phantom hover tint.
+      const bgs = await pg.evaluate(([x, y]) => {
+        const parked = document.elementFromPoint(x, y)?.closest(".vuelo-cloud");
+        const clouds = [...document.querySelectorAll(".vuelo-cloud")];
+        const sibling = clouds.find((c) => c !== parked);
+        return {
+          parked: parked ? getComputedStyle(parked).backgroundColor : "none",
+          sibling: sibling ? getComputedStyle(sibling).backgroundColor : "none",
+        };
       }, [cx, cy]);
-      if (border !== "none" && border !== "rgba(0, 0, 0, 0)")
-        fail(`m20-3: cloud under parked pointer shows phantom border ${border}`);
+      if (bgs.parked !== "none" && bgs.parked !== bgs.sibling)
+        fail(`m20-3: cloud under parked pointer shows phantom hover tint (${bgs.parked} vs ${bgs.sibling})`);
       // move WITHIN the sky (to another cloud's center — a fixed offset was
       // flaky: depending on which shuffled cloud was correct it could exit
       // the sky, where the pointermove listener never fires). Same semantics
       // as the .choice grid test: hover restores on movement within the grid.
       const other = await pg.locator(".vuelo-cloud").nth(1).boundingBox();
-      await pg.mouse.move(other.x + other.width / 2, other.y + other.height / 2);
+      const ox = other.x + other.width / 2, oy = other.y + other.height / 2;
+      await pg.mouse.move(ox, oy);
       await pg.waitForTimeout(60);
       if (await pg.locator(".vuelo-sky.no-hover").count())
         fail("m20-3: no-hover must clear on real pointer movement");
+      const hoverBg = await pg.evaluate(([x, y]) => {
+        const c = document.elementFromPoint(x, y)?.closest(".vuelo-cloud");
+        return c ? getComputedStyle(c).backgroundColor : "none";
+      }, [ox, oy]);
+      if (hoverBg === bgs.sibling)
+        fail("m20-3: hover tint must return once the pointer really moves");
     }
     await pg.close();
     ok(`M20 a11y sprint (${theme}): done-card ink + primary-button ink${theme === "light" ? " + cloud sticky-hover guard" : ""} verified`);
@@ -2075,6 +2090,58 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (await muted.locator(".vuelo-replay").count()) fail("m21 muted: no replay affordance with sound off");
   await muted.close();
   ok("M21 travesía: muted device gets text prompts with no dangling audio affordances");
+}
+
+// ---------- M22: clouds are cloud-shaped (prado-visual-craft lock) ----------
+{
+  const shape = await browser.newPage();
+  trackErrors(shape);
+  await shape.goto(`${BASE}/?m18demo=1#/play/1/present/match`);
+  await shape.waitForSelector(".match-card");
+  const sr = await shape.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
+    for (const l of left) {
+      const [personLabel, inf] = l.textContent.split(" · ");
+      const verb = SETS[0].verbs.find((v) => v.inf === inf);
+      const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
+      const rc = [...document.querySelectorAll(".match-col.right .match-card")]
+        .find((x) => x.textContent === form && !x.disabled);
+      if (!rc) return "missing card";
+      l.click(); rc.click();
+      await new Promise((res) => setTimeout(res, 40));
+    }
+    return "ok";
+  });
+  if (sr !== "ok") fail(`m22 setup: ${sr}`);
+  await shape.waitForSelector(".vuelo-invite");
+  await shape.click(".vuelo-invite");
+  await shape.waitForSelector(".vuelo .vuelo-cloud");
+  const cloud = await shape.evaluate(() => {
+    const c = document.querySelector(".vuelo-cloud");
+    const s = getComputedStyle(c);
+    const p1 = getComputedStyle(c, "::before");
+    const p2 = getComputedStyle(c, "::after");
+    return {
+      filter: s.filter, border: s.borderTopWidth, maxWidth: s.maxWidth,
+      puff1: { w: p1.width, r: p1.borderRadius, bg: p1.backgroundColor },
+      puff2: { w: p2.width, r: p2.borderRadius, bg: p2.backgroundColor },
+      bg: s.backgroundColor,
+      sky: getComputedStyle(document.querySelector(".vuelo-sky")).backgroundColor,
+    };
+  });
+  if (!/drop-shadow/.test(cloud.filter)) fail("m22: cloud silhouette needs its drop-shadow");
+  if (cloud.border !== "0px") fail("m22: clouds are borderless (states signal via background)");
+  if (cloud.maxWidth !== "230px") fail("m22: cloud width cap missing (360px bar regression)");
+  for (const [i, p] of [cloud.puff1, cloud.puff2].entries()) {
+    if (p.r !== "50%") fail(`m22: puff ${i + 1} must be a circle, got radius ${p.r}`);
+    if (p.bg !== cloud.bg) fail(`m22: puff ${i + 1} must inherit the cloud background (${p.bg} vs ${cloud.bg})`);
+    if (parseFloat(p.w) < 24) fail(`m22: puff ${i + 1} too small to read (${p.w})`);
+  }
+  if (cloud.sky === "rgba(0, 0, 0, 0)") fail("m22: sky wash missing behind the cloud grid");
+  await shape.close();
+  ok("M22 clouds: puff silhouette (inherited backgrounds), drop-shadow, borderless states, width cap, sky wash");
 }
 
 // ---------- wrap up ----------
