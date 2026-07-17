@@ -847,6 +847,85 @@ if (gridOk !== true) fail(`practica: rebuilt table mismatch — ${gridOk}`);
 const afterStore = await page.evaluate(() => localStorage.getItem("conjuga.v1"));
 if (afterStore !== beforeStore) fail("practica: must not record any progress (stars, badges, or otherwise)");
 ok("practica: full table rebuild, corrective retry, celebration, nothing recorded");
+
+// ---------- 2026-07-16 bug sweep: Reto dark-pill, Práctica scroll+sticky-hover ----------
+{
+  // Reto (⚔️ contrast): the 🕐 time-cue chip has no data-tense (would leak the
+  // answer), so it must carry its OWN theme-aware background — regression
+  // check for the "dark text on dark card" report.
+  const reto = await browser.newPage();
+  trackErrors(reto);
+  await reto.addInitScript(() =>
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: { theme: "dark" }, best: {} })));
+  await reto.goto(`${BASE}/#/play/1/contrast`);
+  await reto.waitForSelector(".cue-chip");
+  const chip = await reto.evaluate(() => {
+    const c = document.querySelector(".cue-chip");
+    const s = getComputedStyle(c);
+    return { bg: s.backgroundColor, color: s.color, hasDataTense: c.hasAttribute("data-tense") };
+  });
+  if (chip.hasDataTense) fail("reto cue-chip: must never carry data-tense (would leak the answer's tense)");
+  if (chip.bg === "rgba(0, 0, 0, 0)" || chip.bg === "transparent")
+    fail(`reto cue-chip (dark theme): no background — falls through to the card, unreadable (bg=${chip.bg})`);
+  if (chip.color === chip.bg) fail("reto cue-chip: text color matches background");
+  await reto.close();
+  ok("bug sweep: Reto cue-chip has its own readable background in dark theme, still reveals no tense");
+
+  // Práctica: table must genuinely wheel-scroll (not just accept scrollLeft=n
+  // programmatically — see the M13 test fix above for why that check alone
+  // is insufficient) so the hidden columns are actually reachable.
+  const scroll = await browser.newPage({ viewport: { width: 360, height: 640 } });
+  trackErrors(scroll);
+  await scroll.goto(`${BASE}/#/practica/1/present`);
+  await scroll.waitForSelector(".conj-table tbody th");
+  const overflowX = await scroll.evaluate(() => getComputedStyle(document.querySelector(".table-scroll")).overflowX);
+  if (overflowX === "hidden") fail("practica: overflow-x:hidden blocks horizontal scroll to the other verb columns");
+  const box = await scroll.locator(".table-scroll").boundingBox();
+  await scroll.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await scroll.mouse.wheel(300, 0);
+  await scroll.waitForTimeout(80);
+  const scrolled = await scroll.evaluate(() => document.querySelector(".table-scroll").scrollLeft);
+  if (scrolled < 100) fail(`practica: wheel gesture did not scroll the table (scrollLeft=${scrolled})`);
+  await scroll.close();
+  ok("bug sweep: Práctica table genuinely wheel-scrolls to reveal the other verb columns");
+
+  // Práctica bank: removing a placed tile reflows its siblings — one can
+  // land under a touch-parked pointer. suppressHover(bankWrap) is re-armed
+  // on every removal AND the CSS neutralizer must actually exist (it didn't).
+  // Methodology note: page.hover() itself fires the pointermove that clears
+  // this guard, so it CANNOT be used to test it — park via mouse.move once,
+  // then mutate the DOM without further real pointer movement (JS .click()).
+  const bank = await browser.newPage();
+  trackErrors(bank);
+  await bank.goto(`${BASE}/#/practica/1/present`);
+  await bank.waitForSelector(".bank-tile");
+  const bankBox = await bank.locator(".practica-bank").boundingBox();
+  const cx = bankBox.x + bankBox.width / 2, cy = bankBox.y + bankBox.height / 2;
+  await bank.mouse.move(cx, cy);
+  await bank.waitForTimeout(50);
+  await bank.evaluate(async () => {
+    const { SETS } = await import("./js/verbs.js");
+    const { conjugate } = await import("./js/conjugator.js");
+    const tile0 = document.querySelectorAll(".bank-tile")[0];
+    const form = tile0.textContent;
+    tile0.click();
+    const verb = SETS[0].verbs[0];
+    let p = -1;
+    for (let i = 0; i < 6; i++) if (conjugate(verb, "present")[i] === form) p = i;
+    document.querySelectorAll(".drop-slot")[p]?.click();
+  });
+  await bank.waitForTimeout(500);
+  const afterRemoval = await bank.evaluate(([x, y]) => {
+    const el = document.elementFromPoint(x, y)?.closest(".bank-tile");
+    return { hovering: document.querySelectorAll(".bank-tile:hover").length > 0, border: el ? getComputedStyle(el).borderTopColor : null };
+  }, [cx, cy]);
+  // if the reflow happened to leave no tile under the point, there's nothing
+  // to assert — only check when the browser's own :hover truly matches
+  if (afterRemoval.hovering && afterRemoval.border !== "rgba(0, 0, 0, 0)")
+    fail(`practica bank: reflowed tile under a touch-parked pointer shows a phantom hover border (${afterRemoval.border})`);
+  await bank.close();
+  ok("bug sweep: Práctica bank tiles never show a phantom hover border after a sibling is removed");
+}
 await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- 🪟 M9 F1-F3: footer on every screen, standards links, credits ----------
@@ -1246,19 +1325,26 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   for (const route of ["#/practica/1/present", "#/study/1/present"]) {
     await sticky.goto(`${BASE}/${route}`);
     await sticky.waitForSelector(".conj-table tbody th");
+    // computed overflow-x is the real gate: `scrollLeft = n` succeeds even
+    // when overflow-x:hidden (a CSS quirk that let a backwards shorthand
+    // — `overflow: hidden auto` — pass a scrollLeft-only assertion while
+    // real touch/wheel/drag scroll stayed silently disabled for users;
+    // owner bug report 2026-07-16). Assert the computed style directly.
+    const overflowX = await sticky.evaluate(() => getComputedStyle(document.querySelector(".table-scroll")).overflowX);
+    if (overflowX === "hidden") fail(`sticky ${route}: overflow-x:hidden blocks real user scroll (scrollLeft alone can't catch this)`);
+    // simulate an actual user gesture (wheel), not a programmatic jump
+    const box = await sticky.locator(".table-scroll").boundingBox();
+    await sticky.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     const before = await sticky.evaluate(() => document.querySelector(".conj-table tbody th").getBoundingClientRect().x);
-    const scrolled = await sticky.evaluate(() => {
-      const sc = document.querySelector(".table-scroll");
-      sc.scrollLeft = 300;
-      return sc.scrollLeft;
-    });
-    if (scrolled < 100) fail(`sticky ${route}: table should overflow-scroll at 360px (scrollLeft=${scrolled})`);
-    await sticky.waitForTimeout(60);
+    await sticky.mouse.wheel(300, 0);
+    await sticky.waitForTimeout(80);
+    const scrolled = await sticky.evaluate(() => document.querySelector(".table-scroll").scrollLeft);
+    if (scrolled < 100) fail(`sticky ${route}: wheel scroll did not move the table (scrollLeft=${scrolled})`);
     const after = await sticky.evaluate(() => document.querySelector(".conj-table tbody th").getBoundingClientRect().x);
     if (Math.abs(after - before) > 1) fail(`sticky ${route}: persons column moved (x ${before} → ${after})`);
   }
   await sticky.close();
-  ok("sticky: persons column frozen while Práctica/Estudia tables scroll on phones");
+  ok("sticky: persons column frozen while Práctica/Estudia tables genuinely wheel-scroll on phones");
 }
 
 // ---------- M16 FLIP: redesign gate is now DEFAULT ON ----------
