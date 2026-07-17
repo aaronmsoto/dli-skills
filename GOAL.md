@@ -36,8 +36,11 @@ not start it. M19 (🎧 reframe + 🪶 feather), M20 (a11y sprint), and M21
 (La Travesía — owner picked options A+B+C 2026-07-15) COMPLETE on dev
 2026-07-15 — all ride the next release a human merges. No loop-workable item
 is queued; the owner sets the next milestone. M22 (prado-visual-craft skill +
-cloud redesign) COMPLETE on dev 2026-07-16 — future visual work must load the
-skill. Nest-noun clips GENERATED 2026-07-15
+cloud redesign), M23 (owner-reported bug sweep: Práctica scroll, Reto dark
+pill, sticky-hover gaps), and M24 (fixed a flaky e2e test M23 shipped — the
+PRODUCT fix was correct, the test's index math was not) COMPLETE on dev
+2026-07-17 — future visual work must load the skill. Nest-noun clips
+GENERATED 2026-07-15
 (`--nest` flag: 7 phrases x 2 speeds, 60 pre-hash orphan mp3s cleaned,
 manifest integrity now unit-tested). Post-release owner checklist: verify
 celebrations on the live site via `?m18demo=1`.**
@@ -724,6 +727,84 @@ The queue line here — not milestone numbering — sets loop priority.
         (9/9 → feather everywhere; 8/9 → nothing; listening-only → pluma;
         about.html carries the new rationale and not the stale claim).
 
+- [x] **M24 — 🧪 Fix a flaky e2e test that briefly failed the release PR
+  (2026-07-17; complete on dev 2026-07-17, loop/20260717-m24-hover-flake)**
+  PR #97 (the M23 release) showed a red `e2e` check. Investigated rather
+  than just re-running: the NEW "Práctica bank tiles never show a phantom
+  hover border" test (added in M23) failed intermittently — reproduced
+  locally at ~25% (4/15, then 5/20 trials).
+  Root-caused via `wrapHasNoHover: false` + `tileCount: 5` (unchanged) on
+  every failure: the test's own person→drop-slot index mapping was wrong.
+  Drop-slots render only for ACTIVE persons (vosotros off by default →
+  `[0,1,2,3,5]`, 5 slots, not 6), so using the raw logical person index as
+  a direct array index into that compacted NodeList silently missed for
+  any tile whose form mapped to person 5 (ellos/ustedes) — the click
+  no-op'd, the tile was never actually removed, and the test was observing
+  ordinary correct hover on a tile no reflow had touched, not a phantom one.
+  **The shipped M23 product fix (CSS guard + JS re-arm) was correct all
+  along** — confirmed by 30/30 clean trials once the test's index mapping
+  was fixed to go through the same active-persons list the app itself
+  builds. Also hardened `place()` defensively: `suppressHover(bankWrap)`
+  now arms BEFORE `btn.remove()`, not after (zero behavior change, removes
+  a theoretical ordering race). Test now asserts its own precondition
+  (`placed !== 1` fails loudly) so this class of test bug can't silently
+  no-op and pass again.
+  - [x] **V** — unit 56/56 · full e2e suite run 5x consecutively, zero
+        failures (previously ~25% failure rate reproduced locally before
+        the fix); journal.
+
+- [x] **M23 — 🔧 Bug sweep: Práctica scroll, Reto dark pill, sticky-hover gaps
+  (owner-directed 2026-07-16; complete on dev 2026-07-16,
+  loop/20260716-bugfix-sweep)**
+  Owner reported two bugs; loaded prado-visual-craft (M22) and swept for the
+  same failure classes elsewhere. All four findings share one root pattern:
+  a rule/guard that LOOKS correct in code but silently doesn't apply — only
+  rendering + real-gesture testing caught them (the skill's own rule).
+  - [x] **SCROLL** — `.table-scroll { overflow: hidden auto }` had the
+        shorthand's X/Y values backwards (hidden auto = X:hidden, Y:auto),
+        silently blocking real user-driven horizontal scroll (touch/wheel/
+        drag) on Estudia/Práctica/Informe tables since M16 — while
+        `scrollLeft = n` still worked PROGRAMMATICALLY, which is exactly why
+        the existing M13 e2e test stayed green through the whole regression.
+        Fixed to explicit `overflow-x: auto; overflow-y: hidden`. The M13
+        test itself was upgraded from a scrollLeft assertion to a real
+        `mouse.wheel()` gesture + a computed `overflow-x` check, so this
+        class of bug can't hide behind a passing suite again.
+  - [x] **CUE-CHIP** — Reto's 🕐 time-cue pill deliberately carries no
+        `data-tense` (coloring it would leak the tense the challenge is
+        testing), so it fell through the redesign layer's tense-colored
+        base rule to a hardcoded `#243026` ink with NO background of its
+        own — invisible on the dark-theme card (1.04:1, the "dark on dark"
+        report). Given its own theme-aware chip (`--brand-tint` bg /
+        `--ink` text: 11.82:1 light, 10.53:1 dark) that still reveals
+        nothing about the answer. Consolidated a duplicate `.prompt-tense`
+        block (dead `color:#fff` immediately overridden by the next rule)
+        that obscured the root cause during triage.
+  - [x] **DEMO-BANNER** — found in the sweep, not reported: the
+        `?m18demo=1` banner used white text on the persimmon accent —
+        2.93:1 light / 2.30:1 dark, both failing 4.5:1 (the other two
+        accent-background elements already correctly use dark ink). Fixed
+        to match that established pattern.
+  - [x] **STICKY-HOVER GAPS** — Práctica's word bank called
+        `suppressHover(bankWrap)` on render, but the CSS neutralizer
+        (`.no-hover .bank-tile:hover`) never existed in the redesign layer,
+        so the guard was a silent no-op; re-armed the JS call after every
+        tile removal (removal reflows siblings — the same risk class as
+        Elige/Empareja/Vuelo) and added the missing CSS. Added the matching
+        `.no-hover .drop-slot:hover` defensively (legacy styles.css had it;
+        redesign.css never carried it over). Testing note for future loops:
+        Playwright's `page.hover()` itself fires the `pointermove` that
+        clears this guard by design — it CANNOT be used to test it. Use one
+        `mouse.move()` to park the pointer, then mutate the DOM without
+        further real pointer movement (JS `.click()`), matching the
+        existing hover-regression test pattern elsewhere in the suite.
+  - [x] **V** — screenshots reviewed (Reto + demo-banner, both themes;
+        Práctica scroll before/after a real wheel gesture, both themes);
+        e2e locks all four; unit 56/56; also repaired an unrelated GOAL.md
+        corruption from the M22 PR (an insertion had swallowed M21's own
+        heading line — restored, verified all M0-M22 headings now present
+        exactly once).
+
 - [x] **M22 — 🎨 Visual craft: a design skill + the cloud fix (owner-directed
   2026-07-16; complete on dev 2026-07-16, loop/20260716-m22-visual-craft)**
   Owner feedback: the flight's "clouds" don't read as clouds, and the repo
@@ -749,6 +830,8 @@ The queue line here — not milestone numbering — sets loop priority.
         (360px exposed a bar regression → width cap added and re-verified);
         suites green (56/56 unit; e2e incl. the new "M22 clouds" lock);
         journal.
+
+- [x] **M21 — 🌤️ La Travesía: the flight becomes a journey (owner picked
   A+B+C 2026-07-15; complete on dev 2026-07-15,
   loop/20260715-m21-travesia)**
   Owner feedback on the shipped M18.3: the flight felt mechanically like
