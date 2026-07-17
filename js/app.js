@@ -788,12 +788,15 @@ function renderPractica(setId, tense) {
     const td = cells[state.verbIdx][p];
     if (form === conjugate(verb, tense)[p]) {
       state.selected = null;
-      btn.remove();
-      // sticky-hover guard (2026-07-16 sweep): removing a tile reflows its
+      // sticky-hover guard (2026-07-16 sweep, hardened 2026-07-17): arm
+      // BEFORE the removal below, not after — removing a tile reflows its
       // siblings, so one can slide under a touch-parked pointer and paint a
-      // phantom hover border — the same class of bug already guarded on
-      // Elige/Empareja/Vuelo. Re-arm on every removal, not just first render.
+      // phantom hover border (the same class of bug already guarded on
+      // Elige/Empareja/Vuelo), and the guard must be active before the
+      // mutation that can trigger the browser's hover recalculation, not
+      // race it. Re-armed on every removal, not just first render.
       suppressHover(bankWrap);
+      btn.remove();
       td.classList.remove("col-active");
       td.classList.add("filled");
       td.replaceChildren(speakable

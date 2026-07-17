@@ -36,9 +36,11 @@ not start it. M19 (🎧 reframe + 🪶 feather), M20 (a11y sprint), and M21
 (La Travesía — owner picked options A+B+C 2026-07-15) COMPLETE on dev
 2026-07-15 — all ride the next release a human merges. No loop-workable item
 is queued; the owner sets the next milestone. M22 (prado-visual-craft skill +
-cloud redesign) and M23 (owner-reported bug sweep: Práctica scroll, Reto dark
-pill, sticky-hover gaps) COMPLETE on dev 2026-07-16 — future visual work must
-load the skill. Nest-noun clips GENERATED 2026-07-15
+cloud redesign), M23 (owner-reported bug sweep: Práctica scroll, Reto dark
+pill, sticky-hover gaps), and M24 (fixed a flaky e2e test M23 shipped — the
+PRODUCT fix was correct, the test's index math was not) COMPLETE on dev
+2026-07-17 — future visual work must load the skill. Nest-noun clips
+GENERATED 2026-07-15
 (`--nest` flag: 7 phrases x 2 speeds, 60 pre-hash orphan mp3s cleaned,
 manifest integrity now unit-tested). Post-release owner checklist: verify
 celebrations on the live site via `?m18demo=1`.**
@@ -724,6 +726,32 @@ The queue line here — not milestone numbering — sets loop priority.
   - [x] **V** — unit 52/52 (new pluma test) · e2e PASS with three M19 blocks
         (9/9 → feather everywhere; 8/9 → nothing; listening-only → pluma;
         about.html carries the new rationale and not the stale claim).
+
+- [x] **M24 — 🧪 Fix a flaky e2e test that briefly failed the release PR
+  (2026-07-17; complete on dev 2026-07-17, loop/20260717-m24-hover-flake)**
+  PR #97 (the M23 release) showed a red `e2e` check. Investigated rather
+  than just re-running: the NEW "Práctica bank tiles never show a phantom
+  hover border" test (added in M23) failed intermittently — reproduced
+  locally at ~25% (4/15, then 5/20 trials).
+  Root-caused via `wrapHasNoHover: false` + `tileCount: 5` (unchanged) on
+  every failure: the test's own person→drop-slot index mapping was wrong.
+  Drop-slots render only for ACTIVE persons (vosotros off by default →
+  `[0,1,2,3,5]`, 5 slots, not 6), so using the raw logical person index as
+  a direct array index into that compacted NodeList silently missed for
+  any tile whose form mapped to person 5 (ellos/ustedes) — the click
+  no-op'd, the tile was never actually removed, and the test was observing
+  ordinary correct hover on a tile no reflow had touched, not a phantom one.
+  **The shipped M23 product fix (CSS guard + JS re-arm) was correct all
+  along** — confirmed by 30/30 clean trials once the test's index mapping
+  was fixed to go through the same active-persons list the app itself
+  builds. Also hardened `place()` defensively: `suppressHover(bankWrap)`
+  now arms BEFORE `btn.remove()`, not after (zero behavior change, removes
+  a theoretical ordering race). Test now asserts its own precondition
+  (`placed !== 1` fails loudly) so this class of test bug can't silently
+  no-op and pass again.
+  - [x] **V** — unit 56/56 · full e2e suite run 5x consecutively, zero
+        failures (previously ~25% failure rate reproduced locally before
+        the fix); journal.
 
 - [x] **M23 — 🔧 Bug sweep: Práctica scroll, Reto dark pill, sticky-hover gaps
   (owner-directed 2026-07-16; complete on dev 2026-07-16,
