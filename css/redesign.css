@@ -282,7 +282,17 @@
 :root[data-redesign] .table-scroll {
   border-radius: var(--radius-table);
   box-shadow: var(--shadow-card);
-  overflow: hidden auto;
+  /* BUG (owner report 2026-07-16): `overflow: hidden auto` sets
+     overflow-x:hidden, overflow-y:auto — the shorthand's two values are
+     X then Y, so this had it backwards and silently disabled real
+     user-driven horizontal scroll (touch/wheel/drag) on every table
+     wider than its viewport, while `scrollLeft = n` still worked
+     programmatically — which is exactly why the e2e test stayed green.
+     Tables need X:auto (to reach the other columns), Y:hidden (there's
+     nothing to scroll vertically; this only keeps the border-radius
+     clipping the sticky person column's shadow). */
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 :root[data-redesign] .conj-table { background: var(--card); }
 :root[data-redesign] .conj-table thead th {
@@ -324,6 +334,10 @@
   padding: 18px 16px 20px;
   text-align: center;
 }
+/* consolidated from two blocks (2026-07-16 visual sweep): the split left
+   dead code — a `color: #fff` immediately overridden by the next rule's
+   `#243026` — which obscured the real bug below (the no-data-tense cue-chip
+   falling through with no background of its own). One block, one color. */
 :root[data-redesign] .prompt-tense {
   display: inline-flex;
   align-items: center;
@@ -333,14 +347,23 @@
   font-family: var(--font-body);
   font-weight: var(--fw-bold);
   font-size: 0.85rem;
-  color: #fff;
-}
-:root[data-redesign] .prompt-tense {
   color: #243026; /* tense hues stay warm in both palettes — dark text always */
 }
 :root[data-redesign] .prompt-tense[data-tense="present"] { background: var(--tense-present); }
 :root[data-redesign] .prompt-tense[data-tense="preterite"] { background: var(--tense-preterite); }
 :root[data-redesign] .prompt-tense[data-tense="imperfect"] { background: var(--tense-imperfect); color: var(--tense-imperfect-ink); }
+/* BUG (owner report 2026-07-16): the Reto/⚔️ contrast challenge's 🕐 time-cue
+   chip deliberately carries NO data-tense (coloring it present/preterite/
+   imperfect would leak the answer the challenge is testing). It fell through
+   to the base rule's hardcoded #243026 ink with no background of its own —
+   invisible on the dark-theme card (1.04:1; the "dark on dark" report).
+   Give it its own neutral, theme-aware chip — readable in both themes,
+   still revealing nothing about which tense is correct (11.82:1 light /
+   10.53:1 dark, measured 2026-07-16). */
+:root[data-redesign] .prompt-tense.cue-chip {
+  background: var(--brand-tint);
+  color: var(--ink);
+}
 :root[data-redesign] .prompt-main {
   font-family: var(--font-display);
   font-weight: var(--fw-semibold);
@@ -427,6 +450,11 @@
 }
 :root[data-redesign] .drop-slot:hover,
 :root[data-redesign] .drop-slot:focus-visible { background: color-mix(in srgb, var(--brand-tint) 60%, var(--card)); }
+/* defensive guard (2026-07-16 sweep): legacy styles.css already neutralizes
+   this under .no-hover; the redesign layer never carried it over. Table
+   scroll (just fixed in this sweep) can now bring a different column's
+   slot under a touch-parked pointer, so this closes the same class of gap. */
+:root[data-redesign] .no-hover .drop-slot:hover { background: var(--brand-tint); }
 :root[data-redesign] .bank-tile {
   background: var(--card);
   color: var(--ink);
@@ -438,6 +466,12 @@
 }
 :root[data-redesign] .bank-tile:hover,
 :root[data-redesign] .bank-tile:focus-visible { border-color: var(--brand); }
+/* sticky-hover guard (2026-07-16 sweep): app.js already called
+   suppressHover(bankWrap) on every render, but this neutralizing rule was
+   missing, so the guard was a silent no-op — a tile could show a phantom
+   "picked-looking" border after a sibling's removal reflowed it under a
+   touch-parked pointer. Mirrors the .choice/.match-card pattern above. */
+:root[data-redesign] .no-hover .bank-tile:hover { border-color: transparent; }
 
 /* ---------- Results ---------- */
 :root[data-redesign] .results { text-align: center; }
@@ -637,7 +671,12 @@
   padding: 6px 14px;
   border-radius: var(--radius-pill);
   background: var(--accent);
-  color: #fff;
+  /* BUG (found in the 2026-07-16 visual sweep): white text on --accent
+     failed contrast in BOTH themes (2.93:1 light / 2.30:1 dark — well under
+     4.5:1). Persimmon is a bright accent in both palettes, same family as
+     .total-stars/.start-here, which already use dark ink correctly — this
+     one was missed. #243026 = light --ink: 4.69:1 light, 6.0:1 dark. */
+  color: #243026;
   font-weight: var(--fw-extrabold);
   font-size: 0.9rem;
   text-align: center;
