@@ -903,17 +903,30 @@ ok("practica: full table rebuild, corrective retry, celebration, nothing recorde
   const cx = bankBox.x + bankBox.width / 2, cy = bankBox.y + bankBox.height / 2;
   await bank.mouse.move(cx, cy);
   await bank.waitForTimeout(50);
-  await bank.evaluate(async () => {
+  const placed = await bank.evaluate(async () => {
     const { SETS } = await import("./js/verbs.js");
     const { conjugate } = await import("./js/conjugator.js");
     const tile0 = document.querySelectorAll(".bank-tile")[0];
     const form = tile0.textContent;
     tile0.click();
     const verb = SETS[0].verbs[0];
-    let p = -1;
-    for (let i = 0; i < 6; i++) if (conjugate(verb, "present")[i] === form) p = i;
-    document.querySelectorAll(".drop-slot")[p]?.click();
+    const forms = conjugate(verb, "present");
+    let logicalPerson = -1;
+    for (let i = 0; i < 6; i++) if (forms[i] === form) logicalPerson = i;
+    // BUG FIX (2026-07-17): drop-slots render only for ACTIVE persons
+    // (vosotros off by default → [0,1,2,3,5], 5 slots, not 6), so the
+    // logical person index is NOT a valid direct array index into that
+    // compacted NodeList — using it raw silently no-ops for any form
+    // mapped to person 5 (ellos/ustedes), leaving the tile un-removed and
+    // making this test observe ordinary correct hover, not a phantom one.
+    // Map through the same active-persons list the app itself builds.
+    const activePersons = [0, 1, 2, 3, 4, 5].filter((x) => x !== 4);
+    const domIndex = activePersons.indexOf(logicalPerson);
+    const before = document.querySelectorAll(".bank-tile").length;
+    document.querySelectorAll(".drop-slot")[domIndex]?.click();
+    return before - document.querySelectorAll(".bank-tile").length;
   });
+  if (placed !== 1) fail(`practica bank: tile removal setup failed (removed ${placed}, expected 1) — test precondition broken`);
   await bank.waitForTimeout(500);
   const afterRemoval = await bank.evaluate(([x, y]) => {
     const el = document.elementFromPoint(x, y)?.closest(".bank-tile");
