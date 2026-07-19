@@ -41,6 +41,16 @@ export const TENSE_LABELS = {
   imperfect: { es: "Imperfecto", en: "Imperfect (ongoing past)" },
 };
 
+// M26 stretch constructions (M4 reactivated, unscored-first): deliberately
+// SEPARATE from TENSES so nothing that iterates TENSES (question sampling,
+// star math, informe, contrast) ever picks them up. Estudia/Práctica only.
+export const STRETCH_TENSES = ["nearfuture", "progressive"];
+
+export const STRETCH_LABELS = {
+  nearfuture: { es: "Muy pronto", en: "Near future (ir a + infinitive)" },
+  progressive: { es: "Ahora mismo", en: "Right now (estar + -ndo)" },
+};
+
 const ENDINGS = {
   present: {
     ar: ["o", "as", "a", "amos", "áis", "an"],
@@ -169,6 +179,45 @@ export function conjugate(verb, tense) {
 /** Full conjugation table: { present: [...], preterite: [...], imperfect: [...] } */
 export function conjugateAll(verb) {
   return Object.fromEntries(TENSES.map((t) => [t, conjugate(verb, t)]));
+}
+
+// ---------------- M26 stretch constructions ----------------
+
+// The two auxiliaries are fixed paradigms — hard-coded here so the engine
+// needs no dataset import (and stays pure).
+const IR_PRESENT = ["voy", "vas", "va", "vamos", "vais", "van"];
+const ESTAR_PRESENT = ["estoy", "estás", "está", "estamos", "estáis", "están"];
+
+/**
+ * Gerund (gerundio). Regulars from the infinitive (-ando / -iendo);
+ * vowel-final stems take -yendo (leyendo, oyendo, trayendo); -ir verbs
+ * with a `pret3` vowel change use that SAME change here (RAE: pidiendo,
+ * siguiendo, muriendo — the gerund shares the third-person preterite
+ * stem); `ger` is the explicit override for the rest (diciendo,
+ * viniendo, pudiendo); ir → yendo.
+ */
+export function gerund(verb) {
+  if (verb.ger) return verb.ger;
+  if (verb.inf === "ir") return "yendo";
+  const { stem, ending } = splitInfinitive(verb.inf);
+  if (ending === "ar") return stem + "ando";
+  const gStem = ending === "ir" && verb.pret3 ? applyStemChange(stem, verb.pret3) : stem;
+  if (stemEndsInVowel(gStem)) return gStem + "yendo";
+  return gStem + "iendo";
+}
+
+/** Returns the 6 phrase forms (yo → ellos) of a stretch construction. */
+export function conjugateStretch(verb, tense) {
+  switch (tense) {
+    case "nearfuture":
+      return IR_PRESENT.map((aux) => `${aux} a ${verb.inf}`);
+    case "progressive": {
+      const g = gerund(verb);
+      return ESTAR_PRESENT.map((aux) => `${aux} ${g}`);
+    }
+    default:
+      throw new Error(`Unknown stretch tense: ${tense}`);
+  }
 }
 
 /** Normalize for lenient answer checking (trim, lowercase, collapse spaces). */
