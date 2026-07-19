@@ -198,15 +198,24 @@ The first group with zero stars AND zero badges wears a "¡Empieza aquí! /
 Start here" ribbon on the home grid; it advances as groups are started
 and disappears when none are fresh.
 
-### 4.3k Site menu (☰, M11 — owner-directed 2026-07-08)
-A collapsed hamburger in the top-right of every screen's chrome (hero
-corner on home) opening a compact disclosure with the main pages: Inicio,
-Informe de progreso, Acerca de / Standards, Documentación (/docs). Kept
-deliberately unintrusive: contextual back-navigation stays top-left in
-the crumbs. Not a modal — links are normal tab stops; the first link is
-focused on open; Esc and click-outside close and focus returns to ☰.
-The footer also links /docs, and its standards links read NBPTS-first.
-Hidden in print.
+### 4.3k Site menu (☰, M11 — overhauled M30.2, owner-directed 2026-07-19)
+A top-right hamburger on every screen (WAI-ARIA APG
+disclosure-navigation: normal tab stops, no role=menu/roving arrows).
+TEXT-ONLY rows (owner: no icons): Inicio, Informe, Descargas, Instalar
+la app, Acerca de / Standards, Documentación, and an expandable
+**Ajustes / Settings** sub-group (aria-expanded + ▾/▴ caret) holding
+Sonido, Tema (Auto/Claro/Oscuro — Light default), Pistas, Incluir
+vosotros/as, and Borrar progreso — mirroring the footer controls via the
+same mid-round-safe apply semantics (mid-round changes save without
+re-rendering; the footer keeps its own copies). A visual-only scrim
+(pointer-events: none) dims the page while open; outside clicks close
+via the document listener. Dialog handoff: any menu row that opens an
+overlay (Instalar) CLOSES the menu first, and overlays layer at z 70 >
+panel 45 > scrim 44 (the M30 install-under-menu fix). Focus: open →
+first row; every close path (Esc, outside click, row navigation) →
+back to ☰. 44px min rows; the panel scrolls beyond max-height; no
+motion added (reduced-motion parity). Hidden in print. Back-navigation
+stays top-left in the crumbs.
 
 ### 4.3l Gamification — celebration layers (M18-M21, owner-directed 2026-07-15)
 Design source: docs/games-proposal.html (research → 8 candidates → three

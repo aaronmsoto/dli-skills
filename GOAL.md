@@ -37,12 +37,11 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue (owner-directed 2026-07-19): M30 (🛠️ fixes & improvements
-sprint) is ACTIVE and loop-workable NOW — work its checkboxes in order;
-menu work loads the prado-visual-craft skill. History: M25, M26, M28,
-M29 shipped 2026-07-19; the beacon is LIVE at api.dliskills.com
-(dashboard at the root URL); the M26 star-grid question is DECIDED
-(stretch stays unscored).
+**Queue (2026-07-19, post-M30): NO ACTIVE loop milestone — next work
+awaits owner direction. History: M25, M26, M28, M29, M30 all shipped
+2026-07-19; the beacon is LIVE at api.dliskills.com (dashboard at the
+root URL); the M26 star-grid question is DECIDED (stretch stays
+unscored).
 M27 (🔄 anonymous sync codes) is PAUSED indefinitely (owner,
 2026-07-19 — progress syncing is not a priority). M28 (📊 aggregate
 analytics beacon) is INDEPENDENT of M27: its amendment was SIGNED
@@ -915,7 +914,8 @@ journal/.)
   teacher landing section on about.html or docs. Load prado-visual-craft
   for layout. e2e print-emulation coverage. Owner action: print-test.
 
-- [ ] **M30 — 🛠️ Fixes & improvements sprint (owner-directed 2026-07-19)**
+- [x] **M30 — 🛠️ Fixes & improvements sprint · shipped 2026-07-19 (loop
+  iterations M30.1-M30.3, PRs #123/#125/#126) (owner-directed 2026-07-19)**
   Three owner reports: ⭐ stars appear reset (🎧 seems intact) on web +
   PWA; the ☰ menu needs a true hamburger overhaul (no icons, a Settings
   group); the Install dialog opens UNDER the still-open menu.
@@ -939,11 +939,11 @@ journal/.)
         ≥44px rows, reduced-motion parity. e2e: aria/Escape/scrim/focus
         return, settings apply, elementFromPoint proves the install
         dialog is on top.
-  - [ ] **M30.3 REVALIDATE** — axe gate extended to menu-open, settings-
-        expanded, Descargas, Pack, install-dialog states (zero
-        critical/serious); keyboard-only e2e pass; light/dark/360
-        screenshot sweep vs the prado checklist; SPEC §4.3k rewritten;
-        journal; close M30.
+  - [x] **M30.3 REVALIDATE** (2026-07-19) — axe gate extended to
+        menu-open, settings-expanded, install-dialog states + Descargas/
+        Pack/stretch routes (zero critical/serious); keyboard-only e2e
+        pass (Tab order, visible focus, Escape return); light/dark/360
+        screenshots reviewed; SPEC §4.3k rewritten; journal.
 
 - [x] **M-PLAN 2026-07-19 — next-era planning (this entry).** Research +
   adversarially-refined plan for M25-M29 (repo-facts brief + design agent
