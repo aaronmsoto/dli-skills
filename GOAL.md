@@ -24,7 +24,11 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
    in localStorage and never leaves the device; the only network feature
    beyond fetching the site's own assets is aggregate visit counting on
    our own server, which stores counts only and never stores IP addresses
-   or any identifier. It runs on infrastructure we control with in-repo
+   or any identifier; to count how many different devices visit, it also
+   keeps one-way codes made with secret values that are discarded daily
+   and monthly — codes that cannot be turned back into an address, linked
+   across time, or tied to a person (owner-approved uniques addendum,
+   2026-07-19). It runs on infrastructure we control with in-repo
    source; nothing identifies or profiles a learner.
 3. Novice-first, non-punitive pedagogy; bilingual (Spanish-first) UI.
 4. K-5 accessibility: big targets, dark mode, reduced motion, ARIA live.
@@ -33,12 +37,11 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue (2026-07-19, post-M29): NO ACTIVE loop milestone — the approved
-M25-M29 plan is fully shipped (M25, M26, M29; M26's star-grid question
-stays an owner decision). Next work awaits owner direction. Deploy-ready
-when the owner acts: M28's beacon (amendment SIGNED; vendor gate is the
-only open box — Cloudflare setup per server/README.md, token already
-verified in-session 2026-07-19).
+**Queue (2026-07-19, post-M28): NO ACTIVE loop milestone — M25, M26,
+M28, and M29 are all shipped; the beacon is LIVE at
+api.dliskills.com (dashboard at the root URL). The M26
+star-grid question is DECIDED: stretch stays unscored. Next work awaits
+owner direction.
 M27 (🔄 anonymous sync codes) is PAUSED indefinitely (owner,
 2026-07-19 — progress syncing is not a priority). M28 (📊 aggregate
 analytics beacon) is INDEPENDENT of M27: its amendment was SIGNED
@@ -798,9 +801,10 @@ journal/.)
         honest framing: stretch scaffolding, unscored; about.html row +
         public RAE-accuracy note on about + /docs, owner ask 2026-07-19);
         journal.
-  - [ ] **OWNER DECISION (later, separate):** whether stretch tenses join
-        the star grid — changes STARS_PER_SET/600-total/nest derivation;
-        never a loop's call. Until checked, they stay unscored.
+  - [x] **OWNER DECISION (decided 2026-07-19):** stretch tenses STAY
+        unscored ("Keep M26 stretch tenses un-starred" — owner).
+        STARS_PER_SET remains 30, site total 600, nest derivation
+        untouched. Do not re-propose.
 
 - [ ] **M27 — 🔄 Anonymous sync codes (PAUSED indefinitely — owner,
   2026-07-19: not a priority. If unpaused: amendment + vendor setup first;
@@ -847,8 +851,10 @@ journal/.)
   - [ ] **V** — suites green; docs in sync; journal. Phase-2 note (not
         queued): adult email-OTP convenience layer.
 
-- [ ] **M28 — 📊 Aggregate analytics beacon (owner-gated, INDEPENDENT of
-  M27 — its own amendment + vendor gates below; design: docs/SPEC.md §5.7)**
+- [x] **M28 — 📊 Aggregate analytics beacon · shipped 2026-07-19 (loop
+  iterations M28.1-M28.2, PRs #119/#121; LIVE at
+  api.dliskills.com with owner-approved anonymous
+  daily+monthly uniques; design: docs/SPEC.md §5.7)**
   A standalone `server/` Worker (~50 lines vanilla JS, no framework —
   does NOT wait for M27): POST /beacon increments (date, page, event)
   counters in D1 — IP/cookie/identifier never stored; retention enforced
@@ -876,15 +882,26 @@ journal/.)
         notice-disclosure duty). (Superseded by M27's fuller text if sync
         ever ships.) LOOPS MUST NOT write code that calls any network
         endpoint until this box is checked.
-  - [ ] **GATE (owner): vendor setup** — runbook: server/README.md.
-        Cloudflare account, D1 database, first `wrangler deploy`;
-        workers.dev URL is fine to start (Cloudflare DNS NOT required —
-        api.dliskills.com is the optional branded upgrade).
-  - [ ] **SERVER** — `server/` Worker: counters table + POST /beacon
-        (rate limiting, payload validation); unit-tested pure handlers.
-  - [ ] **CLIENT** — beacon for page views + a handful of feature events
-        (named in SPEC before shipping); no-op guards above.
-  - [ ] **V** — e2e asserts the no-op guards; docs in sync; journal.
+  - [x] **GATE (owner): vendor setup** — executed in-session at owner
+        direction 2026-07-19 with the owner's scoped token: D1
+        `conjuga-db` created, schema applied, Worker deployed at
+        https://api.dliskills.com (runbook Option A —
+        no DNS changes; api.dliskills.com stays an optional upgrade).
+  - [x] **SERVER** (2026-07-19) — `server/` Worker: counters + POST
+        /beacon (strict allowlist validation; per-IP rate limiting
+        deliberately absent — storing IPs violates the amendment) +
+        owner-approved anonymous uniques (rotating daily/monthly
+        salted hashes, salts destroyed on rotation) + /aggregates +
+        dashboard; unit-tested pure handlers incl. a no-raw-IP/UA
+        SQL-parameter sweep.
+  - [x] **CLIENT** (2026-07-19) — js/beacon.js: page views per screen +
+        feature events `dl`/`install` (named in SPEC §5.7); pure
+        `beaconAllowed` guards (localhost/webdriver/noSW/GPC),
+        fire-and-forget sendBeacon; joins the SW shell (shell-v3).
+  - [x] **V** (2026-07-19) — unit guard truth-table + e2e zero-request
+        assertions (webdriver + GPC contexts); live positive path
+        verified in M28.1; disclosure sentence applied to about.html,
+        GOAL invariant 2, CLAUDE.md rule 2, STANDARDS §4; journal.
 
 - [x] **M29 — 🍎 Teacher mode · shipped 2026-07-19 (loop iterations
   M29.1-M29.2, PRs #117/#118; owner action open: print-test a pack on a

@@ -1,0 +1,18 @@
+# Conjuga beacon Worker (M28). IDs are not secrets; the API token lives
+# only in the git-ignored .env / owner dashboard.
+name = "conjuga-api"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+
+# Branded endpoint (owner-directed 2026-07-19): the dliskills.com zone
+# already lives in this Cloudflare account, so the Worker attaches
+# api.dliskills.com as a Custom Domain (record + cert managed by CF).
+# The workers.dev URL keeps working as a fallback.
+routes = [
+  { pattern = "api.dliskills.com", custom_domain = true }
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "conjuga-db"
+database_id = "c0d54ad3-0fff-4aed-a0bc-d4d5dfb7ac7f"
