@@ -81,7 +81,9 @@ await assertNoStrayNull("home");
 await page.waitForSelector(".home-title .lola-wrap .lola");
 if ((await page.locator(".lola-wrap").getAttribute("aria-hidden")) !== "true") fail("home: Lola must be aria-hidden");
 const greeting = await page.locator(".lola-greeting").innerText();
-if (!greeting.includes("Lola la Lechuza")) fail(`home: greeting missing, got "${greeting}"`);
+// date-agnostic: the July-2026 Mundial greeting or the standard one —
+// the seasonal block below pins each side with an injected clock
+if (!greeting.includes("Lola")) fail(`home: greeting missing, got "${greeting}"`);
 await page.screenshot({ path: `${SHOTS}/home.png` });
 ok("home renders 20 groups + Lola greeter");
 
@@ -554,16 +556,17 @@ ok("dark mode: Lola dark palette active");
     getComputedStyle(document.documentElement).getPropertyValue("--bg").trim().toLowerCase());
   // Post-FLIP: the redesign (Prado) is the only look now, so every route
   // resolves the Prado palette — light day #fbf6ea, forest-night #191e17.
-  // Light is the DEFAULT (owner 2026-07-09): a fresh visitor on an OS-dark
-  // device still gets data-theme="light" + the Prado day bg, not the OS scheme.
+  // AUTO is the DEFAULT (owner 2026-07-19, reversing the 2026-07-09 Light
+  // default): a fresh visitor has NO data-theme, so the OS scheme drives —
+  // an OS-dark device gets forest-night out of the box.
   const def = await browser.newPage({ colorScheme: "dark" });
   trackErrors(def);
   await def.goto(`${BASE}/#/`);
   await def.waitForSelector(".set-card");
   const defAttr = await def.evaluate(() => document.documentElement.getAttribute("data-theme"));
-  if (defAttr !== "light") fail(`theme default: data-theme should be "light" by default, got "${defAttr}"`);
+  if (defAttr !== null) fail(`theme default Auto: data-theme should be unset by default, got "${defAttr}"`);
   const defBg = await themeBg(def);
-  if (defBg !== "#fbf6ea") fail(`theme default Light: OS-dark should still show Prado day #fbf6ea, got "${defBg}"`);
+  if (defBg !== "#191e17") fail(`theme default Auto: OS-dark should show forest-night #191e17, got "${defBg}"`);
   await def.close();
 
   // Auto is opt-in: selecting it clears data-theme so the OS scheme wins → forest-night.
@@ -1186,8 +1189,17 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     await axePage.waitForSelector(".install-panel");
     await runAxe("install-dialog");
     await axePage.keyboard.press("Escape");
+    // M30.4: the STATIC pages carry the shared drawer now — scan them too.
+    for (const staticPage of ["about.html", "docs/"]) {
+      await axePage.goto(`${BASE}/${staticPage}`);
+      await axePage.waitForSelector(".static-nav .menu-btn");
+      await runAxe(staticPage);
+      await axePage.click(".menu-btn");
+      await axePage.waitForSelector(".menu-panel:not([hidden])");
+      await runAxe(`${staticPage} menu-open`);
+    }
     await axePage.close();
-    ok("axe-core: zero critical/serious violations across 10 routes + 3 menu/dialog states");
+    ok("axe-core: zero critical/serious violations across 12 pages + menu/dialog states");
   }
 }
 
@@ -2651,7 +2663,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (await page.locator(".menu-settings:not([hidden])").count()) fail("m30.2: settings should start collapsed");
   await page.click(".settings-toggle");
   await page.waitForSelector(".menu-settings:not([hidden])");
-  const hintsBefore = await page.locator(".setting-hints").getAttribute("aria-pressed");
+  const hintsBefore = await page.locator(".setting-hints").getAttribute("aria-checked");
   await page.click(".setting-hints");
   await page.waitForSelector(".menu-btn"); // home re-renders on setting change
   const applied = await page.evaluate(() => JSON.parse(localStorage.getItem("conjuga.v1")).settings.hints);
@@ -2707,6 +2719,122 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     fail("m30.3: focus must return to ☰ after keyboard close");
   }
   ok("M30.3 keyboard: Tab traverses rows to Ajustes, focus visibly styled, Escape returns to ☰");
+}
+
+// ---------- M30.4 ⚙️ settings order, switch UX, stacked Tema, static-page nav ----------
+{
+  await page.goto(`${BASE}/`);
+  await page.waitForSelector(".set-card");
+  await page.click(".menu-btn");
+  await page.click(".settings-toggle");
+  await page.waitForSelector(".menu-settings:not([hidden])");
+  // Owner order: Vosotros → Pistas → Sonido → Tema → Borrar. (Sonido is
+  // gated off in this voiceless context — assert relative order of the rest.)
+  const rowOrder = await page.evaluate(() =>
+    [...document.querySelectorAll(".menu-settings > *")].map((n) => n.className.split(" ").pop()));
+  const idx = (c) => rowOrder.findIndex((x) => x === c);
+  if (!(idx("setting-vosotros") < idx("setting-hints") && idx("setting-hints") < idx("theme-selector") && idx("theme-selector") < idx("borrar-row"))) {
+    fail(`m30.4: settings order wrong: ${rowOrder.join(",")}`);
+  }
+  // Switch UX: role=switch, visible track+thumb, toggling persists.
+  const sw = await page.evaluate(() => {
+    const s = document.querySelector(".setting-vosotros");
+    return { role: s.getAttribute("role"), checked: s.getAttribute("aria-checked"), track: !!s.querySelector(".switch-track"), thumb: !!s.querySelector(".switch-thumb") };
+  });
+  if (sw.role !== "switch" || !sw.track || !sw.thumb) fail(`m30.4: vosotros row is not a switch control (${JSON.stringify(sw)})`);
+  if (sw.checked !== "false") fail("m30.4: vosotros must default OFF");
+  await page.click(".setting-vosotros");
+  await page.waitForSelector(".set-card"); // re-render on setting change
+  const vosNow = await page.evaluate(() => JSON.parse(localStorage.getItem("conjuga.v1")).settings.vosotros);
+  if (vosNow !== true) fail("m30.4: vosotros switch did not persist");
+  await page.evaluate(() => {
+    const d = JSON.parse(localStorage.getItem("conjuga.v1"));
+    d.settings.vosotros = false;
+    localStorage.setItem("conjuga.v1", JSON.stringify(d));
+  });
+  // Tema stacked: label above, options underneath.
+  await page.reload();
+  await page.waitForSelector(".set-card");
+  await page.click(".menu-btn");
+  await page.click(".settings-toggle");
+  const stacked = await page.evaluate(() => getComputedStyle(document.querySelector(".theme-selector")).flexDirection);
+  if (stacked !== "column") fail(`m30.4: Tema should stack label over options, got flex-direction ${stacked}`);
+  await page.keyboard.press("Escape");
+
+  // Static pages carry the same drawer, and settings apply live there.
+  for (const [url, root] of [["about.html", "."], ["docs/", ".."]]) {
+    const sp = await browser.newPage({ viewport: { width: 900, height: 900 } });
+    trackErrors(sp);
+    await sp.goto(`${BASE}/${url}`);
+    await sp.waitForSelector(".static-nav .menu-btn");
+    await sp.click(".menu-btn");
+    await sp.waitForSelector(".menu-panel:not([hidden])");
+    if ((await sp.locator(".menu-panel a.menu-link").count()) < 5) fail(`m30.4: ${url} drawer missing nav links`);
+    await sp.click(".settings-toggle");
+    await sp.click('.theme-option[data-theme-value="dark"]');
+    const themed = await sp.evaluate(() => document.documentElement.getAttribute("data-theme"));
+    if (themed !== "dark") fail(`m30.4: theme change did not apply live on ${url}`);
+    await sp.close();
+  }
+  ok("M30.4 menu polish: owner order, switch controls persist, Tema stacked, static pages share the live drawer");
+}
+
+// ---------- 🇪🇸 seasonal hero: Spain jersey in July 2026, auto-revert in August ----------
+{
+  const fakeNow = (iso) => `
+    const RealDate = Date;
+    const fixed = new RealDate("${iso}");
+    window.Date = class extends RealDate {
+      constructor(...a) { if (a.length === 0) { super(fixed.getTime()); } else { super(...a); } }
+      static now() { return fixed.getTime(); }
+    };`;
+  const heroState = (p) => p.evaluate(() => {
+    const svg = document.querySelector(".home-title .lola");
+    return {
+      jersey: !!svg.querySelector('[fill="#c8362f"]'),
+      standard: !!svg.querySelector('[fill="var(--lola-body)"]'),
+      lids: !!svg.querySelector(".lola-lids"),
+      head: !!svg.querySelector(".lola-head"),
+      idle: svg.classList.contains("is-idle"),
+      hidden: svg.closest(".lola-wrap")?.getAttribute("aria-hidden"),
+    };
+  });
+
+  // Mid-July 2026: the home hero wears the jersey, with every hook intact.
+  const jul = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(jul);
+  await jul.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await jul.addInitScript(fakeNow("2026-07-25T12:00:00"));
+  await jul.goto(`${BASE}/`);
+  await jul.waitForSelector(".home-title .lola");
+  const j = await heroState(jul);
+  if (!j.jersey) fail("jersey: July 2026 home hero should wear the Spain jersey");
+  if (!j.lids || !j.head) fail("jersey: animation hooks (.lola-head/.lola-lids) missing from the variant");
+  if (!j.idle) fail("jersey: variant must keep the is-idle bob/blink class");
+  if (j.hidden !== "true") fail("jersey: hero must stay aria-hidden (decorative)");
+  const julGreeting = await jul.locator(".lola-greeting").innerText();
+  if (!julGreeting.includes("felicita a España")) fail(`jersey: July greeting should congratulate Spain, got "${julGreeting}"`);
+  // Every other screen keeps the standard owl, even in July.
+  await jul.goto(`${BASE}/#/practica/1/present`);
+  await jul.waitForSelector(".match-title .lola");
+  const other = await jul.evaluate(() => !!document.querySelector(".match-title .lola [fill=\"#c8362f\"]"));
+  if (other) fail("jersey: non-home screens must keep the standard Lola");
+  await jul.close();
+
+  // August 2026: the standard owl is back on home — no deploy needed.
+  const aug = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(aug);
+  await aug.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await aug.addInitScript(fakeNow("2026-08-02T12:00:00"));
+  await aug.goto(`${BASE}/`);
+  await aug.waitForSelector(".home-title .lola");
+  const a = await heroState(aug);
+  if (a.jersey) fail("jersey: August must auto-revert to the standard Lola");
+  if (!a.standard) fail("jersey: August hero should be the token-colored standard owl");
+  const augGreeting = await aug.locator(".lola-greeting").innerText();
+  if (!augGreeting.includes("¡Hola! Soy Lola la Lechuza.")) fail(`jersey: August greeting must revert, got "${augGreeting}"`);
+  await aug.close();
+  ok("🇪🇸 seasonal hero: jersey in July 2026 (hooks + aria intact, home only), standard owl from August");
 }
 
 // ---------- wrap up ----------

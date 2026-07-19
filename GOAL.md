@@ -51,7 +51,14 @@ Loops must not call any live network endpoint before that gate box is
 checked, and must never self-unpause a milestone or check an owner gate
 themselves. Forward designs live in docs/SPEC.md §5.5-5.7 —
 implement THAT design, don't re-derive it. Still owner/SME-gated as before:
-M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M26 complete
+M18.4 Postales, M2 sentence bank, M5 copy review. SHIPPED same-day
+(2026-07-19, PR #130): the previously asset-gated homepage Lola jersey
+variant — the real Spain SVG arrived from the design side (committed at
+assets/lola-spain.svg), inlined with animation hooks re-applied as
+js/mascot-jersey.js, HOME hero only, July-2026-gated with automatic
+August revert (clock-injected e2e covers both sides); docs/MASCOT.md
+still governs the standard mascot.
+History: M0-M26 complete
 (M19-M24 shipped 2026-07-15..17; M25+M26 shipped 2026-07-19).**
 The queue line here — not milestone numbering or file position — sets loop
 priority. (Historical per-milestone narratives live in each entry and in
@@ -939,6 +946,15 @@ journal/.)
         ≥44px rows, reduced-motion parity. e2e: aria/Escape/scrim/focus
         return, settings apply, elementFromPoint proves the install
         dialog is on top.
+  - [x] **M30.4 MENU POLISH** (owner follow-up 2026-07-19, PR #127) —
+        settings reordered Vosotros → Pistas → Sonido → Tema (Borrar
+        last); the first three are role="switch" rows with visible
+        track+thumb; Tema stacked under its label with **Auto now the
+        DEFAULT** (owner decision, reversing 2026-07-09 Light — inline
+        loaders + themeSelector updated together); the drawer extracted
+        to shared js/menu.js and mounted on about.html + docs/ via
+        js/static-menu.js (consistent sitewide nav); sw shell-v4; axe +
+        switch/order/static-nav e2e coverage.
   - [x] **M30.3 REVALIDATE** (2026-07-19) — axe gate extended to
         menu-open, settings-expanded, install-dialog states + Descargas/
         Pack/stretch routes (zero critical/serious); keyboard-only e2e
