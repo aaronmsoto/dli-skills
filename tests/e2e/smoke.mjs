@@ -498,6 +498,7 @@ ok(`practica voiced: placement speaks "yo ${placeSpoken.yo}", filled cell replay
 await voiced.goto(`${BASE}/#/study/1/present`);
 await voiced.waitForSelector(".menu-btn");
 await voiced.locator(".menu-btn").click();
+await voiced.click(".settings-toggle"); // M30.2: sound lives under Ajustes
 await voiced.waitForSelector(".menu-panel:not([hidden]) .sound-toggle");
 await voiced.locator(".sound-toggle").click();
 await voiced.evaluate(() => { window.__spoken.length = 0; });
@@ -535,6 +536,7 @@ await darkPage.goto(`${BASE}/#/`);
 await darkPage.waitForSelector(".home-title .lola");
 // Light is the default now, so opt into Auto to let OS-dark drive the dark palette.
 await darkPage.click(".menu-btn");
+await darkPage.click(".settings-toggle"); // M30.2: theme lives under Ajustes
 await darkPage.waitForSelector(".theme-selector");
 await darkPage.click('.theme-option[data-theme-value="auto"]');
 await darkPage.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
@@ -570,6 +572,7 @@ ok("dark mode: Lola dark palette active");
   await auto.goto(`${BASE}/#/`);
   await auto.waitForSelector(".set-card");
   await auto.click(".menu-btn");
+  await auto.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await auto.waitForSelector(".theme-selector");
   await auto.click('.theme-option[data-theme-value="auto"]');
   await auto.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
@@ -583,6 +586,7 @@ ok("dark mode: Lola dark palette active");
   await light.goto(`${BASE}/#/`);
   await light.waitForSelector(".set-card");
   await light.click(".menu-btn");
+  await light.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await light.waitForSelector(".theme-selector");
   await light.click('.theme-option[data-theme-value="light"]');
   await light.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "light");
@@ -606,6 +610,7 @@ ok("dark mode: Lola dark palette active");
   await dark.goto(`${BASE}/#/`);
   await dark.waitForSelector(".set-card");
   await dark.click(".menu-btn");
+  await dark.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await dark.click('.theme-option[data-theme-value="dark"]');
   await dark.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "dark");
   const darkBg = await themeBg(dark);
@@ -643,6 +648,7 @@ ok("dark mode: Lola dark palette active");
   if (col.almost !== "rgb(125, 82, 0)") fail(`WCAG-7: .feedback.almost text should be --almost-ink #7d5200, got "${col.almost}"`);
   // NN-8 + WCAG-9/DN-7: theme option ≥44px touch target and a brand-border active cue.
   await p.click(".menu-btn");
+  await p.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await p.waitForSelector(".theme-selector");
   const opt = await p.evaluate(() => {
     const b = document.querySelector('.theme-option[data-theme-value="light"]');
@@ -1092,6 +1098,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await darkStar.waitForSelector(".set-card");
   // Light is the default now — opt into Auto so OS-dark yields the dark --star.
   await darkStar.click(".menu-btn");
+  await darkStar.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await darkStar.waitForSelector(".theme-selector");
   await darkStar.click('.theme-option[data-theme-value="auto"]');
   await darkStar.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
@@ -1147,10 +1154,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (axeSource) {
     const axePage = await browser.newPage();
     trackErrors(axePage);
-    for (const r of ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present", "#/play/1/present/choice", "#/play/1/contrast", "#/informe"]) {
-      await axePage.goto(`${BASE}/${r}`);
-      await axePage.reload();
-      await axePage.waitForSelector(".site-footer");
+    const runAxe = async (label) => {
       await axePage.addScriptTag({ content: axeSource });
       const bad = await axePage.evaluate(async () => {
         const res = await window.axe.run(document, { resultTypes: ["violations"] });
@@ -1158,10 +1162,32 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
           .filter((v) => v.impact === "critical" || v.impact === "serious")
           .map((v) => `${v.id}(${v.impact}) ×${v.nodes.length} e.g. ${v.nodes[0]?.target?.join(" ")}`);
       });
-      if (bad.length) fail(`axe ${r}: ${bad.join(" | ")}`);
+      if (bad.length) fail(`axe ${label}: ${bad.join(" | ")}`);
+    };
+    // M30.3: sweep grew — teacher/offline routes join the route list.
+    for (const r of ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present", "#/play/1/present/choice", "#/play/1/contrast", "#/informe", "#/descargas", "#/pack/1", "#/study/1/nearfuture"]) {
+      await axePage.goto(`${BASE}/${r}`);
+      await axePage.reload();
+      await axePage.waitForSelector(".site-footer");
+      await runAxe(r);
     }
+    // M30.3: interactive STATES of the new menu — open, settings
+    // expanded, and the install dialog — must also be clean.
+    await axePage.goto(`${BASE}/#/`);
+    await axePage.reload();
+    await axePage.waitForSelector(".site-footer");
+    await axePage.click(".menu-btn");
+    await axePage.waitForSelector(".menu-panel:not([hidden])");
+    await runAxe("menu-open");
+    await axePage.click(".settings-toggle");
+    await axePage.waitForSelector(".menu-settings:not([hidden])");
+    await runAxe("menu-settings-expanded");
+    await axePage.click(".menu-panel .install-link");
+    await axePage.waitForSelector(".install-panel");
+    await runAxe("install-dialog");
+    await axePage.keyboard.press("Escape");
     await axePage.close();
-    ok("axe-core: zero critical/serious violations across 7 representative routes");
+    ok("axe-core: zero critical/serious violations across 10 routes + 3 menu/dialog states");
   }
 }
 
@@ -1263,6 +1289,10 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   for (const want of ["#/", "#/informe", "about.html", "docs/"]) {
     if (!menuHrefs.includes(want)) fail(`menu: missing link ${want} (got ${menuHrefs})`);
   }
+  // M30.2: text-only rows (owner: no icons) + the Ajustes group present
+  const menuText = await page.locator(".menu-panel").innerText();
+  if (/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(menuText)) fail(`menu: icon glyphs remain in rows: ${menuText}`);
+  if (!(await page.locator(".menu-panel .settings-toggle").count())) fail("menu: Ajustes/Settings group missing");
   // first link receives focus; Esc closes and returns focus to ☰
   if (!(await page.evaluate(() => document.activeElement?.classList?.contains("menu-link")))) fail("menu: first link should get focus on open");
   await page.keyboard.press("Escape");
@@ -1324,6 +1354,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await clips.goto(`${BASE}/#/study/1/present`);
   await clips.waitForSelector(".menu-btn");
   await clips.locator(".menu-btn").click();
+  await clips.click(".settings-toggle"); // M30.2: sound lives under Ajustes
   await clips.waitForSelector(".menu-panel:not([hidden]) .sound-toggle");
   await clips.locator(".sound-toggle").click();
   await clips.evaluate(() => { window.__played.length = 0; });
@@ -1480,6 +1511,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await axeDark.waitForSelector(".site-footer");
   // Light is the default now — opt into Auto so OS-dark yields the forest-night palette.
   await axeDark.click(".menu-btn");
+  await axeDark.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await axeDark.waitForSelector(".theme-selector");
   await axeDark.click('.theme-option[data-theme-value="auto"]');
   await axeDark.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
@@ -2536,6 +2568,44 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M25.2 PWA: SW active, offline shell (20 groups), ?m18demo=1 preserved offline+online, noSW gate holds");
 }
 
+// ---------- M30.1 ⭐ durability: a populated legacy profile renders stars AND badges ----------
+{
+  // The suites' other seeds round-trip within one session; THIS fixture
+  // simulates a returning learner: realistic pre-existing data, incl. a
+  // legacy at-less entry, loaded by the CURRENT build. It exists so a
+  // selective star-read break can never hide behind the static 🎧
+  // iconography again (2026-07-19 owner report).
+  const profilePage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(profilePage);
+  await profilePage.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await profilePage.addInitScript(() => {
+    localStorage.setItem("conjuga.v1", JSON.stringify({
+      settings: { vosotros: false, sound: true, hints: true },
+      best: {
+        "1.present.choice": { score: 10, total: 10, stars: 3, plays: 2, at: 1752000000000 },
+        "1.present.type": { score: 8, total: 10, stars: 2, plays: 1, at: 1752000000000 },
+        "1.present.match": { score: 6, total: 6, stars: 3, plays: 1 }, // legacy: no `at`
+        "1.preterite.choice": { score: 9, total: 10, stars: 2, plays: 1, at: 1752000000000 },
+        "1.past.contrast": { score: 10, total: 10, stars: 3, plays: 1, at: 1752000000000 },
+        "2.present.listen": { score: 10, total: 10, stars: 3, plays: 1, at: 1752000000000 },
+      },
+    }));
+  });
+  await profilePage.goto(`${BASE}/`);
+  await profilePage.waitForSelector(".set-card");
+  const card1 = await profilePage.locator(".set-card").nth(0).innerText();
+  const card2 = await profilePage.locator(".set-card").nth(1).innerText();
+  if (!card1.includes("⭐ 13/30")) fail(`m30.1: group 1 should show ⭐ 13/30, got "${card1}"`);
+  if (!card2.includes("🎧 3/9")) fail(`m30.1: group 2 should show earned badges 🎧 3/9, got "${card2}"`);
+  if (!card2.includes("⭐ 0/30")) fail("m30.1: group 2 stars should be 0/30 (badges are a separate track)");
+  // informe totals agree with the same data
+  await profilePage.goto(`${BASE}/#/informe`);
+  const informe = await profilePage.locator("#app").innerText();
+  if (!informe.includes("13")) fail("m30.1: informe missing group 1 star total");
+  await profilePage.close();
+  ok("M30.1 durability: legacy populated profile renders ⭐ 13/30 + 🎧 3/9 (stars and badges together)");
+}
+
 // ---------- M28.2 📊 beacon guards: the harness must fire ZERO analytics requests ----------
 {
   let beacons = 0;
@@ -2561,6 +2631,82 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await gpcPage.close();
   if (beacons !== 0) fail(`m28.2: ${beacons} beacon request(s) escaped the guards`);
   ok("M28.2 beacon guards: zero analytics requests from webdriver, localhost, and GPC contexts");
+}
+
+// ---------- M30.2 ☰ hamburger overhaul: scrim, settings group, dialog above menu ----------
+{
+  await page.goto(`${BASE}/`);
+  await page.waitForSelector(".set-card");
+  await page.click(".menu-btn");
+  await page.waitForSelector(".menu-panel:not([hidden])");
+  // scrim: visible while open, visual-only (pointer-events none)
+  const scrim = await page.evaluate(() => {
+    const s = document.querySelector(".menu-scrim");
+    const cs = getComputedStyle(s);
+    return { hidden: s.hidden, pe: cs.pointerEvents, z: cs.zIndex };
+  });
+  if (scrim.hidden) fail("m30.2: scrim should show while the menu is open");
+  if (scrim.pe !== "none") fail("m30.2: scrim must be visual-only (pointer-events none)");
+  // settings group: collapsed by default, expands, a toggle actually applies
+  if (await page.locator(".menu-settings:not([hidden])").count()) fail("m30.2: settings should start collapsed");
+  await page.click(".settings-toggle");
+  await page.waitForSelector(".menu-settings:not([hidden])");
+  const hintsBefore = await page.locator(".setting-hints").getAttribute("aria-pressed");
+  await page.click(".setting-hints");
+  await page.waitForSelector(".menu-btn"); // home re-renders on setting change
+  const applied = await page.evaluate(() => JSON.parse(localStorage.getItem("conjuga.v1")).settings.hints);
+  if (String(applied) === hintsBefore) fail("m30.2: hints toggle did not apply");
+  // restore
+  await page.evaluate(() => {
+    const d = JSON.parse(localStorage.getItem("conjuga.v1"));
+    d.settings.hints = true;
+    localStorage.setItem("conjuga.v1", JSON.stringify(d));
+  });
+
+  // install dialog: opening it CLOSES the menu and renders ON TOP
+  await page.reload();
+  await page.waitForSelector(".set-card");
+  await page.click(".menu-btn");
+  await page.waitForSelector(".menu-panel:not([hidden])");
+  await page.click(".menu-panel .install-link");
+  await page.waitForSelector(".install-panel");
+  if (await page.locator(".menu-panel:not([hidden])").count()) fail("m30.2: menu must close when a dialog opens");
+  const onTop = await page.evaluate(() => {
+    const panel = document.querySelector(".install-panel");
+    const r = panel.getBoundingClientRect();
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + 10);
+    return panel.contains(hit) || hit === panel;
+  });
+  if (!onTop) fail("m30.2: install dialog is not the topmost layer at its own center");
+  await page.keyboard.press("Escape");
+  await page.waitForSelector(".install-panel", { state: "detached" });
+  ok("M30.2 hamburger: visual scrim, collapsed Ajustes group applies settings, dialogs close the menu and render on top");
+}
+
+// ---------- M30.3 ⌨️ keyboard-only pass through the drawer ----------
+{
+  await page.goto(`${BASE}/`);
+  await page.waitForSelector(".set-card");
+  await page.focus(".menu-btn");
+  await page.keyboard.press("Enter");
+  await page.waitForSelector(".menu-panel:not([hidden])");
+  const seq = [];
+  for (let i = 0; i < 7; i++) {
+    seq.push(await page.evaluate(() => document.activeElement?.textContent?.trim().slice(0, 10) ?? "?"));
+    await page.keyboard.press("Tab");
+  }
+  if (!seq[0].startsWith("Inicio")) fail(`m30.3: first focus should be Inicio, got "${seq[0]}"`);
+  if (!seq.some((s) => s.startsWith("Ajustes"))) fail(`m30.3: Tab order never reached Ajustes (${seq.join(",")})`);
+  // keyboard focus is VISIBLE: the focused row takes the tint background
+  await page.focus(".menu-panel .menu-link");
+  await page.keyboard.press("Tab");
+  const focusBg = await page.evaluate(() => getComputedStyle(document.activeElement).backgroundColor);
+  if (focusBg === "rgba(0, 0, 0, 0)") fail("m30.3: keyboard focus on a menu row must be visibly styled");
+  await page.keyboard.press("Escape");
+  if (!(await page.evaluate(() => document.activeElement?.classList?.contains("menu-btn")))) {
+    fail("m30.3: focus must return to ☰ after keyboard close");
+  }
+  ok("M30.3 keyboard: Tab traverses rows to Ajustes, focus visibly styled, Escape returns to ☰");
 }
 
 // ---------- wrap up ----------
