@@ -748,7 +748,7 @@ journal/.)
         !sessionStorage.getItem("conjuga.noSW")`; existing e2e blocks stay
         untouched; ONE dedicated e2e block registers, asserts offline shell
         + query preservation, unregisters.
-  - [ ] **DESCARGAS** — download manager UI (☰ entry + screen with standard
+  - [x] **DESCARGAS** (2026-07-19) — download manager UI (☰ entry + screen with standard
         chrome): per-group download (~2 MB, progress, sequential
         fetch+cache.put into `audio-gNN` caches), download-all
         (resume-by-skip-existing), per-group delete, storage.estimate()
