@@ -789,8 +789,9 @@ journal/.)
         fallback (per-text `hasClip` gating — no silent buttons);
         `tools/generate-audio.mjs --stretch` generates the 1,200
         person-prefixed phrases when the owner runs it.
-  - [ ] **OWNER ACTION: run `node tools/generate-audio.mjs --stretch`**
-        (ElevenLabs key in .env; ~2,400 clips) then commit audio/ —
+  - [x] **OWNER ACTION: run `node tools/generate-audio.mjs --stretch`**
+        (done 2026-07-19, owner-directed in-session: 2,400 clips,
+        manifest 3,360 → 4,560 texts; coverage-swept, suites green) —
         stretch 🔊 buttons light up automatically via the manifest probe.
   - [x] **V** (2026-07-19) — suites green; docs (SPEC 4.3m, STANDARDS
         honest framing: stretch scaffolding, unscored; about.html row +
