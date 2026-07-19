@@ -931,7 +931,7 @@ journal/.)
         together, incl. an at-less legacy entry); about/docs paragraph:
         installed iOS app keeps its own progress, separate from Safari
         (system behavior); Android/desktop share.
-  - [ ] **M30.2 MENU** — hamburger overhaul per APG disclosure-nav:
+  - [x] **M30.2 MENU** (2026-07-19) — hamburger overhaul per APG disclosure-nav:
         text-only rows, Ajustes/Settings expandable group (Sonido, Tema,
         Pistas, Vosotros, Borrar — mirrors footer via applySetting),
         scrim + scroll lock, dialogs open ABOVE and CLOSE the menu

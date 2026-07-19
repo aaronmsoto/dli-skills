@@ -228,7 +228,7 @@ h1 .info-btn { vertical-align: middle; margin-left: 10px; }
 .prompt .info-btn { position: absolute; top: 10px; right: 10px; }
 .info-btn:hover, .info-btn:focus-visible { background: var(--brand-soft); }
 .info-overlay {
-  position: fixed; inset: 0; z-index: 40;
+  position: fixed; inset: 0; z-index: 70; /* M30.2: dialogs ABOVE menu (45) + scrim (44) */
   background: rgba(20, 24, 38, 0.45);
   display: flex; align-items: center; justify-content: center; padding: 18px;
 }
@@ -657,3 +657,17 @@ h1 .info-btn { vertical-align: middle; margin-left: 10px; }
 .pack-station { text-align: center; }
 .station-qr { display: inline-block; max-width: 220px; background: #fff; border-radius: 8px; }
 .station-caption { margin-top: 0.4em; }
+
+/* ---------- M30.2 ☰ hamburger overhaul (structural) ---------- */
+/* Visual-only scrim: dims the page while the drawer is open; clicks pass
+   through to the document-level closer (keeps outside-click semantics). */
+.menu-scrim { position: fixed; inset: 0; z-index: 44; background: rgba(25, 30, 23, 0.35); pointer-events: none; }
+.menu-scrim[hidden] { display: none; }
+.menu-panel { max-height: min(78vh, 560px); overflow-y: auto; }
+.menu-link { min-height: 44px; display: flex; align-items: center; }
+.settings-toggle::after { content: " ▾"; margin-left: auto; }
+.settings-toggle[aria-expanded="true"]::after { content: " ▴"; }
+.menu-settings { display: flex; flex-direction: column; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(0, 0, 0, 0.15); }
+.menu-settings[hidden] { display: none; }
+.menu-settings .menu-link, .menu-settings .theme-selector { padding-left: 20px; }
+.setting-row { text-align: left; }
