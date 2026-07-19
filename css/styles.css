@@ -652,3 +652,8 @@ h1 .info-btn { vertical-align: middle; margin-left: 10px; }
   .pack-sheet:last-child { break-after: auto; page-break-after: auto; }
   .pack-help, .pack-actions { display: none; }
 }
+
+/* M29.2 station card */
+.pack-station { text-align: center; }
+.station-qr { display: inline-block; max-width: 220px; background: #fff; border-radius: 8px; }
+.station-caption { margin-top: 0.4em; }

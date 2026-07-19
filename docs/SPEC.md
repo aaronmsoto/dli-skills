@@ -266,6 +266,18 @@ speaks person-prefixed phrases; affordances gate per-text via
 run exists (rule 1 — no silent buttons). Whether stretch joins the star
 grid is a LATER owner decision recorded in GOAL M26.
 
+### 4.3n Teacher mode (🍎 class packs + QR stations, M29)
+`#/pack/<setId>`: one print flow per group — a QR station card
+(committed SVGs in qr/, generated once by tools/generate-qr.mjs with the
+vendored MIT encoder tools/vendor/qrcode-generator.cjs; links to the
+live #/set/<n>), five blank practice sheets (core + stretch tenses, M5
+Nombre/Fecha headers, 2.4em write-in cells), and the five answer keys
+at the back (tap-to-hear on screen under the standard audio gates).
+`break-after: page` = one sheet per page; chrome and screen helpers hide
+in print. Entry: a quiet "Para maestros" line on the set screen (not a
+card on the kids' grid) + the about.html teacher section. No accounts:
+each classroom device keeps its own localStorage progress.
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +

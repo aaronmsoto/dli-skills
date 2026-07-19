@@ -33,11 +33,12 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue (owner-approved plan, 2026-07-19): M29 (🍎 teacher mode) is NEXT
-— loop-workable on the owner's go; work its acceptance criteria in
-order; visual work loads the prado-visual-craft skill. M26 shipped
-2026-07-19 with two open owner boxes (--stretch ElevenLabs run;
-star-grid decision — see the M26 entry).
+**Queue (2026-07-19, post-M29): NO ACTIVE loop milestone — the approved
+M25-M29 plan is fully shipped (M25, M26, M29; M26's star-grid question
+stays an owner decision). Next work awaits owner direction. Deploy-ready
+when the owner acts: M28's beacon (amendment SIGNED; vendor gate is the
+only open box — Cloudflare setup per server/README.md, token already
+verified in-session 2026-07-19).
 M27 (🔄 anonymous sync codes) is PAUSED indefinitely (owner,
 2026-07-19 — progress syncing is not a priority). M28 (📊 aggregate
 analytics beacon) is INDEPENDENT of M27: its amendment was SIGNED
@@ -885,7 +886,9 @@ journal/.)
         (named in SPEC before shipping); no-op guards above.
   - [ ] **V** — e2e asserts the no-op guards; docs in sync; journal.
 
-- [ ] **M29 — 🍎 Teacher mode (loop-workable after M25; no amendment)**
+- [x] **M29 — 🍎 Teacher mode · shipped 2026-07-19 (loop iterations
+  M29.1-M29.2, PRs #117/#118; owner action open: print-test a pack on a
+  real printer + scan a station QR)**
   Classroom value without accounts: (a) **printable class packs** — one
   print flow bundling a group's study sheets + blank Práctica tables +
   answer keys (builds on the existing print CSS + M5 headers); (b) **QR
