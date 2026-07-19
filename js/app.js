@@ -410,6 +410,14 @@ function render() {
 
 window.addEventListener("hashchange", render);
 
+// PWA offline shell (M25, SPEC §5.5). Gated so the e2e harness stays
+// SW-free and deterministic; the dedicated SW e2e block overrides
+// navigator.webdriver to opt in.
+if ("serviceWorker" in navigator && !navigator.webdriver
+    && !sessionStorage.getItem("conjuga.noSW")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+
 // skip link (WCAG 2.4.1): focus main content without disturbing the hash router
 document.getElementById("skip")?.addEventListener("click", (e) => {
   e.preventDefault();

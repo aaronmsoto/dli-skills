@@ -740,7 +740,7 @@ journal/.)
         tools/generate-audio.mjs — the site itself stays build-free); load
         prado-visual-craft for the icon design; e2e asserts manifest link +
         icon files resolve.
-  - [ ] **SW CORE** — hand-written `sw.js` per SPEC §5.5: network-first
+  - [x] **SW CORE** (2026-07-19) — hand-written `sw.js` per SPEC §5.5: network-first
         shell with cache fallback, `VERSION`-named shell cache,
         skipWaiting+clients.claim, navigation fallback with
         `ignoreSearch:true` ONLY offline (querystrings like `?m18demo=1`
