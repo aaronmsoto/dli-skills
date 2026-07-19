@@ -26,9 +26,10 @@ function gzBytes(rel) {
 }
 
 test("total app payload < 100 KB gzipped", () => {
-  // manifest.webmanifest (and sw.js once M25.2 lands) ride the budget;
-  // icons/ PNGs are binary assets outside it, like audio clips.
-  let total = gzBytes("index.html") + gzBytes("about.html") + gzBytes("manifest.webmanifest");
+  // manifest.webmanifest + sw.js ride the budget; icons/ PNGs are binary
+  // assets outside it, like audio clips.
+  let total = gzBytes("index.html") + gzBytes("about.html")
+    + gzBytes("manifest.webmanifest") + gzBytes("sw.js");
   for (const f of readdirSync(join(ROOT, "js"))) total += gzBytes(join("js", f));
   for (const f of readdirSync(join(ROOT, "css"))) total += gzBytes(join("css", f));
   assert.ok(total < 100_000, `payload ${total} gzipped bytes exceeds 100 KB budget`);

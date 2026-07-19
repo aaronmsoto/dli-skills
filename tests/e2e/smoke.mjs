@@ -2269,6 +2269,68 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M25.1 PWA: manifest links, parses, and all icons resolve as PNGs");
 }
 
+// ---------- M25.2 PWA: SW registers (gated), offline shell, query preservation ----------
+{
+  // Fresh context: SW registrations are per-context, so nothing here can
+  // leak into the other blocks (which stay SW-free via the webdriver gate).
+  const swPage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(swPage);
+  await swPage.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => false });
+  });
+
+  await swPage.goto(`${BASE}/`);
+  await swPage.waitForSelector(".set-card");
+  await swPage.evaluate(() => navigator.serviceWorker.ready);
+  const controlled = await swPage.evaluate(async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    return !!(reg && reg.active);
+  });
+  if (!controlled) fail("m25.2: service worker did not reach active state");
+
+  // Offline: the whole shell must come from the VERSION cache.
+  await swPage.context().setOffline(true);
+  await swPage.reload();
+  await swPage.waitForSelector(".set-card");
+  const offlineCards = await swPage.locator(".set-card").count();
+  if (offlineCards !== 20) fail(`m25.2: offline shell rendered ${offlineCards}/20 set cards`);
+
+  // Offline navigation WITH a querystring: ignoreSearch fallback serves
+  // the shell AND the query survives in location.search.
+  await swPage.goto(`${BASE}/?m18demo=1`);
+  await swPage.waitForSelector(".set-card");
+  const offSearch = await swPage.evaluate(() => location.search);
+  if (offSearch !== "?m18demo=1") fail(`m25.2: offline query lost, got "${offSearch}"`);
+
+  // Back online: querystrings pass through untouched (no ignoreSearch).
+  await swPage.context().setOffline(false);
+  await swPage.goto(`${BASE}/?m18demo=1`);
+  await swPage.waitForSelector(".set-card");
+  const onSearch = await swPage.evaluate(() => location.search);
+  if (onSearch !== "?m18demo=1") fail(`m25.2: online query lost, got "${onSearch}"`);
+
+  // The registration gate itself: a page with conjuga.noSW must not register.
+  const noSwPage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(noSwPage);
+  await noSwPage.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => false });
+    sessionStorage.setItem("conjuga.noSW", "1");
+  });
+  await noSwPage.goto(`${BASE}/`);
+  await noSwPage.waitForSelector(".set-card");
+  const gated = await noSwPage.evaluate(async () => !(await navigator.serviceWorker.getRegistration()));
+  if (!gated) fail("m25.2: conjuga.noSW gate did not prevent registration");
+  await noSwPage.close();
+
+  // Clean up so this block leaves no trace for reruns against the same browser.
+  await swPage.evaluate(async () => {
+    for (const reg of await navigator.serviceWorker.getRegistrations()) await reg.unregister();
+    for (const key of await caches.keys()) await caches.delete(key);
+  });
+  await swPage.close();
+  ok("M25.2 PWA: SW active, offline shell (20 groups), ?m18demo=1 preserved offline+online, noSW gate holds");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();
