@@ -113,6 +113,79 @@ function infoButton(key) {
 }
 
 /**
+ * 📲 M25.4 install panel — a ☰ row opening a small dialog: a real install
+ * button where the browser captured `beforeinstallprompt`, otherwise
+ * per-platform "Añadir a inicio" steps (iOS has no install event).
+ * Reuses the info-overlay dialog chrome.
+ */
+function installMenuItem() {
+  let overlay = null;
+  const onKey = (e) => {
+    if (e.key === "Escape") return close();
+    if (e.key === "Tab" && overlay) {
+      // cycle focus inside the dialog (it has 2-3 focusables)
+      const focusables = [...overlay.querySelectorAll("button, a")];
+      const i = focusables.indexOf(document.activeElement);
+      e.preventDefault();
+      const step = e.shiftKey ? -1 : 1;
+      focusables[(i + step + focusables.length) % focusables.length].focus();
+    }
+  };
+  const close = () => {
+    overlay?.remove();
+    overlay = null;
+    document.removeEventListener("keydown", onKey);
+    btn.setAttribute("aria-expanded", "false");
+    btn.focus();
+  };
+  const btn = el("button", {
+    class: "menu-link install-link", type: "button", "aria-expanded": "false",
+    onclick: () => {
+      if (overlay) return close();
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const en = (t) => el("span", { class: "h-en", lang: "en" }, ` ${t}`);
+      const how = deferredInstall
+        ? el("button", {
+          class: "btn primary install-now", type: "button",
+          onclick: () => {
+            const evt = deferredInstall;
+            deferredInstall = null;
+            close();
+            evt.prompt?.();
+          },
+        }, "📲 Instalar ahora / Install now")
+        : el("ol", { class: "install-steps" },
+          ...(isIOS ? [
+            el("li", {}, "En Safari, toca Compartir (el cuadrito con la flecha ⬆️).",
+              en("In Safari, tap Share (the box with the arrow).")),
+            el("li", {}, "Elige “Añadir a pantalla de inicio”.",
+              en("Choose “Add to Home Screen.”")),
+          ] : [
+            el("li", {}, "Abre el menú del navegador (⋮).",
+              en("Open the browser menu.")),
+            el("li", {}, "Elige “Instalar aplicación” o “Añadir a pantalla de inicio”.",
+              en("Choose “Install app” or “Add to Home Screen.”")),
+          ]));
+      overlay = el("div", { class: "info-overlay", onclick: (e) => { if (e.target === overlay) close(); } },
+        el("div", { class: "info-panel install-panel", role: "dialog", "aria-modal": "true", "aria-label": "Instalar la app / Install the app" },
+          el("button", { class: "info-close", "aria-label": "Cerrar / Close", onclick: close }, "✕"),
+          el("p", { class: "info-kid" }, "📲 Instalar la app"),
+          el("p", { class: "info-en" },
+            "Con la app en tu pantalla de inicio y el audio descargado, Conjuga funciona sin internet.",
+            en("Installed on your home screen, with downloaded audio, Conjuga works fully offline.")),
+          how,
+          el("p", { class: "info-more" },
+            el("a", { href: "#/descargas", onclick: close }, "⬇️ Descargas / Offline audio"))));
+      document.body.append(overlay);
+      btn.setAttribute("aria-expanded", "true");
+      overlay.querySelector(".info-close").focus();
+      document.addEventListener("keydown", onKey);
+    },
+  }, "📲 Instalar la app / Install");
+  return btn;
+}
+
+/**
  * ☰ site menu (M11): top-right disclosure with the main pages — global nav
  * collapses here because contextual back-nav lives top-left in the crumbs.
  */
@@ -122,6 +195,7 @@ function menuButton() {
     el("a", { class: "menu-link", href: "#/" }, "🏠 Inicio / Home"),
     el("a", { class: "menu-link", href: "#/informe" }, "Informe / Status"),
     el("a", { class: "menu-link", href: "#/descargas" }, "⬇️ Descargas / Offline audio"),
+    installMenuItem(),
     el("a", { class: "menu-link", href: "about.html" }, "🦉 Acerca de / Standards"),
     el("a", { class: "menu-link", href: "docs/" }, "Documentación / Docs"),
     soundToggle(),
@@ -422,6 +496,15 @@ if ("serviceWorker" in navigator && !navigator.webdriver
     && !sessionStorage.getItem("conjuga.noSW")) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
+
+// M25.4: capture the install prompt where the browser offers one
+// (Android/desktop Chrome). iOS never fires this — the panel shows
+// "Añadir a inicio" steps instead.
+let deferredInstall = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstall = e;
+});
 
 // skip link (WCAG 2.4.1): focus main content without disturbing the hash router
 document.getElementById("skip")?.addEventListener("click", (e) => {

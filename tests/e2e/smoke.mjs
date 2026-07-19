@@ -2330,6 +2330,33 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await dlPage.close();
 }
 
+// ---------- M25.4 📲 install UX: ☰ row, panel steps, Descargas link ----------
+{
+  await page.goto(`${BASE}/`);
+  await page.waitForSelector(".set-card");
+  await page.click(".menu-btn");
+  if (!(await page.locator(".menu-panel .install-link").count())) {
+    fail("m25.4: ☰ menu missing the install row");
+  }
+  await page.click(".menu-panel .install-link");
+  await page.waitForSelector(".install-panel");
+  // No beforeinstallprompt in the harness → generic steps, never the
+  // install-now button; the panel links to Descargas.
+  if (await page.locator(".install-panel .install-now").count()) {
+    fail("m25.4: install-now button rendered without a captured prompt");
+  }
+  if ((await page.locator(".install-panel .install-steps li").count()) < 2) {
+    fail("m25.4: install steps missing");
+  }
+  if (!(await page.locator('.install-panel a[href="#/descargas"]').count())) {
+    fail("m25.4: install panel missing the Descargas link");
+  }
+  await page.keyboard.press("Escape");
+  if (await page.locator(".install-panel").count()) fail("m25.4: Escape did not close the install panel");
+  await assertNoStrayNull("install-panel");
+  ok("m25.4 install UX: ☰ row opens the panel, steps + Descargas link, Escape closes");
+}
+
 // ---------- M25.2 PWA: SW registers (gated), offline shell, query preservation ----------
 {
   // Fresh context: SW registrations are per-context, so nothing here can

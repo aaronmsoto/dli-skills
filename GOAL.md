@@ -33,22 +33,21 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue (owner-approved plan, 2026-07-19): M25 (📱 PWA + offline Descargas)
+**Queue (owner-approved plan, 2026-07-19): M26 (⏭️ stretch tenses — the
+owner reactivated M4 with the unscored-first scope via the approved plan)
 is ACTIVE and loop-workable NOW — work its acceptance criteria in order;
-visual work loads the prado-visual-craft skill. Next: M26 (⏭️ stretch
-tenses — the owner reactivated M4 with the unscored-first scope via the
-approved plan). Then M29 (🍎 teacher mode). M27 (🔄 anonymous sync codes)
-is PAUSED indefinitely (owner, 2026-07-19 — progress syncing is not a
-priority). M28 (📊 aggregate analytics beacon) is INDEPENDENT of M27 —
-owner-gated, not paused: it becomes loop-workable the moment the owner
-checks its own beacon-only amendment + Cloudflare gates inside the M28
-entry, even while M27 stays paused. Loops must not write code that calls
-any network endpoint before the relevant gate boxes are checked, and must
-never self-unpause a milestone or check an owner gate themselves.
-Forward designs live in docs/SPEC.md §5.5-5.7 —
+visual work loads the prado-visual-craft skill. Then M29 (🍎 teacher
+mode). M27 (🔄 anonymous sync codes) is PAUSED indefinitely (owner,
+2026-07-19 — progress syncing is not a priority). M28 (📊 aggregate
+analytics beacon) is INDEPENDENT of M27: its amendment was SIGNED
+2026-07-19 (PR #104), so beacon code may be written (e2e against stubs);
+deploying waits only on the vendor-setup gate inside the M28 entry.
+Loops must not call any live network endpoint before that gate box is
+checked, and must never self-unpause a milestone or check an owner gate
+themselves. Forward designs live in docs/SPEC.md §5.5-5.7 —
 implement THAT design, don't re-derive it. Still owner/SME-gated as before:
-M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M24 complete
-(M19-M24 shipped 2026-07-15..17).**
+M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M25 complete
+(M19-M24 shipped 2026-07-15..17; M25 shipped 2026-07-19).**
 The queue line here — not milestone numbering or file position — sets loop
 priority. (Historical per-milestone narratives live in each entry and in
 journal/.)
@@ -727,7 +726,8 @@ journal/.)
         (9/9 → feather everywhere; 8/9 → nothing; listening-only → pluma;
         about.html carries the new rationale and not the stale claim).
 
-- [ ] **M25 — 📱 PWA: install + offline + Descargas (owner-approved plan
+- [x] **M25 — 📱 PWA: install + offline + Descargas · shipped 2026-07-19
+  (loop iterations M25.1-M25.4, PRs #106-#109) (owner-approved plan
   2026-07-19; ACTIVE — loop-workable now; design: docs/SPEC.md §5.5)**
   Installable app + offline shell + downloadable audio. Zero conflict with
   any existing privacy promise (everything stays same-origin and on-device);
@@ -757,11 +757,11 @@ journal/.)
         Precache audio/manifest.json → offline 🎧 Escucha for downloaded
         groups; e2e covers download/delete/estimate flows with stubbed
         clips.
-  - [ ] **INSTALL UX** — iOS has no beforeinstallprompt: a small "Instalar
+  - [x] **INSTALL UX** (2026-07-19) — iOS has no beforeinstallprompt: a small "Instalar
         la app / Añadir a inicio" instructions panel (☰), Android/desktop
         install prompt where available; about.html gains an offline/install
         paragraph (go-live content rule).
-  - [ ] **V** — suites green incl. the SW-gating regression assertions;
+  - [x] **V** (2026-07-19) — suites green incl. the SW-gating regression assertions;
         payload budget green (sw.js + manifest join the budget); journal.
   Owner actions: merge; install-test on a real iPhone/iPad; verify
   `?m18demo=1` on the live site post-SW.
