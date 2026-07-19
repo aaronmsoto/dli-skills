@@ -16,8 +16,9 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
    personal data collection.** The app is plain ES modules served
    statically. Do not add bundlers, frameworks, third-party analytics, or
    anything else requiring a server — the ONLY permitted server code is the
-   in-repo `server/` Worker, which stores aggregate counts and never IPs or
-   identifiers (see GOAL.md invariant 2). Progress lives only in
+   in-repo `server/` Worker, which stores aggregate counts plus
+   rotating-salt unique-device tokens (salts destroyed daily/monthly) and
+   never raw IPs or identifiers (see GOAL.md invariant 2). Progress lives only in
    `localStorage` (versioned key `conjuga.v1` — bump the version if the
    schema changes incompatibly).
 3. **Novice-first pedagogy.** Feedback is corrective, never punitive; recognition

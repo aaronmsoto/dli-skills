@@ -368,17 +368,26 @@ deferred phase-2 note; Google/Apple OAuth rejected (child account minimums,
 shared classroom devices). BLOCKED until the owner signs the privacy
 amendment described in GOAL.md M27.
 
-### 5.7 Forward design — aggregate analytics beacon (M28, planned 2026-07-19)
-M28 is independent of M27: the beacon ships as its own standalone
-Cloudflare Worker (in-repo `server/`) and does not wait for sync; if M27
-ever unpauses, its sync endpoints join this same Worker rather than a
-second one. `POST /beacon` increments `(date, page, event)` counters
-in D1 — no IP, cookie, or identifier is ever stored (the strongest reading
-of COPPA's "support for internal operations" exception; the 2025 rule's
-notice-disclosure duty is satisfied by the amended about.html Privacy text).
-No third-party analytics script ever loads. Client no-ops on localhost,
-webdriver, and `conjuga.noSW`; respects Global Privacy Control. Accepted
-trade-off: no bot filtering — order-of-magnitude usage signal only.
+### 5.7 Aggregate analytics beacon (M28 — SHIPPED 2026-07-19, live at conjuga-api.soto-c30.workers.dev)
+Standalone in-repo Cloudflare Worker (`server/worker.js`; if M27 ever
+unpauses, its sync endpoints join this Worker). `POST /beacon` (text/plain
+JSON via sendBeacon — no preflight) increments `(UTC date, page, event)`
+counters in D1. **Events (final):** `view` on every screen render (pages:
+home, set, study, practica, play, contrast, report, nido, descargas,
+pack), `dl` on a completed Descargas group download, `install` on opening
+the install panel. **Anonymous uniques (owner-approved 2026-07-19, both
+windows):** per view the Worker stores sha256(salt+ip+ua)-truncated
+tokens under independent DAILY and MONTHLY rotating salts kept in D1 and
+destroyed on rotation — DAU/MAU without any reversible or cross-window
+identifier; raw IP/UA are transient in memory and unit tests sweep SQL
+parameters to prove they never persist. No per-IP rate limiting (would
+require storing IPs); no third-party script; notice-disclosure satisfied
+by the amended about.html text. Client `js/beacon.js` no-ops on
+localhost/127.*, webdriver, `conjuga.noSW`, and Global Privacy Control.
+`GET /aggregates` public JSON; `GET /` = owner dashboard on the Worker.
+Accepted trade-off: no bot filtering — order-of-magnitude signal only.
+Sessions/visit-duration deliberately NOT tracked (would require activity
+trails). True all-time uniques impossible by design (no persistent IDs).
 
 ## 6. Validation performed
 

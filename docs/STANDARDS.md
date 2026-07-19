@@ -100,7 +100,10 @@ personal data — no accounts, no login, no cookies, no third-party trackers
 or advertising. The one permitted network feature is the M28 aggregate
 visit beacon: our own in-repo Cloudflare Worker increments anonymous
 (date, page, event) counters and never stores IP addresses or any
-identifier. Aggregate counting of this kind falls under COPPA's "support
+identifier; unique-device counting uses one-way rotating-salt codes
+whose secrets are discarded daily and monthly, so they cannot be
+reversed, linked across time, or tied to a person (owner-approved
+addendum 2026-07-19). Aggregate counting of this kind falls under COPPA's "support
 for internal operations" exception (as retained in the 2025 amendments to
 the COPPA Rule), and is disclosed on about.html's Privacy section per that
 rule's notice duty. FERPA posture is unchanged: the site holds no
