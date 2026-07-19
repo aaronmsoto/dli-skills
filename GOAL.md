@@ -776,7 +776,7 @@ journal/.)
   ahora mismo 🔄"; STARS_PER_SET stays 30; nest/vuelo/informe/e2e
   denominators untouched; no recordResult.
   Acceptance criteria:
-  - [ ] **ENGINE** — conjugator support for both constructions with
+  - [x] **ENGINE** (2026-07-19) — conjugator support for both constructions with
         hand-verified tests covering every irregular-gerund class in the
         dataset (golden rule 1).
   - [ ] **UI** — Estudia tables + Práctica rebuild for both, tense triad
