@@ -32,11 +32,14 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 is ACTIVE and loop-workable NOW — work its acceptance criteria in order;
 visual work loads the prado-visual-craft skill. Next: M26 (⏭️ stretch
 tenses — the owner reactivated M4 with the unscored-first scope via the
-approved plan). M27 (🔄 anonymous sync codes) and M28 (📊 aggregate
-analytics beacon) are BLOCKED until the owner signs the privacy-amendment PR
-described inside M27 and completes Cloudflare setup — loops must not write
-code that calls any network endpoint before that checkbox is checked. M29
-(🍎 teacher mode) follows. Forward designs live in docs/SPEC.md §5.5-5.7 —
+approved plan). Then M29 (🍎 teacher mode). M27 (🔄 anonymous sync codes)
+is PAUSED indefinitely (owner, 2026-07-19 — progress syncing is not a
+priority); M28 (📊 aggregate analytics beacon) pauses with it (same
+amendment, shares its Worker). If ever unpaused, both still require the
+owner-signed privacy-amendment PR described inside M27 plus Cloudflare
+setup first — loops must not write code that calls any network endpoint
+before that checkbox is checked, and must never self-unpause a milestone.
+Forward designs live in docs/SPEC.md §5.5-5.7 —
 implement THAT design, don't re-derive it. Still owner/SME-gated as before:
 M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M24 complete
 (M19-M24 shipped 2026-07-15..17).**
@@ -782,8 +785,9 @@ journal/.)
         the star grid — changes STARS_PER_SET/600-total/nest derivation;
         never a loop's call. Until checked, they stay unscored.
 
-- [ ] **M27 — 🔄 Anonymous sync codes (BLOCKED — amendment + vendor setup
-  first; design: docs/SPEC.md §5.6)**
+- [ ] **M27 — 🔄 Anonymous sync codes (PAUSED indefinitely — owner,
+  2026-07-19: not a priority. If unpaused: amendment + vendor setup first;
+  design: docs/SPEC.md §5.6)**
   Cross-device progress sync with NO accounts, NO identities, NO PII: a
   user-held 4-word Spanish code moves the ~21 KB zero-PII progress blob via
   our own Cloudflare Worker + D1 (SQLite; in-repo `server/`; owner-deployed
@@ -822,8 +826,8 @@ journal/.)
   - [ ] **V** — suites green; docs in sync; journal. Phase-2 note (not
         queued): adult email-OTP convenience layer.
 
-- [ ] **M28 — 📊 Aggregate analytics beacon (BLOCKED on the same M27
-  amendment + backend; design: docs/SPEC.md §5.7)**
+- [ ] **M28 — 📊 Aggregate analytics beacon (PAUSED with M27 — needs its
+  amendment AND its Worker backend; design: docs/SPEC.md §5.7)**
   ~30-line addition to the same Worker: POST /beacon increments
   (date, page, event) counters in D1 — IP/cookie/identifier never stored;
   retention enforced by our own code. No third-party analytics script,
