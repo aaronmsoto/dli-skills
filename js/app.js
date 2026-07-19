@@ -17,6 +17,7 @@ import { createLola, createNest } from "./mascot.js";
 import { createNido, nestTier, tierMeta, PLUMA } from "./nido.js";
 import { STANDARDS_INFO } from "./standards-info.js";
 import { downloadsSupported, clipUrlsForSet, groupStatus, downloadGroup, deleteGroup, storageSnapshot, requestPersistence, fmtMB } from "./descargas.js";
+import { el, createMenuButton } from "./menu.js";
 import { pageView, feature } from "./beacon.js";
 
 const MODES = ["choice", "type", "match"];
@@ -133,242 +134,25 @@ function infoButton(key) {
  * per-platform "Añadir a inicio" steps (iOS has no install event).
  * Reuses the info-overlay dialog chrome.
  */
-function installMenuItem(beforeOpen = () => {}) {
-  let overlay = null;
-  const onKey = (e) => {
-    if (e.key === "Escape") return close();
-    if (e.key === "Tab" && overlay) {
-      // cycle focus inside the dialog (it has 2-3 focusables)
-      const focusables = [...overlay.querySelectorAll("button, a")];
-      const i = focusables.indexOf(document.activeElement);
-      e.preventDefault();
-      const step = e.shiftKey ? -1 : 1;
-      focusables[(i + step + focusables.length) % focusables.length].focus();
-    }
-  };
-  const close = () => {
-    overlay?.remove();
-    overlay = null;
-    document.removeEventListener("keydown", onKey);
-    btn.setAttribute("aria-expanded", "false");
-    btn.focus();
-  };
-  const btn = el("button", {
-    class: "menu-link install-link", type: "button", "aria-expanded": "false",
-    onclick: () => {
-      if (overlay) return close();
-      beforeOpen(); // M30.2: the menu closes BEFORE the dialog opens
-      feature(parseRoute().screen, "install");
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const en = (t) => el("span", { class: "h-en", lang: "en" }, ` ${t}`);
-      const how = deferredInstall
-        ? el("button", {
-          class: "btn primary install-now", type: "button",
-          onclick: () => {
-            const evt = deferredInstall;
-            deferredInstall = null;
-            close();
-            evt.prompt?.();
-          },
-        }, "📲 Instalar ahora / Install now")
-        : el("ol", { class: "install-steps" },
-          ...(isIOS ? [
-            el("li", {}, "En Safari, toca Compartir (el cuadrito con la flecha ⬆️).",
-              en("In Safari, tap Share (the box with the arrow).")),
-            el("li", {}, "Elige “Añadir a pantalla de inicio”.",
-              en("Choose “Add to Home Screen.”")),
-          ] : [
-            el("li", {}, "Abre el menú del navegador (⋮).",
-              en("Open the browser menu.")),
-            el("li", {}, "Elige “Instalar aplicación” o “Añadir a pantalla de inicio”.",
-              en("Choose “Install app” or “Add to Home Screen.”")),
-          ]));
-      overlay = el("div", { class: "info-overlay", onclick: (e) => { if (e.target === overlay) close(); } },
-        el("div", { class: "info-panel install-panel", role: "dialog", "aria-modal": "true", "aria-label": "Instalar la app / Install the app" },
-          el("button", { class: "info-close", "aria-label": "Cerrar / Close", onclick: close }, "✕"),
-          el("p", { class: "info-kid" }, "📲 Instalar la app"),
-          el("p", { class: "info-en" },
-            "Con la app en tu pantalla de inicio y el audio descargado, Conjuga funciona sin internet.",
-            en("Installed on your home screen, with downloaded audio, Conjuga works fully offline.")),
-          how,
-          el("p", { class: "info-more" },
-            el("a", { href: "#/descargas", onclick: close }, "⬇️ Descargas / Offline audio"))));
-      document.body.append(overlay);
-      btn.setAttribute("aria-expanded", "true");
-      overlay.querySelector(".info-close").focus();
-      document.addEventListener("keydown", onKey);
-    },
-  }, "Instalar la app / Install");
-  return btn;
-}
-
 /**
- * ☰ site menu (M11, overhauled M30.2 — WAI-ARIA APG disclosure-navigation
- * pattern, owner-directed hamburger redesign): text-only rows (no icons),
- * an expandable "Ajustes / Settings" sub-group mirroring the footer
- * controls, a visual scrim, and a dialog handoff that CLOSES the menu
- * before any overlay opens (the old install-under-menu bug). Tab
- * navigation, not roving arrows — this is site nav, not an app menu.
- * Focus: open → first row; close (any path) → back to ☰.
+ * ☰ site menu — shared drawer lives in js/menu.js (M30.4 extraction);
+ * this wrapper supplies the app-side hooks: mid-round-safe re-render,
+ * audio gating + the unmute greeting, beacon feature events, and the
+ * captured beforeinstallprompt.
  */
 function menuButton() {
-  let open = false;
-  const scrim = el("div", { class: "menu-scrim no-print", hidden: true, "aria-hidden": "true" });
-
   const inRound = () => ["play", "contrast", "practica"].includes(parseRoute().screen);
-  // Same semantics as the footer (NN-1 option b): mid-round, settings
-  // save WITHOUT re-rendering so the round isn't restarted.
-  const applySetting = (name, value) => {
-    store.setSetting(name, value);
-    if (!inRound()) render();
-  };
-
-  const settingToggle = (labelOn, labelOff, name) => {
-    const btn2 = el("button", {
-      class: `menu-link setting-row setting-${name}`, type: "button",
-      "aria-pressed": String(!!store.getSettings()[name]),
-      onclick: () => {
-        const next = !store.getSettings()[name];
-        btn2.setAttribute("aria-pressed", String(next));
-        btn2.textContent = next ? labelOn : labelOff;
-        announce(next ? labelOn : labelOff);
-        applySetting(name, next);
-      },
-    }, store.getSettings()[name] ? labelOn : labelOff);
-    return btn2;
-  };
-
-  const settingsBody = el("div", { class: "menu-settings", hidden: true, id: "menu-settings" },
-    soundToggle(),
-    themeSelector(),
-    settingToggle("Pistas: sí / Hints on", "Pistas: no / Hints off", "hints"),
-    settingToggle("Vosotros: sí / Included", "Vosotros: no / Hidden", "vosotros"),
-    el("button", {
-      class: "menu-link setting-row borrar-row", type: "button",
-      onclick: () => {
-        if (confirm("¿Borrar todo el progreso? / Erase all progress?")) {
-          store.resetProgress();
-          close();
-          render();
-        }
-      },
-    }, "Borrar progreso / Erase progress"));
-  const settingsBtn = el("button", {
-    class: "menu-link settings-toggle", type: "button",
-    "aria-expanded": "false", "aria-controls": "menu-settings",
-    onclick: () => {
-      const expand = settingsBody.hidden;
-      settingsBody.hidden = !expand;
-      settingsBtn.setAttribute("aria-expanded", String(expand));
-    },
-  }, "Ajustes / Settings");
-
-  const panel = el("nav", { class: "menu-panel", id: "site-menu", hidden: true, "aria-label": "Páginas principales / Site menu" },
-    el("a", { class: "menu-link", href: "#/" }, "Inicio / Home"),
-    el("a", { class: "menu-link", href: "#/informe" }, "Informe / Status"),
-    el("a", { class: "menu-link", href: "#/descargas" }, "Descargas / Offline audio"),
-    installMenuItem(() => close()),
-    el("a", { class: "menu-link", href: "about.html" }, "Acerca de / Standards"),
-    el("a", { class: "menu-link", href: "docs/" }, "Documentación / Docs"),
-    settingsBtn,
-    settingsBody);
-
-  const onDoc = (e) => { if (!wrap.contains(e.target)) close(); };
-  const onKey = (e) => { if (e.key === "Escape") { close(); } };
-  const close = () => {
-    if (!open) return;
-    open = false;
-    panel.hidden = true;
-    scrim.hidden = true;
-    document.body.classList.remove("menu-open");
-    btn.setAttribute("aria-expanded", "false");
-    document.removeEventListener("click", onDoc);
-    document.removeEventListener("keydown", onKey);
-    btn.focus();
-  };
-  const btn = el("button", {
-    class: "menu-btn", type: "button",
-    "aria-expanded": "false", "aria-controls": "site-menu",
-    "aria-label": "Menú del sitio / Site menu",
-    onclick: () => {
-      if (open) return close();
-      open = true;
-      panel.hidden = false;
-      scrim.hidden = false;
-      document.body.classList.add("menu-open");
-      btn.setAttribute("aria-expanded", "true");
-      setTimeout(() => document.addEventListener("click", onDoc), 0); // skip the opening click
-      document.addEventListener("keydown", onKey);
-      panel.querySelector("a").focus();
-    },
-  }, "☰");
-  // navigating from a row closes the drawer (typical hamburger behavior)
-  panel.addEventListener("click", (e) => {
-    if (e.target.closest("a.menu-link")) close();
+  return createMenuButton({
+    announce,
+    soundGate: audioAvailable,
+    onUnmute: () => say("Hola"),
+    // NN-1 option b: mid-round changes save WITHOUT re-rendering.
+    afterSetting: () => { if (!inRound()) render(); },
+    onReset: () => render(),
+    installOnOpen: () => feature(parseRoute().screen, "install"),
+    getPrompt: () => deferredInstall,
+    onPromptUsed: () => { deferredInstall = null; },
   });
-  const wrap = el("span", { class: "menu-wrap no-print" }, btn, scrim, panel);
-  return wrap;
-}
-
-/**
- * M16 T: 🎨 theme selector — Auto / Light / Dark, inside the ☰ menu below
- * the 🔊 Sonido row. Light is the DEFAULT (owner, 2026-07-09): an unset
- * theme sets `data-theme="light"`. Auto follows `prefers-color-scheme`;
- * Light and Dark set `data-theme` on <html> and win over the OS in both the
- * current and the redesign looks. Persisted in settings.theme; the inline
- * loader in each HTML head re-applies it before paint so there is no FOUC.
- */
-function applyTheme(t) {
-  const html = document.documentElement;
-  if (t === "light" || t === "dark") html.setAttribute("data-theme", t);
-  else html.removeAttribute("data-theme");
-}
-function themeSelector() {
-  const options = [
-    { value: "auto", label: "Auto" },
-    { value: "light", label: "Claro / Light" },
-    { value: "dark", label: "Oscuro / Dark" },
-  ];
-  const current = () => store.getSettings().theme || "light";
-  const buttons = options.map((o) =>
-    el("button", {
-      class: "theme-option", type: "button",
-      "aria-pressed": String(current() === o.value),
-      "data-theme-value": o.value,
-      onclick: (e) => {
-        store.setSetting("theme", o.value);
-        applyTheme(o.value);
-        for (const b of buttons) {
-          const active = b.getAttribute("data-theme-value") === o.value;
-          b.setAttribute("aria-pressed", String(active));
-        }
-        announce(`Tema: ${o.label}`);
-      },
-    }, o.label));
-  return el("div", { class: "menu-link theme-selector", role: "group", "aria-label": "Tema / Theme" },
-    el("span", { class: "theme-label" }, "Tema / Theme"),
-    el("div", { class: "theme-options" }, ...buttons));
-}
-
-/**
- * 🔊/🔇 toggle — lives INSIDE the ☰ menu (owner, 2026-07-08: cleaner
- * header). Hidden entirely when no audio backend exists.
- */
-function soundToggle() {
-  if (!audioAvailable()) return null;
-  const label = (on) => (on ? "Sonido: encendido / Sound on" : "Sonido: apagado / Sound off");
-  const on = store.getSettings().sound;
-  return el("button", {
-    class: "menu-link sound-toggle", type: "button",
-    "aria-pressed": String(on),
-    onclick: (e) => {
-      const next = !store.getSettings().sound;
-      store.setSetting("sound", next);
-      e.currentTarget.textContent = label(next);
-      e.currentTarget.setAttribute("aria-pressed", String(next));
-      if (next) say("Hola");
-    },
-  }, label(on));
 }
 
 const app = document.getElementById("app");
@@ -382,21 +166,6 @@ function announce(msg) {
 /** Append screen content, skipping nulls (native append() stringifies them). */
 function mount(...nodes) {
   app.append(...nodes.flat().filter(Boolean));
-}
-
-function el(tag, attrs = {}, ...children) {
-  const node = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) {
-    if (k === "class") node.className = v;
-    else if (k === "html") node.innerHTML = v;
-    else if (k.startsWith("on")) node.addEventListener(k.slice(2), v);
-    else if (v !== false && v != null) node.setAttribute(k, v === true ? "" : v);
-  }
-  for (const c of children.flat()) {
-    if (c == null) continue;
-    node.append(c.nodeType ? c : document.createTextNode(c));
-  }
-  return node;
 }
 
 /**

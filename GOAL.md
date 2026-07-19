@@ -939,6 +939,15 @@ journal/.)
         ≥44px rows, reduced-motion parity. e2e: aria/Escape/scrim/focus
         return, settings apply, elementFromPoint proves the install
         dialog is on top.
+  - [x] **M30.4 MENU POLISH** (owner follow-up 2026-07-19, PR #127) —
+        settings reordered Vosotros → Pistas → Sonido → Tema (Borrar
+        last); the first three are role="switch" rows with visible
+        track+thumb; Tema stacked under its label with **Auto now the
+        DEFAULT** (owner decision, reversing 2026-07-09 Light — inline
+        loaders + themeSelector updated together); the drawer extracted
+        to shared js/menu.js and mounted on about.html + docs/ via
+        js/static-menu.js (consistent sitewide nav); sw shell-v4; axe +
+        switch/order/static-nav e2e coverage.
   - [x] **M30.3 REVALIDATE** (2026-07-19) — axe gate extended to
         menu-open, settings-expanded, install-dialog states + Descargas/
         Pack/stretch routes (zero critical/serious); keyboard-only e2e
