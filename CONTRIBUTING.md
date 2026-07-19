@@ -91,7 +91,7 @@ tables are the reference).
 
 ## Code style
 
-- No build step, no dependencies, no login, no analytics
+- No build step, no dependencies, no login, no third-party analytics
 - ES modules, plain DOM via `el()` helper, hash routing
 - No `innerHTML` for user-derived strings
 - UI text: Spanish first, short English support
@@ -100,7 +100,9 @@ tables are the reference).
 
 ## Privacy
 
-- No accounts, no analytics, no network calls (except audio clips)
+- No accounts, no third-party analytics; no network calls except
+  same-origin assets (audio clips) and the disclosed aggregate visit
+  beacon (GOAL.md invariant 2 — counts only, never IPs or identifiers)
 - Progress in localStorage only (`conjuga.v1`)
 - Owner's children appear only as pseudonyms "A1" and "A2"
 

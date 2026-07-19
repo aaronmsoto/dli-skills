@@ -78,7 +78,7 @@ Design-relevant principles and how Conjuga embodies them:
 | **Std IV:** distinguish salient errors from systematic developmental ones; foster students' ability to "monitor and correct their use of language" | Accent-only errors get a penalty-free "¡Casi! Revisa la tilde" retry; wrong answers always show the correct form and pause for reading; naive-regularization distractors surface the classic developmental errors on purpose |
 | **Std VII:** "clear, meaningful, and timely feedback" that models self-assessment; help students "reflect on their own progress" | Immediate per-item feedback; end-of-round review list of missed forms; persistent star/mastery display per group × tense × mode |
 | **Std VI:** curriculum that is "sequential, long-range, and continuous," moving "from simple to sophisticated" | Frequency-ordered groups (most useful verbs first), present before past, study → recognize → produce ladder within every group |
-| **Std V:** equitable, low-anxiety environments where "all students learn actively"; technology as a legitimate strategy | Free, no login, no ads, no data collection; bilingual instructions; dark mode, reduced motion, screen-reader announcements, keyboard play; praise-based messaging, never punitive |
+| **Std V:** equitable, low-anxiety environments where "all students learn actively"; technology as a legitimate strategy | Free, no login, no ads, no personal data collection; bilingual instructions; dark mode, reduced motion, screen-reader announcements, keyboard play; praise-based messaging, never punitive |
 | **Std I:** knowledge of students (K-5 development) | Large targets, emoji anchors, short instructions, ~3-minute rounds matched to elementary attention spans |
 
 ## 3. Teacher-facing claims (for classroom use)
@@ -91,6 +91,19 @@ Claims we deliberately do **not** make: that the app teaches interpersonal
 communication (it has no two-way exchange), that it develops cultural
 competence (Std III is out of scope for v0.1), or that conjugation accuracy
 equals proficiency.
+
+## 4. Privacy & COPPA (owner-amended 2026-07-19)
+
+Progress lives only in the browser's localStorage; the site collects zero
+personal data — no accounts, no login, no cookies, no third-party trackers
+or advertising. The one permitted network feature is the M28 aggregate
+visit beacon: our own in-repo Cloudflare Worker increments anonymous
+(date, page, event) counters and never stores IP addresses or any
+identifier. Aggregate counting of this kind falls under COPPA's "support
+for internal operations" exception (as retained in the 2025 amendments to
+the COPPA Rule), and is disclosed on about.html's Privacy section per that
+rule's notice duty. FERPA posture is unchanged: the site holds no
+education records.
 
 ## Per-screen standards panels (M9; placement per owner 2026-07-08)
 
@@ -110,4 +123,4 @@ it; update both together, enforced by a unit test on the module's shape):
 | 🎧 Escucha | Escucha y elige lo que oyes. | Interpretive Listening, Novice Low–Mid (badges, not stars — progress never requires hearing) |
 | 🪺 Nido | El nido crece con tus estrellas. | Unscored celebration layer — NBPTS Std V |
 | ⚔️ Contraste | La palabra del tiempo es tu pista. | Toward Novice High storytelling — NBPTS Std IV |
-| 📄 Informe | Tu progreso, listo para compartir. | Paper progress sharing, no data collection — NBPTS Std IV |
+| 📄 Informe | Tu progreso, listo para compartir. | Paper progress sharing, no personal data collection — NBPTS Std IV |

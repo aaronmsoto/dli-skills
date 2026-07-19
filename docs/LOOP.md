@@ -76,7 +76,9 @@ main                     production — merge = deploy to GitHub Pages (test-gat
 - **Red never auto-merges.** If you can't get green, push the branch, open
   the PR titled `loop(RED): …`, do **not** enable auto-merge, explain.
 - **Scope discipline.** Nothing outside GOAL.md's current milestone; respect
-  Non-goals absolutely. No new dependencies, build steps, analytics, logins.
+  Non-goals absolutely. No new dependencies, build steps, third-party
+  analytics, logins (the M28 beacon per GOAL.md invariant 2 + SPEC §5.7 is
+  the one permitted network feature).
   (Playwright is CI/dev tooling only — it must never become an app
   dependency.)
 - **Journal per iteration**: one `journal/*.md` file per loop; never edit
