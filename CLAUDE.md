@@ -12,11 +12,14 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
    `js/verbs.js` MUST be accompanied by tests in `tests/conjugator.test.mjs`
    with hand-verified forms (RAE conjugation tables are the reference). Run
    `npm test` before committing — all tests must pass.
-2. **No build step, no dependencies, no login, no analytics.** The app is plain
-   ES modules served statically. Do not add bundlers, frameworks, trackers, or
-   anything requiring a server. Progress lives only in `localStorage`
-   (versioned key `conjuga.v1` — bump the version if the schema changes
-   incompatibly).
+2. **No build step, no dependencies, no login, no third-party trackers, no
+   personal data collection.** The app is plain ES modules served
+   statically. Do not add bundlers, frameworks, third-party analytics, or
+   anything else requiring a server — the ONLY permitted server code is the
+   in-repo `server/` Worker, which stores aggregate counts and never IPs or
+   identifiers (see GOAL.md invariant 2). Progress lives only in
+   `localStorage` (versioned key `conjuga.v1` — bump the version if the
+   schema changes incompatibly).
 3. **Novice-first pedagogy.** Feedback is corrective, never punitive; recognition
    (Elige) precedes production (Escribe); present tense is presented before past
    tenses. Keep UI text bilingual: Spanish first, short English support.

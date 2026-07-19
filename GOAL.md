@@ -19,8 +19,13 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 ## Product invariants (violating these fails review — see CLAUDE.md)
 
 1. Linguistic accuracy is test-gated; RAE tables are the reference.
-2. Static site: no build step, no dependencies, no server, no login,
-   no analytics. Progress lives only in localStorage.
+2. Static site: no build step, no dependencies, no login, no third-party
+   trackers, no advertising, no personal data collection. Progress lives
+   in localStorage and never leaves the device; the only network feature
+   beyond fetching the site's own assets is aggregate visit counting on
+   our own server, which stores counts only and never stores IP addresses
+   or any identifier. It runs on infrastructure we control with in-repo
+   source; nothing identifies or profiles a learner.
 3. Novice-first, non-punitive pedagogy; bilingual (Spanish-first) UI.
 4. K-5 accessibility: big targets, dark mode, reduced motion, ARIA live.
 5. Production = `main` = the live GitHub Pages site. Only a human merge
@@ -28,22 +33,21 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue (owner-approved plan, 2026-07-19): M25 (📱 PWA + offline Descargas)
+**Queue (owner-approved plan, 2026-07-19): M26 (⏭️ stretch tenses — the
+owner reactivated M4 with the unscored-first scope via the approved plan)
 is ACTIVE and loop-workable NOW — work its acceptance criteria in order;
-visual work loads the prado-visual-craft skill. Next: M26 (⏭️ stretch
-tenses — the owner reactivated M4 with the unscored-first scope via the
-approved plan). Then M29 (🍎 teacher mode). M27 (🔄 anonymous sync codes)
-is PAUSED indefinitely (owner, 2026-07-19 — progress syncing is not a
-priority). M28 (📊 aggregate analytics beacon) is INDEPENDENT of M27 —
-owner-gated, not paused: it becomes loop-workable the moment the owner
-checks its own beacon-only amendment + Cloudflare gates inside the M28
-entry, even while M27 stays paused. Loops must not write code that calls
-any network endpoint before the relevant gate boxes are checked, and must
-never self-unpause a milestone or check an owner gate themselves.
-Forward designs live in docs/SPEC.md §5.5-5.7 —
+visual work loads the prado-visual-craft skill. Then M29 (🍎 teacher
+mode). M27 (🔄 anonymous sync codes) is PAUSED indefinitely (owner,
+2026-07-19 — progress syncing is not a priority). M28 (📊 aggregate
+analytics beacon) is INDEPENDENT of M27: its amendment was SIGNED
+2026-07-19 (PR #104), so beacon code may be written (e2e against stubs);
+deploying waits only on the vendor-setup gate inside the M28 entry.
+Loops must not call any live network endpoint before that gate box is
+checked, and must never self-unpause a milestone or check an owner gate
+themselves. Forward designs live in docs/SPEC.md §5.5-5.7 —
 implement THAT design, don't re-derive it. Still owner/SME-gated as before:
-M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M24 complete
-(M19-M24 shipped 2026-07-15..17).**
+M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M25 complete
+(M19-M24 shipped 2026-07-15..17; M25 shipped 2026-07-19).**
 The queue line here — not milestone numbering or file position — sets loop
 priority. (Historical per-milestone narratives live in each entry and in
 journal/.)
@@ -722,20 +726,21 @@ journal/.)
         (9/9 → feather everywhere; 8/9 → nothing; listening-only → pluma;
         about.html carries the new rationale and not the stale claim).
 
-- [ ] **M25 — 📱 PWA: install + offline + Descargas (owner-approved plan
+- [x] **M25 — 📱 PWA: install + offline + Descargas · shipped 2026-07-19
+  (loop iterations M25.1-M25.4, PRs #106-#109) (owner-approved plan
   2026-07-19; ACTIVE — loop-workable now; design: docs/SPEC.md §5.5)**
   Installable app + offline shell + downloadable audio. Zero conflict with
   any existing privacy promise (everything stays same-origin and on-device);
   directly closes the M19-documented offline+voiceless audio gap. Facts:
   shell 59 KB gz; per-group audio ~2 MB; full corpus 39.4 MB.
   Acceptance criteria, in order:
-  - [ ] **ICONS+MANIFEST** — `manifest.webmanifest` (name, colors from
+  - [x] **ICONS+MANIFEST** (2026-07-19) — `manifest.webmanifest` (name, colors from
         Prado tokens, start_url `.`, display standalone) + real icon files
         (192/512 + maskable) generated ONCE by a repo tool script (like
         tools/generate-audio.mjs — the site itself stays build-free); load
         prado-visual-craft for the icon design; e2e asserts manifest link +
         icon files resolve.
-  - [ ] **SW CORE** — hand-written `sw.js` per SPEC §5.5: network-first
+  - [x] **SW CORE** (2026-07-19) — hand-written `sw.js` per SPEC §5.5: network-first
         shell with cache fallback, `VERSION`-named shell cache,
         skipWaiting+clients.claim, navigation fallback with
         `ignoreSearch:true` ONLY offline (querystrings like `?m18demo=1`
@@ -743,7 +748,7 @@ journal/.)
         !sessionStorage.getItem("conjuga.noSW")`; existing e2e blocks stay
         untouched; ONE dedicated e2e block registers, asserts offline shell
         + query preservation, unregisters.
-  - [ ] **DESCARGAS** — download manager UI (☰ entry + screen with standard
+  - [x] **DESCARGAS** (2026-07-19) — download manager UI (☰ entry + screen with standard
         chrome): per-group download (~2 MB, progress, sequential
         fetch+cache.put into `audio-gNN` caches), download-all
         (resume-by-skip-existing), per-group delete, storage.estimate()
@@ -752,11 +757,11 @@ journal/.)
         Precache audio/manifest.json → offline 🎧 Escucha for downloaded
         groups; e2e covers download/delete/estimate flows with stubbed
         clips.
-  - [ ] **INSTALL UX** — iOS has no beforeinstallprompt: a small "Instalar
+  - [x] **INSTALL UX** (2026-07-19) — iOS has no beforeinstallprompt: a small "Instalar
         la app / Añadir a inicio" instructions panel (☰), Android/desktop
         install prompt where available; about.html gains an offline/install
         paragraph (go-live content rule).
-  - [ ] **V** — suites green incl. the SW-gating regression assertions;
+  - [x] **V** (2026-07-19) — suites green incl. the SW-gating regression assertions;
         payload budget green (sw.js + manifest join the budget); journal.
   Owner actions: merge; install-test on a real iPhone/iPad; verify
   `?m18demo=1` on the live site post-SW.
@@ -843,7 +848,8 @@ journal/.)
   static admin page reading a public aggregates endpoint or `wrangler d1`
   queries. Accepted trade-off: no bot filtering (order-of-magnitude
   signal). If M27 ever unpauses, its sync endpoints join this same Worker.
-  - [ ] **GATE (owner): SIGN THE BEACON-ONLY PRIVACY AMENDMENT** — one PR
+  - [x] **GATE (owner): SIGN THE BEACON-ONLY PRIVACY AMENDMENT** (signed
+        by merging PR #104, 2026-07-19) — one PR
         updating together: invariant 2 + Non-goals below, about.html
         Privacy, README, CLAUDE.md golden rule 2, docs/STANDARDS.md,
         js/standards-info.js. Replacement invariant 2 (sign verbatim):
@@ -1049,13 +1055,17 @@ journal/.)
 ## Non-goals (do not build)
 
 
-Accounts, servers, dashboards, analytics, other languages (until M5 is done
-and a human re-scopes), external services, and economy-style gamification
+Accounts, third-party servers or services, third-party analytics/trackers,
+ad-tech, other languages (until M5 is done and a human re-scopes), external
+services, and economy-style gamification
 (currencies, shops, random loot, competitive leaderboards, streak-guilt
 mechanics). The mascot companion (M6) is explicitly IN scope. ⭐ stars and
 🎧 badges remain the only *scorekeeping*; celebration layers (nest, flight,
 album) must be fully derived from them — deterministic, unscored, and never
-a new currency (owner-amended 2026-07-15 for M18).
+a new currency (owner-amended 2026-07-15 for M18). The ONLY permitted
+server is the in-repo `server/` Cloudflare Worker (M28 beacon; M27 sync
+endpoints join it only if that milestone is ever unpaused), and the only
+permitted dashboard is M28's aggregates page (owner-amended 2026-07-19).
 
 ## Definition of done (any milestone item)
 

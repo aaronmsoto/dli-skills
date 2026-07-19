@@ -59,6 +59,12 @@ export function clipsAvailable() {
   return clipIndex !== null;
 }
 
+/** The loaded manifest map (spoken text → clip files), or null. Descargas
+ *  (M25.3) derives per-group download lists from it. */
+export function clipMap() {
+  return clipIndex?.map ?? null;
+}
+
 /** Either backend works → audio UI may render. */
 export function audioAvailable() {
   return clipsAvailable() || ttsAvailable();

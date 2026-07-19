@@ -73,7 +73,13 @@ zero-setup, and usable from any browser without registration or data collection.
   does her signature head-spin on 3-star rounds; fully static under
   reduced-motion and hidden in print (design rationale in docs/MASCOT.md)
 - **Mastery tracking** — 0-3 stars per activity, best-score persistence in
-  `localStorage`; no accounts, no server, no analytics
+  `localStorage`; no accounts, no login, no personal data collection — the
+  only network feature is an anonymous, aggregate visit counter on our own
+  open-source Worker (see `server/`); no IPs or identifiers are ever stored
+- **📱 Installable & offline** — PWA (manifest + hand-written service
+  worker): "Add to Home Screen" installs the app; the ⬇️ Descargas screen
+  stores per-group audio (~2 MB each) so practice — including 🎧 Escucha —
+  works fully offline
 - **Vosotros toggle** — off by default (US convention), one click to include
 - **Accessible** — large touch targets, keyboard shortcuts (1-4 for choices),
   ARIA live announcements, dark mode, reduced-motion support

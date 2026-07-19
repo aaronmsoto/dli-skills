@@ -26,6 +26,7 @@ const MIME = {
   ".svg": "image/svg+xml",
   ".json": "application/json",
   ".png": "image/png",
+  ".webmanifest": "application/manifest+json",
 };
 
 const server = createServer(async (req, res) => {
@@ -2241,6 +2242,192 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (cloud.sky === "rgba(0, 0, 0, 0)") fail("m22: sky wash missing behind the cloud grid");
   await shape.close();
   ok("M22 clouds: puff silhouette (inherited backgrounds), drop-shadow, borderless states, width cap, sky wash");
+}
+
+// ---------- M25.1 PWA: manifest links, parses, icons resolve ----------
+{
+  const html = await (await fetch(`${BASE}/index.html`)).text();
+  if (!html.includes('rel="manifest"')) fail("m25.1: index.html missing manifest link");
+  if (!html.includes('name="theme-color"')) fail("m25.1: index.html missing theme-color meta");
+  const res = await fetch(`${BASE}/manifest.webmanifest`);
+  if (res.status !== 200) fail("m25.1: manifest.webmanifest not served");
+  let man = null;
+  try { man = await res.json(); } catch { fail("m25.1: manifest is not valid JSON"); }
+  // iOS: dedicated FULL-BLEED touch icon (transparent corners composite
+  // onto black on the home screen) + stable manifest id.
+  if (!html.includes('rel="apple-touch-icon"')) fail("m25.1: index.html missing apple-touch-icon link");
+  {
+    const r = await fetch(`${BASE}/icons/apple-touch-icon.png`);
+    const buf = new Uint8Array(await r.arrayBuffer());
+    if (r.status !== 200 || buf[0] !== 0x89 || buf[1] !== 0x50) {
+      fail("m25.1: icons/apple-touch-icon.png does not resolve to a PNG");
+    }
+  }
+  if (man) {
+    if (man.id !== "./") fail("m25.1: manifest id missing/wrong");
+    if (man.display !== "standalone" || man.start_url !== ".") fail("m25.1: manifest display/start_url wrong");
+    const purposes = (man.icons || []).map((i) => i.purpose || "any");
+    if (!purposes.includes("maskable")) fail("m25.1: manifest lacks a maskable icon");
+    if (!purposes.includes("any")) fail("m25.1: manifest lacks a purpose-any icon");
+    for (const icon of man.icons || []) {
+      const r = await fetch(`${BASE}/${icon.src}`);
+      const buf = new Uint8Array(await r.arrayBuffer());
+      if (r.status !== 200 || buf[0] !== 0x89 || buf[1] !== 0x50) {
+        fail(`m25.1: icon ${icon.src} does not resolve to a PNG`);
+      }
+    }
+  }
+  ok("M25.1 PWA: manifest links, parses, and all icons resolve as PNGs");
+}
+
+// ---------- M25.3 ⬇️ Descargas: download/resume/delete + voiceless fallback ----------
+{
+  // Voiceless context first (the main page keeps its manifest-204 stub):
+  // the screen must render its "audio unreachable" message, no rows.
+  await page.goto(`${BASE}/#/descargas`);
+  await page.waitForSelector(".dl-unavailable");
+  if (await page.locator(".dl-row").count()) fail("m25.3: rows rendered without a clip manifest");
+  await assertNoStrayNull("descargas-voiceless");
+
+  // Real-manifest context (own page, SW-free — the Cache API needs no SW):
+  // stub every clip mp3 with tiny bytes so "downloads" stay instant.
+  const dlPage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(dlPage);
+  const FAKE_MP3 = Buffer.from("ID3fakeclip");
+  await dlPage.route("**/audio/clips/*.mp3", (r) =>
+    r.fulfill({ status: 200, contentType: "audio/mpeg", body: FAKE_MP3 }));
+  await dlPage.goto(`${BASE}/#/descargas`);
+  await dlPage.waitForSelector(".dl-row");
+  const rows = await dlPage.locator(".dl-row").count();
+  if (rows !== 20) fail(`m25.3: expected 20 group rows, got ${rows}`);
+  if (!(await dlPage.locator(".dl-all").count())) fail("m25.3: download-all button missing");
+  if (!(await dlPage.locator(".dl-warning").count())) fail("m25.3: iOS eviction warning missing");
+
+  // ☰ menu links the screen (Estudia-links rule analogue for site chrome).
+  if (!(await dlPage.locator('.menu-panel a[href="#/descargas"]').count())) {
+    fail("m25.3: ☰ menu missing the Descargas link");
+  }
+
+  // Group 1: download fills audio-g01 with every derived clip URL.
+  const g1 = dlPage.locator(".dl-row").first();
+  await g1.locator(".dl-btn").click();
+  await dlPage.waitForFunction(
+    () => document.querySelector(".dl-row .dl-status")?.textContent?.includes("Descargado"),
+    { timeout: 30000 },
+  );
+  const cacheInfo = await dlPage.evaluate(async () => {
+    const keys = await caches.keys();
+    const cache = await caches.open("audio-g01");
+    return { keys, count: (await cache.keys()).length };
+  });
+  if (!cacheInfo.keys.includes("audio-g01")) fail("m25.3: audio-g01 cache not created");
+  // Prefixed + bare shapes, both speeds; dupes (ser/ir preterite,
+  // imperfect yo=él) lower the ceiling — see tests/descargas.test.mjs.
+  if (cacheInfo.count < 320 || cacheInfo.count > 360) {
+    fail(`m25.3: audio-g01 holds ${cacheInfo.count} clips (expected 320-360)`);
+  }
+  if ((await g1.locator(".dl-btn").isVisible())) fail("m25.3: download button still visible after completion");
+
+  // Delete: cache disappears, button returns.
+  await g1.locator(".dl-del").click();
+  await dlPage.waitForFunction(async () => !(await caches.has("audio-g01")));
+  await dlPage.waitForFunction(() => {
+    const btn = document.querySelector(".dl-row .dl-btn");
+    return btn && !btn.hidden;
+  });
+  ok("m25.3 descargas: 20 rows, ☰ link, group download fills audio-g01, delete clears it, voiceless fallback message");
+
+  await dlPage.evaluate(async () => { for (const k of await caches.keys()) await caches.delete(k); });
+  await dlPage.close();
+}
+
+// ---------- M25.4 📲 install UX: ☰ row, panel steps, Descargas link ----------
+{
+  await page.goto(`${BASE}/`);
+  await page.waitForSelector(".set-card");
+  await page.click(".menu-btn");
+  if (!(await page.locator(".menu-panel .install-link").count())) {
+    fail("m25.4: ☰ menu missing the install row");
+  }
+  await page.click(".menu-panel .install-link");
+  await page.waitForSelector(".install-panel");
+  // No beforeinstallprompt in the harness → generic steps, never the
+  // install-now button; the panel links to Descargas.
+  if (await page.locator(".install-panel .install-now").count()) {
+    fail("m25.4: install-now button rendered without a captured prompt");
+  }
+  if ((await page.locator(".install-panel .install-steps li").count()) < 2) {
+    fail("m25.4: install steps missing");
+  }
+  if (!(await page.locator('.install-panel a[href="#/descargas"]').count())) {
+    fail("m25.4: install panel missing the Descargas link");
+  }
+  await page.keyboard.press("Escape");
+  if (await page.locator(".install-panel").count()) fail("m25.4: Escape did not close the install panel");
+  await assertNoStrayNull("install-panel");
+  ok("m25.4 install UX: ☰ row opens the panel, steps + Descargas link, Escape closes");
+}
+
+// ---------- M25.2 PWA: SW registers (gated), offline shell, query preservation ----------
+{
+  // Fresh context: SW registrations are per-context, so nothing here can
+  // leak into the other blocks (which stay SW-free via the webdriver gate).
+  const swPage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(swPage);
+  await swPage.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => false });
+  });
+
+  await swPage.goto(`${BASE}/`);
+  await swPage.waitForSelector(".set-card");
+  await swPage.evaluate(() => navigator.serviceWorker.ready);
+  const controlled = await swPage.evaluate(async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    return !!(reg && reg.active);
+  });
+  if (!controlled) fail("m25.2: service worker did not reach active state");
+
+  // Offline: the whole shell must come from the VERSION cache.
+  await swPage.context().setOffline(true);
+  await swPage.reload();
+  await swPage.waitForSelector(".set-card");
+  const offlineCards = await swPage.locator(".set-card").count();
+  if (offlineCards !== 20) fail(`m25.2: offline shell rendered ${offlineCards}/20 set cards`);
+
+  // Offline navigation WITH a querystring: ignoreSearch fallback serves
+  // the shell AND the query survives in location.search.
+  await swPage.goto(`${BASE}/?m18demo=1`);
+  await swPage.waitForSelector(".set-card");
+  const offSearch = await swPage.evaluate(() => location.search);
+  if (offSearch !== "?m18demo=1") fail(`m25.2: offline query lost, got "${offSearch}"`);
+
+  // Back online: querystrings pass through untouched (no ignoreSearch).
+  await swPage.context().setOffline(false);
+  await swPage.goto(`${BASE}/?m18demo=1`);
+  await swPage.waitForSelector(".set-card");
+  const onSearch = await swPage.evaluate(() => location.search);
+  if (onSearch !== "?m18demo=1") fail(`m25.2: online query lost, got "${onSearch}"`);
+
+  // The registration gate itself: a page with conjuga.noSW must not register.
+  const noSwPage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(noSwPage);
+  await noSwPage.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => false });
+    sessionStorage.setItem("conjuga.noSW", "1");
+  });
+  await noSwPage.goto(`${BASE}/`);
+  await noSwPage.waitForSelector(".set-card");
+  const gated = await noSwPage.evaluate(async () => !(await navigator.serviceWorker.getRegistration()));
+  if (!gated) fail("m25.2: conjuga.noSW gate did not prevent registration");
+  await noSwPage.close();
+
+  // Clean up so this block leaves no trace for reruns against the same browser.
+  await swPage.evaluate(async () => {
+    for (const reg of await navigator.serviceWorker.getRegistrations()) await reg.unregister();
+    for (const key of await caches.keys()) await caches.delete(key);
+  });
+  await swPage.close();
+  ok("M25.2 PWA: SW active, offline shell (20 groups), ?m18demo=1 preserved offline+online, noSW gate holds");
 }
 
 // ---------- wrap up ----------

@@ -32,8 +32,8 @@ See docs/STANDARDS.md for the alignment detail.
 | gustar | Replaced with comer | Novices learn *me gusta* as a chunk; drilling *yo gusto* teaches an unnatural pattern |
 | Grouping | 20 fixed groups of 5, by frequency rank | "5 at a time" requirement; predictable, spiraling progression |
 | Tense framing | ☀️ ahora / ⭐ ayer, una vez / 🌙 antes, muchas veces | Kid-accessible semantic anchors for the preterite/imperfect contrast |
-| Platform | Static site (vanilla ES modules), GitHub Pages | Free, no server, no accounts, works on school Chromebooks/iPads |
-| Persistence | localStorage only | Zero data collection (COPPA/FERPA-friendly by construction) |
+| Platform | Static site (vanilla ES modules), GitHub Pages | Free, no app server (the §5.7 beacon Worker is the sole, separate server piece), no accounts, works on school Chromebooks/iPads |
+| Persistence | localStorage only | Zero personal data collection; aggregate identifier-free visit counts only (§5.7) |
 
 ## 4. Functional requirements
 
@@ -266,8 +266,10 @@ timers/streaks/leaderboards; celebration access never gates on perfection
   **Light as the default**; full token spec in [docs/DESIGN.md](DESIGN.md).
 - **Accessibility:** WCAG-minded — ARIA live region for feedback, focus-visible
   styles, keyboard play, ≥44px targets, dark mode, prefers-reduced-motion.
-- **Performance:** no network calls after load; total payload < 100 KB GZIPPED — the wire-transfer measure (owner, 2026-07-08; ~37 KB at changeover).
-- **Privacy:** no cookies, no analytics, no external requests, no PII.
+- **Performance:** no network calls after load beyond lazy same-origin audio and §5.7's beacon; total payload < 100 KB GZIPPED — the wire-transfer measure (owner, 2026-07-08; ~37 KB at changeover).
+- **Privacy:** no cookies, no third-party analytics, no PII; the only
+  permitted request beyond same-origin assets is §5.7's identifier-free
+  aggregate beacon.
 - **Browser support:** evergreen browsers (ES2020 modules).
 
 ## 5. Technical design
@@ -302,7 +304,7 @@ sessionStorage; mastery in localStorage under versioned key `conjuga.v1`.
 GitHub Actions workflow publishes the repository root to GitHub Pages on push
 to `main` (and manually via workflow_dispatch). No build step.
 
-### 5.5 Forward design — PWA/offline (M25, planned 2026-07-19)
+### 5.5 PWA/offline (M25 — designed and SHIPPED 2026-07-19, iterations M25.1-M25.4)
 Hand-written `sw.js` (no build step, ever — Workbox excluded): NETWORK-FIRST
 with cache fallback for the entire ~59 KB gz shell (freshness beats speed on
 a no-hash site; stale-while-revalidate risks version skew between unhashed

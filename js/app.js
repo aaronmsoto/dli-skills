@@ -12,10 +12,11 @@ import { SETS } from "./verbs.js";
 import { conjugate, PERSONS, TENSES, TENSE_LABELS, normalizeAnswer, stripAccents } from "./conjugator.js";
 import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
 import * as store from "./storage.js";
-import { speak, ttsAvailable, audioAvailable, initClips, chirp } from "./audio.js";
+import { speak, ttsAvailable, audioAvailable, initClips, chirp, clipMap } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
 import { createNido, nestTier, tierMeta, PLUMA } from "./nido.js";
 import { STANDARDS_INFO } from "./standards-info.js";
+import { downloadsSupported, clipUrlsForSet, groupStatus, downloadGroup, deleteGroup, storageSnapshot, requestPersistence, fmtMB } from "./descargas.js";
 
 const MODES = ["choice", "type", "match"];
 // Escucha is a parallel track: badges, not stars — never in MODES, so no
@@ -112,6 +113,79 @@ function infoButton(key) {
 }
 
 /**
+ * 📲 M25.4 install panel — a ☰ row opening a small dialog: a real install
+ * button where the browser captured `beforeinstallprompt`, otherwise
+ * per-platform "Añadir a inicio" steps (iOS has no install event).
+ * Reuses the info-overlay dialog chrome.
+ */
+function installMenuItem() {
+  let overlay = null;
+  const onKey = (e) => {
+    if (e.key === "Escape") return close();
+    if (e.key === "Tab" && overlay) {
+      // cycle focus inside the dialog (it has 2-3 focusables)
+      const focusables = [...overlay.querySelectorAll("button, a")];
+      const i = focusables.indexOf(document.activeElement);
+      e.preventDefault();
+      const step = e.shiftKey ? -1 : 1;
+      focusables[(i + step + focusables.length) % focusables.length].focus();
+    }
+  };
+  const close = () => {
+    overlay?.remove();
+    overlay = null;
+    document.removeEventListener("keydown", onKey);
+    btn.setAttribute("aria-expanded", "false");
+    btn.focus();
+  };
+  const btn = el("button", {
+    class: "menu-link install-link", type: "button", "aria-expanded": "false",
+    onclick: () => {
+      if (overlay) return close();
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const en = (t) => el("span", { class: "h-en", lang: "en" }, ` ${t}`);
+      const how = deferredInstall
+        ? el("button", {
+          class: "btn primary install-now", type: "button",
+          onclick: () => {
+            const evt = deferredInstall;
+            deferredInstall = null;
+            close();
+            evt.prompt?.();
+          },
+        }, "📲 Instalar ahora / Install now")
+        : el("ol", { class: "install-steps" },
+          ...(isIOS ? [
+            el("li", {}, "En Safari, toca Compartir (el cuadrito con la flecha ⬆️).",
+              en("In Safari, tap Share (the box with the arrow).")),
+            el("li", {}, "Elige “Añadir a pantalla de inicio”.",
+              en("Choose “Add to Home Screen.”")),
+          ] : [
+            el("li", {}, "Abre el menú del navegador (⋮).",
+              en("Open the browser menu.")),
+            el("li", {}, "Elige “Instalar aplicación” o “Añadir a pantalla de inicio”.",
+              en("Choose “Install app” or “Add to Home Screen.”")),
+          ]));
+      overlay = el("div", { class: "info-overlay", onclick: (e) => { if (e.target === overlay) close(); } },
+        el("div", { class: "info-panel install-panel", role: "dialog", "aria-modal": "true", "aria-label": "Instalar la app / Install the app" },
+          el("button", { class: "info-close", "aria-label": "Cerrar / Close", onclick: close }, "✕"),
+          el("p", { class: "info-kid" }, "📲 Instalar la app"),
+          el("p", { class: "info-en" },
+            "Con la app en tu pantalla de inicio y el audio descargado, Conjuga funciona sin internet.",
+            en("Installed on your home screen, with downloaded audio, Conjuga works fully offline.")),
+          how,
+          el("p", { class: "info-more" },
+            el("a", { href: "#/descargas", onclick: close }, "⬇️ Descargas / Offline audio"))));
+      document.body.append(overlay);
+      btn.setAttribute("aria-expanded", "true");
+      overlay.querySelector(".info-close").focus();
+      document.addEventListener("keydown", onKey);
+    },
+  }, "📲 Instalar la app / Install");
+  return btn;
+}
+
+/**
  * ☰ site menu (M11): top-right disclosure with the main pages — global nav
  * collapses here because contextual back-nav lives top-left in the crumbs.
  */
@@ -120,6 +194,8 @@ function menuButton() {
   const panel = el("nav", { class: "menu-panel", hidden: true, "aria-label": "Páginas principales / Site menu" },
     el("a", { class: "menu-link", href: "#/" }, "🏠 Inicio / Home"),
     el("a", { class: "menu-link", href: "#/informe" }, "Informe / Status"),
+    el("a", { class: "menu-link", href: "#/descargas" }, "⬇️ Descargas / Offline audio"),
+    installMenuItem(),
     el("a", { class: "menu-link", href: "about.html" }, "🦉 Acerca de / Standards"),
     el("a", { class: "menu-link", href: "docs/" }, "Documentación / Docs"),
     soundToggle(),
@@ -327,6 +403,7 @@ function parseRoute() {
     return { screen: "play", setId: +parts[1], tense: parts[2], mode: parts[3] };
   if (parts[0] === "informe") return { screen: "report" };
   if (parts[0] === "nido") return { screen: "nido" };
+  if (parts[0] === "descargas") return { screen: "descargas" };
   return { screen: "home" };
 }
 
@@ -390,6 +467,7 @@ function routeTitle(r) {
   }
   if (r.screen === "report") return "Informe / Status · Conjuga";
   if (r.screen === "nido") return "El Nido de Lola · Conjuga";
+  if (r.screen === "descargas") return "Descargas · Conjuga";
   return "Conjuga — Spanish Verb Skills Builder (K-5 DLI)";
 }
 
@@ -405,10 +483,28 @@ function render() {
   else if (route.screen === "contrast") renderContrast(route.setId);
   else if (route.screen === "report") renderReport();
   else if (route.screen === "nido") renderNido();
+  else if (route.screen === "descargas") renderDescargas();
   else renderPlay(route.setId, route.tense, route.mode);
 }
 
 window.addEventListener("hashchange", render);
+
+// PWA offline shell (M25, SPEC §5.5). Gated so the e2e harness stays
+// SW-free and deterministic; the dedicated SW e2e block overrides
+// navigator.webdriver to opt in.
+if ("serviceWorker" in navigator && !navigator.webdriver
+    && !sessionStorage.getItem("conjuga.noSW")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+
+// M25.4: capture the install prompt where the browser offers one
+// (Android/desktop Chrome). iOS never fires this — the panel shows
+// "Añadir a inicio" steps instead.
+let deferredInstall = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstall = e;
+});
 
 // skip link (WCAG 2.4.1): focus main content without disturbing the hash router
 document.getElementById("skip")?.addEventListener("click", (e) => {
@@ -1322,6 +1418,131 @@ function renderNido() {
       "Modo demo — datos de ejemplo, tu progreso no cambia. ",
       el("span", { class: "h-en", lang: "en" }, "Demo mode — sample data, progress untouched.")) : null,
     createNido(nestItems(), { canSpeak: audioAvailable(), speak: (t) => say(t) }),
+    renderFooter(),
+  );
+}
+
+// ---------------------------------------------------------------- descargas (M25.3)
+
+// ~6.8 KB average per clip (measured across audio/clips) — display estimate only.
+const CLIP_AVG_BYTES = 6832;
+let persistAsked = false; // ask navigator.storage.persist() once per session
+let dlBusy = false;       // one download at a time (sequential by design)
+
+async function refreshStorageLine(node) {
+  const snap = await storageSnapshot();
+  node.textContent = snap && snap.quota
+    ? `Espacio usado / Storage used: ${fmtMB(snap.usage)} de ${fmtMB(snap.quota)}`
+    : "";
+}
+
+function descargasRow(set, map, storageLine) {
+  const urls = clipUrlsForSet(set, map);
+  const sizeLabel = `≈ ${fmtMB(urls.length * CLIP_AVG_BYTES)}`;
+  const status = el("span", { class: "dl-status" }, sizeLabel);
+  const fill = el("div", { class: "dl-bar-fill" });
+  const bar = el("div", { class: "dl-bar", hidden: true }, fill);
+  let dlBtn = null;
+  let delBtn = null;
+
+  const refresh = async () => {
+    const s = await groupStatus(set, map);
+    const complete = s.total > 0 && s.cached >= s.total;
+    status.textContent = complete ? "✓ Descargado"
+      : s.cached > 0 ? `${s.cached}/${s.total} · ${sizeLabel}` : sizeLabel;
+    dlBtn.hidden = complete;
+    dlBtn.textContent = s.cached > 0 && !complete ? "⬇️ Continuar" : "⬇️ Descargar";
+    delBtn.hidden = s.cached === 0;
+    refreshStorageLine(storageLine);
+  };
+
+  const run = async () => {
+    if (dlBusy || !downloadsSupported()) return;
+    dlBusy = true;
+    dlBtn.disabled = true;
+    bar.hidden = false;
+    if (!persistAsked) { persistAsked = true; requestPersistence(); }
+    const { ok } = await downloadGroup(set, map, (done, total) => {
+      fill.style.width = `${Math.round((done / total) * 100)}%`;
+      status.textContent = `${done}/${total}`;
+    });
+    bar.hidden = true;
+    dlBtn.disabled = false;
+    dlBusy = false;
+    announce(ok ? `Grupo ${set.id} descargado. Group downloaded.`
+      : `Grupo ${set.id}: descarga incompleta — inténtalo otra vez. Download incomplete.`);
+    await refresh();
+  };
+  descargasRow.queue.set(set.id, run); // download-all reuses each row's runner
+
+  dlBtn = el("button", { class: "btn dl-btn", type: "button", onclick: run }, "⬇️ Descargar");
+  delBtn = el("button", {
+    class: "btn dl-del", type: "button", hidden: true,
+    onclick: async () => {
+      await deleteGroup(set.id);
+      announce(`Audio del grupo ${set.id} borrado. Group audio deleted.`);
+      fill.style.width = "0%";
+      await refresh();
+    },
+  }, "🗑️ Borrar");
+
+  refresh();
+  return el("div", { class: "dl-row" },
+    el("div", { class: "dl-row-head" },
+      el("strong", {}, `Grupo ${set.id}`),
+      el("span", { class: "set-verbs" }, set.verbs.map((v) => v.inf).join(" · "))),
+    bar,
+    el("div", { class: "dl-row-actions" }, status, dlBtn, delBtn));
+}
+descargasRow.queue = new Map();
+
+function renderDescargas() {
+  const map = clipMap();
+  const supported = downloadsSupported();
+  const storageLine = el("p", { class: "dl-storage" });
+  descargasRow.queue = new Map();
+
+  let body;
+  if (!map) {
+    body = el("p", { class: "dl-unavailable" },
+      "El audio no está disponible ahora mismo — conéctate a internet e inténtalo otra vez. ",
+      el("span", { class: "h-en", lang: "en" }, "Audio clips are unreachable right now — go online and try again."));
+  } else if (!supported) {
+    body = el("p", { class: "dl-unavailable" },
+      "Este navegador no permite guardar descargas. El audio seguirá llegando por internet. ",
+      el("span", { class: "h-en", lang: "en" }, "This browser can't store downloads; audio still streams online."));
+  } else {
+    const allBtn = el("button", {
+      class: "btn primary dl-all", type: "button",
+      onclick: async (e) => {
+        const btn = e.currentTarget;
+        if (dlBusy) return;
+        btn.disabled = true;
+        for (const run of descargasRow.queue.values()) {
+          await run(); // each runner skips clips it already has
+        }
+        btn.disabled = false;
+        announce("Descarga completa. All downloads finished.");
+      },
+    }, "⬇️ Descargar todo (≈ 40 MB)");
+    body = el("div", { class: "dl-list" },
+      el("div", { class: "dl-toolbar" }, allBtn, storageLine),
+      el("p", { class: "dl-warning" },
+        "En iPhone y iPad, el sistema puede borrar descargas si falta espacio. ",
+        el("span", { class: "h-en", lang: "en" }, "On iPhone/iPad the system may evict downloads when space runs low.")),
+      ...SETS.map((s) => descargasRow(s, map, storageLine)));
+    refreshStorageLine(storageLine);
+  }
+
+  mount(
+    el("nav", { class: "crumbs" },
+      el("a", { href: "#/" }, "← Conjuga"),
+      menuButton()),
+    el("h1", {}, "⬇️ Descargas"),
+    el("p", { class: "dl-help" },
+      "Guarda el audio en este aparato para practicar sin internet. ",
+      el("span", { class: "h-en", lang: "en" }, "Save the audio on this device to practice offline.")),
+    body,
     renderFooter(),
   );
 }
