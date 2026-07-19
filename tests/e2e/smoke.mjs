@@ -2253,7 +2253,18 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (res.status !== 200) fail("m25.1: manifest.webmanifest not served");
   let man = null;
   try { man = await res.json(); } catch { fail("m25.1: manifest is not valid JSON"); }
+  // iOS: dedicated FULL-BLEED touch icon (transparent corners composite
+  // onto black on the home screen) + stable manifest id.
+  if (!html.includes('rel="apple-touch-icon"')) fail("m25.1: index.html missing apple-touch-icon link");
+  {
+    const r = await fetch(`${BASE}/icons/apple-touch-icon.png`);
+    const buf = new Uint8Array(await r.arrayBuffer());
+    if (r.status !== 200 || buf[0] !== 0x89 || buf[1] !== 0x50) {
+      fail("m25.1: icons/apple-touch-icon.png does not resolve to a PNG");
+    }
+  }
   if (man) {
+    if (man.id !== "./") fail("m25.1: manifest id missing/wrong");
     if (man.display !== "standalone" || man.start_url !== ".") fail("m25.1: manifest display/start_url wrong");
     const purposes = (man.icons || []).map((i) => i.purpose || "any");
     if (!purposes.includes("maskable")) fail("m25.1: manifest lacks a maskable icon");
