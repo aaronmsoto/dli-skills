@@ -779,7 +779,7 @@ journal/.)
   - [x] **ENGINE** (2026-07-19) — conjugator support for both constructions with
         hand-verified tests covering every irregular-gerund class in the
         dataset (golden rule 1).
-  - [ ] **UI** — Estudia tables + Práctica rebuild for both, tense triad
+  - [x] **UI** (2026-07-19) — Estudia tables + Práctica rebuild for both, tense triad
         extended visually (load prado-visual-craft; the star-free icon
         language rule applies), vosotros filtering respected, print styles.
   - [ ] **AUDIO** — new forms speak via TTS fallback initially; owner

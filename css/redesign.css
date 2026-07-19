@@ -1043,3 +1043,19 @@
 :root[data-redesign] .install-steps { margin: 10px 0; padding-left: 22px; color: var(--ink); }
 :root[data-redesign] .install-steps li { margin: 6px 0; }
 :root[data-redesign] .install-now { min-height: 44px; margin: 8px 0; }
+
+/* ---------- M26 ⏭️🔄 stretch-tense cards (Estudia/Práctica only, unscored) ---------- */
+/* Identity icons join the tense line-icon language (M17): 24x24, 2px
+   rounded stroke, masked over the emoji fallback. Both take --brand —
+   calm leaf green; the saturated accent stays reserved. */
+:root[data-redesign] .stretch-card .tense-icon[data-tense="nearfuture"] {
+  background-color: var(--brand);
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3.5 12h14'/><path d='M12 6.5l5.5 5.5-5.5 5.5'/><path d='M20.5 6.5v11'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3.5 12h14'/><path d='M12 6.5l5.5 5.5-5.5 5.5'/><path d='M20.5 6.5v11'/></svg>");
+}
+:root[data-redesign] .stretch-card .tense-icon[data-tense="progressive"] {
+  background-color: var(--brand);
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 12a8 8 0 1 1-2.4-5.7'/><path d='M20.5 2.5v4.2h-4.2'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 12a8 8 0 1 1-2.4-5.7'/><path d='M20.5 2.5v4.2h-4.2'/></svg>");
+}
+:root[data-redesign] .stretch-card .mode-free { color: var(--ink-soft); }

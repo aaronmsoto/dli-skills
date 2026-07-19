@@ -9,10 +9,10 @@
  *   #/informe               printable progress report
  */
 import { SETS } from "./verbs.js";
-import { conjugate, PERSONS, TENSES, TENSE_LABELS, normalizeAnswer, stripAccents } from "./conjugator.js";
+import { conjugate, conjugateStretch, PERSONS, TENSES, TENSE_LABELS, STRETCH_TENSES, STRETCH_LABELS, normalizeAnswer, stripAccents } from "./conjugator.js";
 import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildContrastQuestions, shuffle, QUESTIONS_PER_ROUND } from "./game.js";
 import * as store from "./storage.js";
-import { speak, ttsAvailable, audioAvailable, initClips, chirp, clipMap } from "./audio.js";
+import { speak, ttsAvailable, audioAvailable, initClips, chirp, clipMap, hasClip } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
 import { createNido, nestTier, tierMeta, PLUMA } from "./nido.js";
 import { STANDARDS_INFO } from "./standards-info.js";
@@ -39,6 +39,20 @@ const TENSE_META = {
   preterite: { icon: "⭐", hint: "ayer, una vez — completed past", example: "Ayer hablé con ella." },
   imperfect: { icon: "🌙", hint: "antes, muchas veces — ongoing past", example: "Antes hablaba cada día." },
 };
+// M26 stretch constructions — Estudia/Práctica only, unscored (owner scope).
+const STRETCH_META = {
+  nearfuture: { icon: "⏭️", hint: "muy pronto — very soon", example: "Mañana voy a hablar con ella." },
+  progressive: { icon: "🔄", hint: "ahora mismo — right now", example: "¡Estoy hablando ahora mismo!" },
+};
+const isStretch = (t) => STRETCH_TENSES.includes(t);
+const tenseLabel = (t) => (isStretch(t) ? STRETCH_LABELS[t] : TENSE_LABELS[t]);
+const tenseMeta = (t) => (isStretch(t) ? STRETCH_META[t] : TENSE_META[t]);
+const formsFor = (v, t) => (isStretch(t) ? conjugateStretch(v, t) : conjugate(v, t));
+// Stretch clips don't exist until the owner's ElevenLabs run — gate their
+// audio on TTS or a probe of the manifest (all-or-nothing per run), never
+// on audioAvailable() alone (a silent 🔊 button breaks rule 1).
+const stretchSpeakable = (set, tense) =>
+  ttsAvailable() || hasClip(`yo ${conjugateStretch(set.verbs[0], tense)[0]}`);
 // NN-7 (M17): inline line-icon matching the group-card set, for activity
 // headings and the Estudia action row. The redesign CSS masks the emoji
 // fallback with the shared glyph; aria-hidden because the adjacent text
@@ -393,9 +407,11 @@ function parseRoute() {
   const h = location.hash.replace(/^#\/?/, "");
   const parts = h.split("/").filter(Boolean);
   if (parts[0] === "set" && SETS[+parts[1] - 1]) return { screen: "set", setId: +parts[1] };
-  if (parts[0] === "study" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]))
+  // Estudia/Práctica accept the M26 stretch constructions; play routes
+  // deliberately do NOT (unscored-first owner scope).
+  if (parts[0] === "study" && SETS[+parts[1] - 1] && (TENSES.includes(parts[2]) || STRETCH_TENSES.includes(parts[2])))
     return { screen: "study", setId: +parts[1], tense: parts[2] };
-  if (parts[0] === "practica" && SETS[+parts[1] - 1] && TENSES.includes(parts[2]))
+  if (parts[0] === "practica" && SETS[+parts[1] - 1] && (TENSES.includes(parts[2]) || STRETCH_TENSES.includes(parts[2])))
     return { screen: "practica", setId: +parts[1], tense: parts[2] };
   if (parts[0] === "play" && SETS[+parts[1] - 1] && parts[2] === "contrast")
     return { screen: "contrast", setId: +parts[1] };
@@ -458,7 +474,7 @@ function go(hash) {
 /** Per-route page titles (WCAG 2.4.2) — tabs/history distinguish screens. */
 function routeTitle(r) {
   if (r.screen === "set") return `Grupo ${r.setId} · Conjuga`;
-  if (r.screen === "study") return `Estudia ${TENSE_LABELS[r.tense].es} · Grupo ${r.setId} · Conjuga`;
+  if (r.screen === "study") return `Estudia ${tenseLabel(r.tense).es} · Grupo ${r.setId} · Conjuga`;
   if (r.screen === "practica") return `Práctica · Grupo ${r.setId} · Conjuga`;
   if (r.screen === "contrast") return `¿Pretérito o imperfecto? · Grupo ${r.setId} · Conjuga`;
   if (r.screen === "play") {
@@ -731,6 +747,19 @@ function renderSet(setId) {
         starRow(contrastBest?.stars ?? 0),
       ),
     ),
+
+    // M26 stretch constructions: Estudia + Práctica only, no stars EVER
+    // here (unscored-first owner scope — the star grid is a separate,
+    // later owner decision).
+    el("h2", {}, "4 · Tiempos nuevos ", el("span", { class: "h-en", lang: "en" }, "(stretch tenses — just explore)")),
+    el("div", { class: "mode-row stretch-row" },
+      STRETCH_TENSES.map((t) =>
+        el("a", { class: "mode-card stretch-card", "data-stretch": t, href: `#/study/${set.id}/${t}` },
+          el("span", { class: "tense-icon", "data-tense": t }, STRETCH_META[t].icon),
+          el("strong", {}, `${STRETCH_LABELS[t].es} ${STRETCH_META[t].icon}`),
+          el("span", { class: "mode-en", lang: "en" }, STRETCH_LABELS[t].en),
+          el("span", { class: "mode-free" }, "sin estrellas · unscored"),
+        ))),
     renderFooter(),
   );
 }
@@ -741,18 +770,19 @@ function renderStudy(setId, tense) {
   const set = SETS[setId - 1];
   const { vosotros } = store.getSettings();
   const persons = [0, 1, 2, 3, 4, 5].filter((p) => vosotros || p !== 4);
+  const stretch = isStretch(tense);
 
-  const speakable = audioAvailable();
+  const speakable = stretch ? stretchSpeakable(set, tense) : audioAvailable();
 
   mount(
     el("nav", { class: "crumbs" }, el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`), menuButton()),
-    el("h1", {}, modeIcon("study", "📖"), `Estudia — ${TENSE_LABELS[tense].es}`, infoButton("study")),
+    el("h1", {}, modeIcon("study", "📖"), `Estudia — ${tenseLabel(tense).es}`, infoButton("study")),
     // classroom print header: appears only on the printed study sheet
     el("p", { class: "print-fields print-only" },
       `Grupo ${setId} · Nombre: `, el("span", { class: "fill-line" }, ""),
       "  Fecha: ", el("span", { class: "fill-line short" }, "")),
-    el("p", { class: "study-hint" }, `${TENSE_META[tense].hint} — ej.: `,
-      el("em", {}, TENSE_META[tense].example)),
+    el("p", { class: "study-hint" }, `${tenseMeta(tense).hint} — ej.: `,
+      el("em", {}, tenseMeta(tense).example)),
     speakable
       ? el("p", { class: "study-hint tap-hint" }, "👆🔊 Toca una forma para escucharla. Tap a form to hear it.")
       : null,
@@ -768,7 +798,7 @@ function renderStudy(setId, tense) {
             el("tr", {},
               el("th", { scope: "row" }, personDisplay(p)),
               set.verbs.map((v) => {
-                const form = conjugate(v, tense)[p];
+                const form = formsFor(v, tense)[p];
                 if (!speakable) return el("td", {}, form);
                 return el("td", {},
                   el("button", { class: "cell-speak", onclick: () => sayForm(p, form) }, form));
@@ -776,17 +806,19 @@ function renderStudy(setId, tense) {
       )),
     el("div", { class: "study-actions" },
       // Práctica first: the rebuild-the-table step sits between studying
-      // the chart and the scored games (Estudia → Práctica → Elige → …)
+      // the chart and the scored games (Estudia → Práctica → Elige → …).
+      // Stretch tenses (M26) list Práctica ONLY — the scored games don't
+      // exist for them (rule 2: this row is ALL activities for the tense).
       el("a", { class: "btn primary practica-link", href: `#/practica/${setId}/${tense}` },
         modeIcon("practica", PRACTICA_META.icon), PRACTICA_META.es),
-      MODES.map((m) => el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/${m}` },
+      stretch ? null : MODES.map((m) => el("a", { class: "btn primary", href: `#/play/${setId}/${tense}/${m}` },
         modeIcon(m, MODE_META[m].icon), MODE_META[m].es)),
       // every current activity is reachable from Estudia (M7 owner add-on)
-      audioAvailable()
+      !stretch && audioAvailable()
         ? el("a", { class: "btn primary listen-link", href: `#/play/${setId}/${tense}/${LISTEN}` },
           modeIcon("listen", LISTEN_META.icon), LISTEN_META.es)
         : null,
-      tense !== "present"
+      !stretch && tense !== "present"
         ? el("a", { class: "btn contrast-link", href: `#/play/${setId}/contrast` },
           modeIcon("contrast", "⚔️"), "¿Pretérito o imperfecto?")
         : null,
@@ -808,7 +840,7 @@ function renderPractica(setId, tense) {
   const set = SETS[setId - 1];
   const { vosotros } = store.getSettings();
   const persons = [0, 1, 2, 3, 4, 5].filter((p) => vosotros || p !== 4);
-  const speakable = audioAvailable();
+  const speakable = isStretch(tense) ? stretchSpeakable(set, tense) : audioAvailable();
   const lola = createLola(52);
   const state = { verbIdx: 0, selected: null, remaining: 0 };
 
@@ -831,7 +863,7 @@ function renderPractica(setId, tense) {
       el("a", { href: `#/set/${setId}` }, "← Salir"),
       el("a", { href: `#/study/${setId}/${tense}` }, "Estudia"),
       menuButton()),
-    el("h1", { class: "match-title" }, lola.el, modeIcon("practica", PRACTICA_META.icon), `Práctica — ${TENSE_LABELS[tense].es}`, infoButton("practica")),
+    el("h1", { class: "match-title" }, lola.el, modeIcon("practica", PRACTICA_META.icon), `Práctica — ${tenseLabel(tense).es}`, infoButton("practica")),
     el("p", { class: "match-help" },
       "Reconstruye la tabla palabra por palabra. Rebuild the table word by word — no stars, just practice."),
     el("div", { class: "table-scroll" }, table),
@@ -882,7 +914,7 @@ function renderPractica(setId, tense) {
     }
     const { form, btn } = state.selected;
     const td = cells[state.verbIdx][p];
-    if (form === conjugate(verb, tense)[p]) {
+    if (form === formsFor(verb, tense)[p]) {
       state.selected = null;
       // sticky-hover guard (2026-07-16 sweep, hardened 2026-07-17): arm
       // BEFORE the removal below, not after — removing a tile reflows its
