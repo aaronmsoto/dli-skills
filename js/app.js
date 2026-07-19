@@ -133,7 +133,7 @@ function infoButton(key) {
  * per-platform "Añadir a inicio" steps (iOS has no install event).
  * Reuses the info-overlay dialog chrome.
  */
-function installMenuItem() {
+function installMenuItem(beforeOpen = () => {}) {
   let overlay = null;
   const onKey = (e) => {
     if (e.key === "Escape") return close();
@@ -157,6 +157,7 @@ function installMenuItem() {
     class: "menu-link install-link", type: "button", "aria-expanded": "false",
     onclick: () => {
       if (overlay) return close();
+      beforeOpen(); // M30.2: the menu closes BEFORE the dialog opens
       feature(parseRoute().screen, "install");
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const en = (t) => el("span", { class: "h-en", lang: "en" }, ` ${t}`);
@@ -197,49 +198,115 @@ function installMenuItem() {
       overlay.querySelector(".info-close").focus();
       document.addEventListener("keydown", onKey);
     },
-  }, "📲 Instalar la app / Install");
+  }, "Instalar la app / Install");
   return btn;
 }
 
 /**
- * ☰ site menu (M11): top-right disclosure with the main pages — global nav
- * collapses here because contextual back-nav lives top-left in the crumbs.
+ * ☰ site menu (M11, overhauled M30.2 — WAI-ARIA APG disclosure-navigation
+ * pattern, owner-directed hamburger redesign): text-only rows (no icons),
+ * an expandable "Ajustes / Settings" sub-group mirroring the footer
+ * controls, a visual scrim, and a dialog handoff that CLOSES the menu
+ * before any overlay opens (the old install-under-menu bug). Tab
+ * navigation, not roving arrows — this is site nav, not an app menu.
+ * Focus: open → first row; close (any path) → back to ☰.
  */
 function menuButton() {
   let open = false;
-  const panel = el("nav", { class: "menu-panel", hidden: true, "aria-label": "Páginas principales / Site menu" },
-    el("a", { class: "menu-link", href: "#/" }, "🏠 Inicio / Home"),
-    el("a", { class: "menu-link", href: "#/informe" }, "Informe / Status"),
-    el("a", { class: "menu-link", href: "#/descargas" }, "⬇️ Descargas / Offline audio"),
-    installMenuItem(),
-    el("a", { class: "menu-link", href: "about.html" }, "🦉 Acerca de / Standards"),
-    el("a", { class: "menu-link", href: "docs/" }, "Documentación / Docs"),
+  const scrim = el("div", { class: "menu-scrim no-print", hidden: true, "aria-hidden": "true" });
+
+  const inRound = () => ["play", "contrast", "practica"].includes(parseRoute().screen);
+  // Same semantics as the footer (NN-1 option b): mid-round, settings
+  // save WITHOUT re-rendering so the round isn't restarted.
+  const applySetting = (name, value) => {
+    store.setSetting(name, value);
+    if (!inRound()) render();
+  };
+
+  const settingToggle = (labelOn, labelOff, name) => {
+    const btn2 = el("button", {
+      class: `menu-link setting-row setting-${name}`, type: "button",
+      "aria-pressed": String(!!store.getSettings()[name]),
+      onclick: () => {
+        const next = !store.getSettings()[name];
+        btn2.setAttribute("aria-pressed", String(next));
+        btn2.textContent = next ? labelOn : labelOff;
+        announce(next ? labelOn : labelOff);
+        applySetting(name, next);
+      },
+    }, store.getSettings()[name] ? labelOn : labelOff);
+    return btn2;
+  };
+
+  const settingsBody = el("div", { class: "menu-settings", hidden: true, id: "menu-settings" },
     soundToggle(),
-    themeSelector());
+    themeSelector(),
+    settingToggle("Pistas: sí / Hints on", "Pistas: no / Hints off", "hints"),
+    settingToggle("Vosotros: sí / Included", "Vosotros: no / Hidden", "vosotros"),
+    el("button", {
+      class: "menu-link setting-row borrar-row", type: "button",
+      onclick: () => {
+        if (confirm("¿Borrar todo el progreso? / Erase all progress?")) {
+          store.resetProgress();
+          close();
+          render();
+        }
+      },
+    }, "Borrar progreso / Erase progress"));
+  const settingsBtn = el("button", {
+    class: "menu-link settings-toggle", type: "button",
+    "aria-expanded": "false", "aria-controls": "menu-settings",
+    onclick: () => {
+      const expand = settingsBody.hidden;
+      settingsBody.hidden = !expand;
+      settingsBtn.setAttribute("aria-expanded", String(expand));
+    },
+  }, "Ajustes / Settings");
+
+  const panel = el("nav", { class: "menu-panel", id: "site-menu", hidden: true, "aria-label": "Páginas principales / Site menu" },
+    el("a", { class: "menu-link", href: "#/" }, "Inicio / Home"),
+    el("a", { class: "menu-link", href: "#/informe" }, "Informe / Status"),
+    el("a", { class: "menu-link", href: "#/descargas" }, "Descargas / Offline audio"),
+    installMenuItem(() => close()),
+    el("a", { class: "menu-link", href: "about.html" }, "Acerca de / Standards"),
+    el("a", { class: "menu-link", href: "docs/" }, "Documentación / Docs"),
+    settingsBtn,
+    settingsBody);
+
   const onDoc = (e) => { if (!wrap.contains(e.target)) close(); };
-  const onKey = (e) => { if (e.key === "Escape") { close(); btn.focus(); } };
+  const onKey = (e) => { if (e.key === "Escape") { close(); } };
   const close = () => {
     if (!open) return;
     open = false;
     panel.hidden = true;
+    scrim.hidden = true;
+    document.body.classList.remove("menu-open");
     btn.setAttribute("aria-expanded", "false");
     document.removeEventListener("click", onDoc);
     document.removeEventListener("keydown", onKey);
+    btn.focus();
   };
   const btn = el("button", {
     class: "menu-btn", type: "button",
-    "aria-expanded": "false", "aria-label": "Menú del sitio / Site menu",
+    "aria-expanded": "false", "aria-controls": "site-menu",
+    "aria-label": "Menú del sitio / Site menu",
     onclick: () => {
       if (open) return close();
       open = true;
       panel.hidden = false;
+      scrim.hidden = false;
+      document.body.classList.add("menu-open");
       btn.setAttribute("aria-expanded", "true");
       setTimeout(() => document.addEventListener("click", onDoc), 0); // skip the opening click
       document.addEventListener("keydown", onKey);
       panel.querySelector("a").focus();
     },
   }, "☰");
-  const wrap = el("span", { class: "menu-wrap no-print" }, btn, panel);
+  // navigating from a row closes the drawer (typical hamburger behavior)
+  panel.addEventListener("click", (e) => {
+    if (e.target.closest("a.menu-link")) close();
+  });
+  const wrap = el("span", { class: "menu-wrap no-print" }, btn, scrim, panel);
   return wrap;
 }
 
@@ -279,7 +346,7 @@ function themeSelector() {
       },
     }, o.label));
   return el("div", { class: "menu-link theme-selector", role: "group", "aria-label": "Tema / Theme" },
-    el("span", { class: "theme-label" }, "🎨 Tema / Theme"),
+    el("span", { class: "theme-label" }, "Tema / Theme"),
     el("div", { class: "theme-options" }, ...buttons));
 }
 
@@ -289,7 +356,7 @@ function themeSelector() {
  */
 function soundToggle() {
   if (!audioAvailable()) return null;
-  const label = (on) => (on ? "🔊 Sonido: encendido / Sound on" : "🔇 Sonido: apagado / Sound off");
+  const label = (on) => (on ? "Sonido: encendido / Sound on" : "Sonido: apagado / Sound off");
   const on = store.getSettings().sound;
   return el("button", {
     class: "menu-link sound-toggle", type: "button",

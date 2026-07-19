@@ -498,6 +498,7 @@ ok(`practica voiced: placement speaks "yo ${placeSpoken.yo}", filled cell replay
 await voiced.goto(`${BASE}/#/study/1/present`);
 await voiced.waitForSelector(".menu-btn");
 await voiced.locator(".menu-btn").click();
+await voiced.click(".settings-toggle"); // M30.2: sound lives under Ajustes
 await voiced.waitForSelector(".menu-panel:not([hidden]) .sound-toggle");
 await voiced.locator(".sound-toggle").click();
 await voiced.evaluate(() => { window.__spoken.length = 0; });
@@ -535,6 +536,7 @@ await darkPage.goto(`${BASE}/#/`);
 await darkPage.waitForSelector(".home-title .lola");
 // Light is the default now, so opt into Auto to let OS-dark drive the dark palette.
 await darkPage.click(".menu-btn");
+await darkPage.click(".settings-toggle"); // M30.2: theme lives under Ajustes
 await darkPage.waitForSelector(".theme-selector");
 await darkPage.click('.theme-option[data-theme-value="auto"]');
 await darkPage.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
@@ -570,6 +572,7 @@ ok("dark mode: Lola dark palette active");
   await auto.goto(`${BASE}/#/`);
   await auto.waitForSelector(".set-card");
   await auto.click(".menu-btn");
+  await auto.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await auto.waitForSelector(".theme-selector");
   await auto.click('.theme-option[data-theme-value="auto"]');
   await auto.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
@@ -583,6 +586,7 @@ ok("dark mode: Lola dark palette active");
   await light.goto(`${BASE}/#/`);
   await light.waitForSelector(".set-card");
   await light.click(".menu-btn");
+  await light.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await light.waitForSelector(".theme-selector");
   await light.click('.theme-option[data-theme-value="light"]');
   await light.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "light");
@@ -606,6 +610,7 @@ ok("dark mode: Lola dark palette active");
   await dark.goto(`${BASE}/#/`);
   await dark.waitForSelector(".set-card");
   await dark.click(".menu-btn");
+  await dark.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await dark.click('.theme-option[data-theme-value="dark"]');
   await dark.waitForFunction(() => document.documentElement.getAttribute("data-theme") === "dark");
   const darkBg = await themeBg(dark);
@@ -643,6 +648,7 @@ ok("dark mode: Lola dark palette active");
   if (col.almost !== "rgb(125, 82, 0)") fail(`WCAG-7: .feedback.almost text should be --almost-ink #7d5200, got "${col.almost}"`);
   // NN-8 + WCAG-9/DN-7: theme option ≥44px touch target and a brand-border active cue.
   await p.click(".menu-btn");
+  await p.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await p.waitForSelector(".theme-selector");
   const opt = await p.evaluate(() => {
     const b = document.querySelector('.theme-option[data-theme-value="light"]');
@@ -1092,6 +1098,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await darkStar.waitForSelector(".set-card");
   // Light is the default now — opt into Auto so OS-dark yields the dark --star.
   await darkStar.click(".menu-btn");
+  await darkStar.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await darkStar.waitForSelector(".theme-selector");
   await darkStar.click('.theme-option[data-theme-value="auto"]');
   await darkStar.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
@@ -1263,6 +1270,10 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   for (const want of ["#/", "#/informe", "about.html", "docs/"]) {
     if (!menuHrefs.includes(want)) fail(`menu: missing link ${want} (got ${menuHrefs})`);
   }
+  // M30.2: text-only rows (owner: no icons) + the Ajustes group present
+  const menuText = await page.locator(".menu-panel").innerText();
+  if (/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(menuText)) fail(`menu: icon glyphs remain in rows: ${menuText}`);
+  if (!(await page.locator(".menu-panel .settings-toggle").count())) fail("menu: Ajustes/Settings group missing");
   // first link receives focus; Esc closes and returns focus to ☰
   if (!(await page.evaluate(() => document.activeElement?.classList?.contains("menu-link")))) fail("menu: first link should get focus on open");
   await page.keyboard.press("Escape");
@@ -1324,6 +1335,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await clips.goto(`${BASE}/#/study/1/present`);
   await clips.waitForSelector(".menu-btn");
   await clips.locator(".menu-btn").click();
+  await clips.click(".settings-toggle"); // M30.2: sound lives under Ajustes
   await clips.waitForSelector(".menu-panel:not([hidden]) .sound-toggle");
   await clips.locator(".sound-toggle").click();
   await clips.evaluate(() => { window.__played.length = 0; });
@@ -1480,6 +1492,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await axeDark.waitForSelector(".site-footer");
   // Light is the default now — opt into Auto so OS-dark yields the forest-night palette.
   await axeDark.click(".menu-btn");
+  await axeDark.click(".settings-toggle"); // M30.2: theme lives under Ajustes
   await axeDark.waitForSelector(".theme-selector");
   await axeDark.click('.theme-option[data-theme-value="auto"]');
   await axeDark.waitForFunction(() => !document.documentElement.hasAttribute("data-theme"));
@@ -2599,6 +2612,56 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await gpcPage.close();
   if (beacons !== 0) fail(`m28.2: ${beacons} beacon request(s) escaped the guards`);
   ok("M28.2 beacon guards: zero analytics requests from webdriver, localhost, and GPC contexts");
+}
+
+// ---------- M30.2 ☰ hamburger overhaul: scrim, settings group, dialog above menu ----------
+{
+  await page.goto(`${BASE}/`);
+  await page.waitForSelector(".set-card");
+  await page.click(".menu-btn");
+  await page.waitForSelector(".menu-panel:not([hidden])");
+  // scrim: visible while open, visual-only (pointer-events none)
+  const scrim = await page.evaluate(() => {
+    const s = document.querySelector(".menu-scrim");
+    const cs = getComputedStyle(s);
+    return { hidden: s.hidden, pe: cs.pointerEvents, z: cs.zIndex };
+  });
+  if (scrim.hidden) fail("m30.2: scrim should show while the menu is open");
+  if (scrim.pe !== "none") fail("m30.2: scrim must be visual-only (pointer-events none)");
+  // settings group: collapsed by default, expands, a toggle actually applies
+  if (await page.locator(".menu-settings:not([hidden])").count()) fail("m30.2: settings should start collapsed");
+  await page.click(".settings-toggle");
+  await page.waitForSelector(".menu-settings:not([hidden])");
+  const hintsBefore = await page.locator(".setting-hints").getAttribute("aria-pressed");
+  await page.click(".setting-hints");
+  await page.waitForSelector(".menu-btn"); // home re-renders on setting change
+  const applied = await page.evaluate(() => JSON.parse(localStorage.getItem("conjuga.v1")).settings.hints);
+  if (String(applied) === hintsBefore) fail("m30.2: hints toggle did not apply");
+  // restore
+  await page.evaluate(() => {
+    const d = JSON.parse(localStorage.getItem("conjuga.v1"));
+    d.settings.hints = true;
+    localStorage.setItem("conjuga.v1", JSON.stringify(d));
+  });
+
+  // install dialog: opening it CLOSES the menu and renders ON TOP
+  await page.reload();
+  await page.waitForSelector(".set-card");
+  await page.click(".menu-btn");
+  await page.waitForSelector(".menu-panel:not([hidden])");
+  await page.click(".menu-panel .install-link");
+  await page.waitForSelector(".install-panel");
+  if (await page.locator(".menu-panel:not([hidden])").count()) fail("m30.2: menu must close when a dialog opens");
+  const onTop = await page.evaluate(() => {
+    const panel = document.querySelector(".install-panel");
+    const r = panel.getBoundingClientRect();
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + 10);
+    return panel.contains(hit) || hit === panel;
+  });
+  if (!onTop) fail("m30.2: install dialog is not the topmost layer at its own center");
+  await page.keyboard.press("Escape");
+  await page.waitForSelector(".install-panel", { state: "detached" });
+  ok("M30.2 hamburger: visual scrim, collapsed Ajustes group applies settings, dialogs close the menu and render on top");
 }
 
 // ---------- wrap up ----------

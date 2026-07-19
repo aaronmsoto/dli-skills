@@ -1066,3 +1066,8 @@
 :root[data-redesign] .pack-help { color: var(--ink); }
 :root[data-redesign] .pack-hint { color: var(--ink-soft); }
 :root[data-redesign] .pack-blank { background: var(--card); }
+
+/* ---------- M30.2 ☰ hamburger skin ---------- */
+:root[data-redesign] .menu-settings { border-top: 1px solid var(--brand-tint); }
+:root[data-redesign] .settings-toggle[aria-expanded="true"] { background: var(--brand-tint); }
+:root[data-redesign] .menu-scrim { background: rgba(25, 30, 23, 0.35); }
