@@ -1154,10 +1154,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (axeSource) {
     const axePage = await browser.newPage();
     trackErrors(axePage);
-    for (const r of ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present", "#/play/1/present/choice", "#/play/1/contrast", "#/informe"]) {
-      await axePage.goto(`${BASE}/${r}`);
-      await axePage.reload();
-      await axePage.waitForSelector(".site-footer");
+    const runAxe = async (label) => {
       await axePage.addScriptTag({ content: axeSource });
       const bad = await axePage.evaluate(async () => {
         const res = await window.axe.run(document, { resultTypes: ["violations"] });
@@ -1165,10 +1162,32 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
           .filter((v) => v.impact === "critical" || v.impact === "serious")
           .map((v) => `${v.id}(${v.impact}) ×${v.nodes.length} e.g. ${v.nodes[0]?.target?.join(" ")}`);
       });
-      if (bad.length) fail(`axe ${r}: ${bad.join(" | ")}`);
+      if (bad.length) fail(`axe ${label}: ${bad.join(" | ")}`);
+    };
+    // M30.3: sweep grew — teacher/offline routes join the route list.
+    for (const r of ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present", "#/play/1/present/choice", "#/play/1/contrast", "#/informe", "#/descargas", "#/pack/1", "#/study/1/nearfuture"]) {
+      await axePage.goto(`${BASE}/${r}`);
+      await axePage.reload();
+      await axePage.waitForSelector(".site-footer");
+      await runAxe(r);
     }
+    // M30.3: interactive STATES of the new menu — open, settings
+    // expanded, and the install dialog — must also be clean.
+    await axePage.goto(`${BASE}/#/`);
+    await axePage.reload();
+    await axePage.waitForSelector(".site-footer");
+    await axePage.click(".menu-btn");
+    await axePage.waitForSelector(".menu-panel:not([hidden])");
+    await runAxe("menu-open");
+    await axePage.click(".settings-toggle");
+    await axePage.waitForSelector(".menu-settings:not([hidden])");
+    await runAxe("menu-settings-expanded");
+    await axePage.click(".menu-panel .install-link");
+    await axePage.waitForSelector(".install-panel");
+    await runAxe("install-dialog");
+    await axePage.keyboard.press("Escape");
     await axePage.close();
-    ok("axe-core: zero critical/serious violations across 7 representative routes");
+    ok("axe-core: zero critical/serious violations across 10 routes + 3 menu/dialog states");
   }
 }
 
@@ -2662,6 +2681,32 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await page.keyboard.press("Escape");
   await page.waitForSelector(".install-panel", { state: "detached" });
   ok("M30.2 hamburger: visual scrim, collapsed Ajustes group applies settings, dialogs close the menu and render on top");
+}
+
+// ---------- M30.3 ⌨️ keyboard-only pass through the drawer ----------
+{
+  await page.goto(`${BASE}/`);
+  await page.waitForSelector(".set-card");
+  await page.focus(".menu-btn");
+  await page.keyboard.press("Enter");
+  await page.waitForSelector(".menu-panel:not([hidden])");
+  const seq = [];
+  for (let i = 0; i < 7; i++) {
+    seq.push(await page.evaluate(() => document.activeElement?.textContent?.trim().slice(0, 10) ?? "?"));
+    await page.keyboard.press("Tab");
+  }
+  if (!seq[0].startsWith("Inicio")) fail(`m30.3: first focus should be Inicio, got "${seq[0]}"`);
+  if (!seq.some((s) => s.startsWith("Ajustes"))) fail(`m30.3: Tab order never reached Ajustes (${seq.join(",")})`);
+  // keyboard focus is VISIBLE: the focused row takes the tint background
+  await page.focus(".menu-panel .menu-link");
+  await page.keyboard.press("Tab");
+  const focusBg = await page.evaluate(() => getComputedStyle(document.activeElement).backgroundColor);
+  if (focusBg === "rgba(0, 0, 0, 0)") fail("m30.3: keyboard focus on a menu row must be visibly styled");
+  await page.keyboard.press("Escape");
+  if (!(await page.evaluate(() => document.activeElement?.classList?.contains("menu-btn")))) {
+    fail("m30.3: focus must return to ☰ after keyboard close");
+  }
+  ok("M30.3 keyboard: Tab traverses rows to Ajustes, focus visibly styled, Escape returns to ☰");
 }
 
 // ---------- wrap up ----------
