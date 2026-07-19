@@ -89,7 +89,8 @@ ok("home renders 20 groups + Lola greeter");
 await page.click('a[href="#/set/1"]');
 await page.waitForSelector(".tense-card");
 if ((await page.locator(".tense-card").count()) !== 3) fail("set: expected 3 tense cards");
-if ((await page.locator(".mode-card").count()) !== 6) fail("set: expected 6 activity cards");
+// M26: stretch cards share .mode-card styling but are NOT activities — exclude them.
+if ((await page.locator(".mode-card:not(.stretch-card)").count()) !== 6) fail("set: expected 6 activity cards");
 if (!(await page.locator(".practica-card").count())) fail("set: Práctica card missing");
 if (await page.locator(".practica-card .star").count()) fail("set: Práctica is unscored — no stars on its card");
 if (await page.locator(".listen-card").count()) fail("set: Escucha must be hidden without a Spanish voice");
@@ -401,7 +402,7 @@ ok(`tts speaks person + form (study: "${spoken[0].text}", match: "${matchSpoken[
 // ---------- 🎧 Escucha (listen mode): voiced device ----------
 await voiced.goto(`${BASE}/#/set/1`);
 await voiced.waitForSelector(".listen-card");
-if ((await voiced.locator(".mode-card").count()) !== 7) fail("escucha: voiced set screen should show 7 activity cards");
+if ((await voiced.locator(".mode-card:not(.stretch-card)").count()) !== 7) fail("escucha: voiced set screen should show 7 activity cards");
 await voiced.goto(`${BASE}/#/study/1/present`);
 await voiced.waitForSelector(".conj-table");
 if (!(await voiced.locator(".study-actions .listen-link").count())) fail("study: voiced device must link Escucha");
@@ -1308,7 +1309,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await clips.goto(`${BASE}/#/set/1`);
   await clips.waitForSelector(".mode-card");
   if (!(await clips.locator(".listen-card").count())) fail("clips: Escucha card must appear with clips available");
-  if ((await clips.locator(".mode-card").count()) !== 7) fail("clips: set screen should show 7 activity cards");
+  if ((await clips.locator(".mode-card:not(.stretch-card)").count()) !== 7) fail("clips: set screen should show 7 activity cards");
   await clips.goto(`${BASE}/#/play/1/present/listen`);
   await clips.waitForSelector(".listen-controls");
   const prompt = await clips.evaluate(() => window.__played.at(-1));
@@ -2339,6 +2340,64 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
   await dlPage.evaluate(async () => { for (const k of await caches.keys()) await caches.delete(k); });
   await dlPage.close();
+}
+
+// ---------- M26 ⏭️🔄 stretch tenses: cards, Estudia, Práctica, unscored ----------
+{
+  // Set screen: two stretch cards, star-free, linking to study only.
+  await page.goto(`${BASE}/#/set/1`);
+  await page.waitForSelector(".stretch-card");
+  if ((await page.locator(".stretch-card").count()) !== 2) fail("m26: expected 2 stretch cards");
+  if (await page.locator(".stretch-row .star").count()) fail("m26: stretch cards must be unscored — no stars");
+  if (!(await page.locator('.stretch-card[href="#/study/1/nearfuture"]').count())) {
+    fail("m26: nearfuture card must link to study");
+  }
+
+  // Estudia nearfuture (group 1): ir a + infinitive phrases, RAE forms.
+  await page.click('.stretch-card[data-stretch="nearfuture"]');
+  await page.waitForSelector(".conj-table");
+  const nfText = await page.locator(".conj-table").innerText();
+  for (const form of ["voy a ser", "vas a estar", "va a tener", "vamos a hacer", "van a ir"]) {
+    if (!nfText.includes(form)) fail(`m26: study nearfuture missing "${form}"`);
+  }
+  // Action row: Práctica + print ONLY — no scored-game links for stretch.
+  if (await page.locator('.study-actions a[href*="/play/"]').count()) {
+    fail("m26: stretch study must not link scored games");
+  }
+  if (!(await page.locator(".study-actions .practica-link").count())) fail("m26: stretch study missing Práctica link");
+  // Voiceless harness context: no clips for stretch texts and no TTS →
+  // cells must be plain (a silent 🔊 button would break rule 1).
+  if (await page.locator(".conj-table .cell-speak").count()) {
+    fail("m26: stretch study rendered speak buttons with no playable backend");
+  }
+  await assertNoStrayNull("study-nearfuture");
+
+  // Estudia progressive (group 2): irregular gerunds diciendo/pudiendo/viendo.
+  await page.goto(`${BASE}/#/study/2/progressive`);
+  await page.waitForSelector(".conj-table");
+  const pgText = await page.locator(".conj-table").innerText();
+  for (const form of ["estoy diciendo", "estás pudiendo", "está viendo", "estamos dando", "están sabiendo"]) {
+    if (!pgText.includes(form)) fail(`m26: study progressive missing "${form}"`);
+  }
+
+  // Práctica nearfuture (group 1): bank of 5 phrase tiles; a correct
+  // placement fills the cell.
+  await page.goto(`${BASE}/#/practica/1/nearfuture`);
+  await page.waitForSelector(".bank-tile");
+  if ((await page.locator(".bank-tile").count()) !== 5) fail("m26: práctica stretch bank should hold 5 tiles");
+  await page.locator(".bank-tile", { hasText: "voy a ser" }).first().click();
+  await page.locator("tbody tr", { hasText: "yo" }).first().locator(".drop-slot").click();
+  await page.waitForSelector(".practica-cell.filled");
+  const filled = await page.locator(".practica-cell.filled").innerText();
+  if (!filled.includes("voy a ser")) fail(`m26: práctica placed "${filled}" instead of "voy a ser"`);
+  await assertNoStrayNull("practica-nearfuture");
+
+  // Stretch never reaches play routes: the router bounces to home.
+  await page.goto(`${BASE}/#/play/1/nearfuture/choice`);
+  await page.waitForSelector(".set-card");
+  if ((await page.locator(".set-card").count()) !== 20) fail("m26: stretch play route must fall back to home");
+
+  ok("M26 stretch: set cards (unscored), Estudia RAE phrases, Práctica placement, voiceless parity, no play routes");
 }
 
 // ---------- M25.4 📲 install UX: ☰ row, panel steps, Descargas link ----------
