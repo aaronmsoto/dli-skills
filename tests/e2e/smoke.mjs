@@ -2269,6 +2269,67 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M25.1 PWA: manifest links, parses, and all icons resolve as PNGs");
 }
 
+// ---------- M25.3 ⬇️ Descargas: download/resume/delete + voiceless fallback ----------
+{
+  // Voiceless context first (the main page keeps its manifest-204 stub):
+  // the screen must render its "audio unreachable" message, no rows.
+  await page.goto(`${BASE}/#/descargas`);
+  await page.waitForSelector(".dl-unavailable");
+  if (await page.locator(".dl-row").count()) fail("m25.3: rows rendered without a clip manifest");
+  await assertNoStrayNull("descargas-voiceless");
+
+  // Real-manifest context (own page, SW-free — the Cache API needs no SW):
+  // stub every clip mp3 with tiny bytes so "downloads" stay instant.
+  const dlPage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(dlPage);
+  const FAKE_MP3 = Buffer.from("ID3fakeclip");
+  await dlPage.route("**/audio/clips/*.mp3", (r) =>
+    r.fulfill({ status: 200, contentType: "audio/mpeg", body: FAKE_MP3 }));
+  await dlPage.goto(`${BASE}/#/descargas`);
+  await dlPage.waitForSelector(".dl-row");
+  const rows = await dlPage.locator(".dl-row").count();
+  if (rows !== 20) fail(`m25.3: expected 20 group rows, got ${rows}`);
+  if (!(await dlPage.locator(".dl-all").count())) fail("m25.3: download-all button missing");
+  if (!(await dlPage.locator(".dl-warning").count())) fail("m25.3: iOS eviction warning missing");
+
+  // ☰ menu links the screen (Estudia-links rule analogue for site chrome).
+  if (!(await dlPage.locator('.menu-panel a[href="#/descargas"]').count())) {
+    fail("m25.3: ☰ menu missing the Descargas link");
+  }
+
+  // Group 1: download fills audio-g01 with every derived clip URL.
+  const g1 = dlPage.locator(".dl-row").first();
+  await g1.locator(".dl-btn").click();
+  await dlPage.waitForFunction(
+    () => document.querySelector(".dl-row .dl-status")?.textContent?.includes("Descargado"),
+    { timeout: 30000 },
+  );
+  const cacheInfo = await dlPage.evaluate(async () => {
+    const keys = await caches.keys();
+    const cache = await caches.open("audio-g01");
+    return { keys, count: (await cache.keys()).length };
+  });
+  if (!cacheInfo.keys.includes("audio-g01")) fail("m25.3: audio-g01 cache not created");
+  // Prefixed + bare shapes, both speeds; dupes (ser/ir preterite,
+  // imperfect yo=él) lower the ceiling — see tests/descargas.test.mjs.
+  if (cacheInfo.count < 320 || cacheInfo.count > 360) {
+    fail(`m25.3: audio-g01 holds ${cacheInfo.count} clips (expected 320-360)`);
+  }
+  if ((await g1.locator(".dl-btn").isVisible())) fail("m25.3: download button still visible after completion");
+
+  // Delete: cache disappears, button returns.
+  await g1.locator(".dl-del").click();
+  await dlPage.waitForFunction(async () => !(await caches.has("audio-g01")));
+  await dlPage.waitForFunction(() => {
+    const btn = document.querySelector(".dl-row .dl-btn");
+    return btn && !btn.hidden;
+  });
+  ok("m25.3 descargas: 20 rows, ☰ link, group download fills audio-g01, delete clears it, voiceless fallback message");
+
+  await dlPage.evaluate(async () => { for (const k of await caches.keys()) await caches.delete(k); });
+  await dlPage.close();
+}
+
 // ---------- M25.2 PWA: SW registers (gated), offline shell, query preservation ----------
 {
   // Fresh context: SW registrations are per-context, so nothing here can
