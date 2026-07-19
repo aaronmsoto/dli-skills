@@ -734,7 +734,7 @@ journal/.)
   directly closes the M19-documented offline+voiceless audio gap. Facts:
   shell 59 KB gz; per-group audio ~2 MB; full corpus 39.4 MB.
   Acceptance criteria, in order:
-  - [ ] **ICONS+MANIFEST** — `manifest.webmanifest` (name, colors from
+  - [x] **ICONS+MANIFEST** (2026-07-19) — `manifest.webmanifest` (name, colors from
         Prado tokens, start_url `.`, display standalone) + real icon files
         (192/512 + maskable) generated ONCE by a repo tool script (like
         tools/generate-audio.mjs — the site itself stays build-free); load

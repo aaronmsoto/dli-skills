@@ -26,6 +26,7 @@ const MIME = {
   ".svg": "image/svg+xml",
   ".json": "application/json",
   ".png": "image/png",
+  ".webmanifest": "application/manifest+json",
 };
 
 const server = createServer(async (req, res) => {
@@ -2241,6 +2242,31 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (cloud.sky === "rgba(0, 0, 0, 0)") fail("m22: sky wash missing behind the cloud grid");
   await shape.close();
   ok("M22 clouds: puff silhouette (inherited backgrounds), drop-shadow, borderless states, width cap, sky wash");
+}
+
+// ---------- M25.1 PWA: manifest links, parses, icons resolve ----------
+{
+  const html = await (await fetch(`${BASE}/index.html`)).text();
+  if (!html.includes('rel="manifest"')) fail("m25.1: index.html missing manifest link");
+  if (!html.includes('name="theme-color"')) fail("m25.1: index.html missing theme-color meta");
+  const res = await fetch(`${BASE}/manifest.webmanifest`);
+  if (res.status !== 200) fail("m25.1: manifest.webmanifest not served");
+  let man = null;
+  try { man = await res.json(); } catch { fail("m25.1: manifest is not valid JSON"); }
+  if (man) {
+    if (man.display !== "standalone" || man.start_url !== ".") fail("m25.1: manifest display/start_url wrong");
+    const purposes = (man.icons || []).map((i) => i.purpose || "any");
+    if (!purposes.includes("maskable")) fail("m25.1: manifest lacks a maskable icon");
+    if (!purposes.includes("any")) fail("m25.1: manifest lacks a purpose-any icon");
+    for (const icon of man.icons || []) {
+      const r = await fetch(`${BASE}/${icon.src}`);
+      const buf = new Uint8Array(await r.arrayBuffer());
+      if (r.status !== 200 || buf[0] !== 0x89 || buf[1] !== 0x50) {
+        fail(`m25.1: icon ${icon.src} does not resolve to a PNG`);
+      }
+    }
+  }
+  ok("M25.1 PWA: manifest links, parses, and all icons resolve as PNGs");
 }
 
 // ---------- wrap up ----------
