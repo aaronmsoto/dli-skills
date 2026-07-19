@@ -59,6 +59,10 @@ const OUT = [
   // 0.9 keeps the star tip (~x110 in viewBox units) inside the circular
   // 80% safe zone: (110-60)*0.9*(512/120) ≈ 192 px < 204.8 px radius.
   { file: "maskable-512.png", px: 512, rounded: false, scale: 0.9 },
+  // iOS composites transparency onto BLACK, so the touch icon must be
+  // full-bleed (no transparent corners); iOS rounds the corners itself.
+  // 1.1 keeps the star clear of that ~20% system corner radius.
+  { file: "apple-touch-icon.png", px: 180, rounded: false, scale: 1.1 },
 ];
 
 const browser = await chromium.launch(
