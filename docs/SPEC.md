@@ -368,7 +368,7 @@ deferred phase-2 note; Google/Apple OAuth rejected (child account minimums,
 shared classroom devices). BLOCKED until the owner signs the privacy
 amendment described in GOAL.md M27.
 
-### 5.7 Aggregate analytics beacon (M28 — SHIPPED 2026-07-19, live at conjuga-api.soto-c30.workers.dev)
+### 5.7 Aggregate analytics beacon (M28 — SHIPPED 2026-07-19, live at api.dliskills.com (Workers Custom Domain; workers.dev fallback))
 Standalone in-repo Cloudflare Worker (`server/worker.js`; if M27 ever
 unpauses, its sync endpoints join this Worker). `POST /beacon` (text/plain
 JSON via sendBeacon — no preflight) increments `(UTC date, page, event)`

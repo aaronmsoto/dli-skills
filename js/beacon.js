@@ -8,9 +8,9 @@
  * app: every path is guarded and wrapped.
  */
 
-// One constant = the whole endpoint story (workers.dev now; a branded
-// api.dliskills.com later would change only this line).
-const ENDPOINT = "https://conjuga-api.soto-c30.workers.dev/beacon";
+// One constant = the whole endpoint story. Branded Workers Custom Domain
+// (owner-directed 2026-07-19); the workers.dev URL remains as fallback.
+const ENDPOINT = "https://api.dliskills.com/beacon";
 
 /** Pure decision function (unit-tested): should a beacon fire at all? */
 export function beaconAllowed(ctx) {

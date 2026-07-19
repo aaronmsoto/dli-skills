@@ -39,7 +39,7 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 **Queue (2026-07-19, post-M28): NO ACTIVE loop milestone — M25, M26,
 M28, and M29 are all shipped; the beacon is LIVE at
-conjuga-api.soto-c30.workers.dev (dashboard at the root URL). The M26
+api.dliskills.com (dashboard at the root URL). The M26
 star-grid question is DECIDED: stretch stays unscored. Next work awaits
 owner direction.
 M27 (🔄 anonymous sync codes) is PAUSED indefinitely (owner,
@@ -853,7 +853,7 @@ journal/.)
 
 - [x] **M28 — 📊 Aggregate analytics beacon · shipped 2026-07-19 (loop
   iterations M28.1-M28.2, PRs #119/#121; LIVE at
-  conjuga-api.soto-c30.workers.dev with owner-approved anonymous
+  api.dliskills.com with owner-approved anonymous
   daily+monthly uniques; design: docs/SPEC.md §5.7)**
   A standalone `server/` Worker (~50 lines vanilla JS, no framework —
   does NOT wait for M27): POST /beacon increments (date, page, event)
@@ -885,7 +885,7 @@ journal/.)
   - [x] **GATE (owner): vendor setup** — executed in-session at owner
         direction 2026-07-19 with the owner's scoped token: D1
         `conjuga-db` created, schema applied, Worker deployed at
-        https://conjuga-api.soto-c30.workers.dev (runbook Option A —
+        https://api.dliskills.com (runbook Option A —
         no DNS changes; api.dliskills.com stays an optional upgrade).
   - [x] **SERVER** (2026-07-19) — `server/` Worker: counters + POST
         /beacon (strict allowlist validation; per-IP rate limiting
