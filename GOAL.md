@@ -859,8 +859,10 @@ journal/.)
         notice-disclosure duty). (Superseded by M27's fuller text if sync
         ever ships.) LOOPS MUST NOT write code that calls any network
         endpoint until this box is checked.
-  - [ ] **GATE (owner): vendor setup** — Cloudflare account,
-        api.dliskills.com DNS, D1 database, first `wrangler deploy`.
+  - [ ] **GATE (owner): vendor setup** — runbook: server/README.md.
+        Cloudflare account, D1 database, first `wrangler deploy`;
+        workers.dev URL is fine to start (Cloudflare DNS NOT required —
+        api.dliskills.com is the optional branded upgrade).
   - [ ] **SERVER** — `server/` Worker: counters table + POST /beacon
         (rate limiting, payload validation); unit-tested pure handlers.
   - [ ] **CLIENT** — beacon for page views + a handful of feature events
