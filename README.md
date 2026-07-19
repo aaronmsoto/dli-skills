@@ -80,6 +80,9 @@ zero-setup, and usable from any browser without registration or data collection.
   worker): "Add to Home Screen" installs the app; the ⬇️ Descargas screen
   stores per-group audio (~2 MB each) so practice — including 🎧 Escucha —
   works fully offline
+- **🍎 Teacher mode** — per-group printable class packs (blank practice
+  sheets for all five tenses + answer keys in one print job) and QR
+  station cards that open a group directly on classroom tablets
 - **Vosotros toggle** — off by default (US convention), one click to include
 - **Accessible** — large touch targets, keyboard shortcuts (1-4 for choices),
   ARIA live announcements, dark mode, reduced-motion support

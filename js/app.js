@@ -816,6 +816,20 @@ function renderPack(setId) {
     el("div", { class: "pack-actions no-print" },
       el("button", { class: "btn primary print-btn", onclick: () => window.print() }, "🖨️ Imprimir el pack")),
 
+    // Station card: a scannable QR to this group for classroom stations
+    // (committed SVG from tools/generate-qr.mjs; links to the LIVE site).
+    el("section", { class: "pack-sheet pack-station" },
+      el("h2", {}, "📱 Estación — Grupo " + setId,
+        el("span", { class: "h-en", lang: "en" }, " (scan to practice this group)")),
+      el("img", {
+        class: "station-qr", src: `qr/g${String(setId).padStart(2, "0")}.svg`,
+        alt: `Código QR para practicar el Grupo ${setId} en dliskills.com`,
+        width: "220", height: "220",
+      }),
+      el("p", { class: "station-caption" },
+        `Escanea y practica el Grupo ${setId} en tu tableta. `,
+        el("span", { class: "h-en", lang: "en" }, "Scan on a tablet to open this group."))),
+
     // Blank practice sheets, one page each.
     allTenses.map((t) =>
       el("section", { class: "pack-sheet" },

@@ -2408,11 +2408,17 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
   await page.click(".pack-link");
   await page.waitForSelector(".pack-sheet");
-  // 5 blank sheets (3 core + 2 stretch) + 5 answer keys.
-  const sheets = await page.locator(".pack-sheet:not(.pack-key)").count();
+  // M29.2 station card + 5 blank sheets (3 core + 2 stretch) + 5 keys.
+  const sheets = await page.locator(".pack-sheet:not(.pack-key):not(.pack-station)").count();
   const keys = await page.locator(".pack-key").count();
   if (sheets !== 5) fail(`m29.1: expected 5 blank sheets, got ${sheets}`);
   if (keys !== 5) fail(`m29.1: expected 5 answer keys, got ${keys}`);
+  // Station QR: present, resolves as an SVG, alt text names the group.
+  if ((await page.locator(".pack-station .station-qr").count()) !== 1) fail("m29.2: station QR missing");
+  const qrRes = await fetch(`${BASE}/qr/g01.svg`);
+  if (qrRes.status !== 200 || !(await qrRes.text()).startsWith("<svg")) {
+    fail("m29.2: qr/g01.svg does not resolve as an SVG");
+  }
   // Blank sheets are actually blank; keys carry RAE forms incl. stretch.
   const blankText = await page.locator(".pack-sheet:not(.pack-key) .pack-blank").first().innerText();
   if (blankText.trim() !== "") fail("m29.1: blank cell is not blank");
@@ -2434,7 +2440,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (printState.teacherSheet === "none") fail("m29.1: sheets hidden in print");
   if (printState.breakAfter !== "page") fail(`m29.1: sheets missing page breaks (${printState.breakAfter})`);
   await assertNoStrayNull("pack");
-  ok("M29.1 class pack: link, 5 blank sheets + 5 keys (incl. stretch), print emulation clean");
+  // Teacher landing section on about.html (M29.2 go-live content).
+  const aboutRes = await fetch(`${BASE}/about.html`);
+  const aboutHtml = await aboutRes.text();
+  if (!aboutHtml.includes("Para maestros")) fail("m29.2: about.html missing the teacher section");
+  ok("M29 teacher mode: pack link, station QR resolves, 5 sheets + 5 keys, print emulation, about section");
 }
 
 // ---------- M25.4 📲 install UX: ☰ row, panel steps, Descargas link ----------
