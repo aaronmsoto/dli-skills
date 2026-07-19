@@ -338,7 +338,10 @@ shared classroom devices). BLOCKED until the owner signs the privacy
 amendment described in GOAL.md M27.
 
 ### 5.7 Forward design — aggregate analytics beacon (M28, planned 2026-07-19)
-`POST /beacon` on the same Worker increments `(date, page, event)` counters
+M28 is independent of M27: the beacon ships as its own standalone
+Cloudflare Worker (in-repo `server/`) and does not wait for sync; if M27
+ever unpauses, its sync endpoints join this same Worker rather than a
+second one. `POST /beacon` increments `(date, page, event)` counters
 in D1 — no IP, cookie, or identifier is ever stored (the strongest reading
 of COPPA's "support for internal operations" exception; the 2025 rule's
 notice-disclosure duty is satisfied by the amended about.html Privacy text).
