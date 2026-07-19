@@ -11,6 +11,7 @@
  *   node tools/generate-audio.mjs --samples          # audition set only
  *   node tools/generate-audio.mjs --sets 1,2         # specific groups
  *   node tools/generate-audio.mjs --sets all         # full dataset
+ *   node tools/generate-audio.mjs --stretch          # M26 stretch phrases (all verbs)
  *
  * Output: audio/clips/<slug>-<hash>.mp3 + audio/manifest.json mapping
  * EXACT spoken text → clip path. Two variants per form: person-prefixed
@@ -23,7 +24,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { SETS } from "../js/verbs.js";
-import { conjugate, TENSES } from "../js/conjugator.js";
+import { conjugate, conjugateStretch, TENSES, STRETCH_TENSES } from "../js/conjugator.js";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const OUT = join(ROOT, "audio");
@@ -67,6 +68,23 @@ function phrasesForSets(setIds) {
           texts.add(`${SPEECH_PERSONS[p]} ${forms[p]}`); // say/sayForm paths
           texts.add(forms[p]); // bare form for 🎧 Escucha
         }
+      }
+    }
+  }
+  return [...texts];
+}
+
+// M26 stretch constructions (Estudia/Práctica tap-to-hear). Person-prefixed
+// ONLY: sayForm speaks "yo voy a hablar"; there is no stretch Escucha, so
+// no bare variants. The js/app.js stretchSpeakable probe checks
+// `yo <first form>` — these texts satisfy it once generated.
+function stretchPhrases() {
+  const texts = new Set();
+  for (const set of SETS) {
+    for (const verb of set.verbs) {
+      for (const tense of STRETCH_TENSES) {
+        const forms = conjugateStretch(verb, tense);
+        for (let p = 0; p < 6; p++) texts.add(`${SPEECH_PERSONS[p]} ${forms[p]}`);
       }
     }
   }
@@ -125,17 +143,20 @@ async function run() {
   const args = process.argv.slice(2);
   const samplesOnly = args.includes("--samples");
   const nestOnly = args.includes("--nest");
+  const stretchOnly = args.includes("--stretch");
   const setsArg = args[args.indexOf("--sets") + 1];
   let texts;
   if (samplesOnly) {
     texts = SAMPLES;
   } else if (nestOnly) {
     texts = NEST_PHRASES;
+  } else if (stretchOnly) {
+    texts = stretchPhrases();
   } else if (setsArg) {
     const ids = setsArg === "all" ? SETS.map((s) => s.id) : setsArg.split(",").map(Number);
     texts = phrasesForSets(ids);
   } else {
-    console.error("Pass --samples, --nest, or --sets 1,2 | --sets all");
+    console.error("Pass --samples, --nest, --stretch, or --sets 1,2 | --sets all");
     process.exit(1);
   }
 

@@ -2,7 +2,7 @@
  * Question generation for the three practice modes.
  * A "question" targets one (verb, person, tense) cell of the paradigm.
  */
-import { conjugate, PERSONS } from "./conjugator.js";
+import { conjugate, conjugateStretch, STRETCH_TENSES, PERSONS } from "./conjugator.js";
 
 export const QUESTIONS_PER_ROUND = 10;
 export const MATCH_PAIRS = 6;
@@ -133,7 +133,9 @@ export function buildContrastQuestions(verbs, count, includeVosotros) {
  * bank length always equals the person count.
  */
 export function buildPracticaBank(verb, tense, persons) {
-  const forms = conjugate(verb, tense);
+  const forms = STRETCH_TENSES.includes(tense)
+    ? conjugateStretch(verb, tense)
+    : conjugate(verb, tense);
   return shuffle(persons.map((p) => forms[p]));
 }
 

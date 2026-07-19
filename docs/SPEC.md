@@ -249,6 +249,23 @@ timers/streaks/leaderboards; celebration access never gates on perfection
   writes — owner verification on production without grinding stars.
   Unlinked; pattern follows the retired `?redesign=1` gate.
 
+### 4.3m Stretch constructions (⏭️🔄 Tiempos nuevos, M26 — unscored-first)
+Two periphrastic constructions extend the tense set WITHOUT touching the
+star grid: `ir a + infinitive` ("voy a hablar") and the present
+progressive `estar + gerundio` ("estoy hablando"). Engine:
+`STRETCH_TENSES`/`conjugateStretch`/`gerund` in js/conjugator.js, kept
+SEPARATE from `TENSES` so no scored surface can sample them (test-locked;
+STARS_PER_SET stays 30). The gerund derives -ir stem changes from the
+existing `pret3` flags (RAE: the gerund shares the third-person-preterite
+vowel), takes -yendo after vowel stems, and uses per-verb `ger` overrides
+only for diciendo/viniendo/pudiendo (+ ir → yendo). Surfaces: set-screen
+"Tiempos nuevos" cards (star-free) → Estudia chart + unscored Práctica
+rebuild only; play routes reject stretch tenses. Audio: tap-to-hear
+speaks person-prefixed phrases; affordances gate per-text via
+`hasClip()`/TTS until the owner's `tools/generate-audio.mjs --stretch`
+run exists (rule 1 — no silent buttons). Whether stretch joins the star
+grid is a LATER owner decision recorded in GOAL M26.
+
 ### 4.4 Results & progression
 - Score, star award (≥60% ★, ≥80% ★★, 100% ★★★), encouraging message
   (never shaming), review list of missed items (person + correct form + verb +

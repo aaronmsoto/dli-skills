@@ -33,11 +33,12 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue (owner-approved plan, 2026-07-19): M26 (⏭️ stretch tenses — the
-owner reactivated M4 with the unscored-first scope via the approved plan)
-is ACTIVE and loop-workable NOW — work its acceptance criteria in order;
-visual work loads the prado-visual-craft skill. Then M29 (🍎 teacher
-mode). M27 (🔄 anonymous sync codes) is PAUSED indefinitely (owner,
+**Queue (owner-approved plan, 2026-07-19): M29 (🍎 teacher mode) is NEXT
+— loop-workable on the owner's go; work its acceptance criteria in
+order; visual work loads the prado-visual-craft skill. M26 shipped
+2026-07-19 with two open owner boxes (--stretch ElevenLabs run;
+star-grid decision — see the M26 entry).
+M27 (🔄 anonymous sync codes) is PAUSED indefinitely (owner,
 2026-07-19 — progress syncing is not a priority). M28 (📊 aggregate
 analytics beacon) is INDEPENDENT of M27: its amendment was SIGNED
 2026-07-19 (PR #104), so beacon code may be written (e2e against stubs);
@@ -46,8 +47,8 @@ Loops must not call any live network endpoint before that gate box is
 checked, and must never self-unpause a milestone or check an owner gate
 themselves. Forward designs live in docs/SPEC.md §5.5-5.7 —
 implement THAT design, don't re-derive it. Still owner/SME-gated as before:
-M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M25 complete
-(M19-M24 shipped 2026-07-15..17; M25 shipped 2026-07-19).**
+M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M26 complete
+(M19-M24 shipped 2026-07-15..17; M25+M26 shipped 2026-07-19).**
 The queue line here — not milestone numbering or file position — sets loop
 priority. (Historical per-milestone narratives live in each entry and in
 journal/.)
@@ -766,7 +767,9 @@ journal/.)
   Owner actions: merge; install-test on a real iPhone/iPad; verify
   `?m18demo=1` on the live site post-SW.
 
-- [ ] **M26 — ⏭️ Stretch tenses: M4 reactivated, unscored-first
+- [x] **M26 — ⏭️ Stretch tenses: M4 reactivated, unscored-first · shipped
+  2026-07-19 (loop iterations M26.1-M26.3, PRs #111/#113/#114; open owner
+  boxes: --stretch audio run, star-grid decision)
   (owner-approved plan 2026-07-19)**
   `ir a + infinitive` (near future) + present progressive (estar + gerund,
   incl. irregular gerunds: leyendo, oyendo, diciendo, pidiendo, viniendo,
@@ -776,17 +779,23 @@ journal/.)
   ahora mismo 🔄"; STARS_PER_SET stays 30; nest/vuelo/informe/e2e
   denominators untouched; no recordResult.
   Acceptance criteria:
-  - [ ] **ENGINE** — conjugator support for both constructions with
+  - [x] **ENGINE** (2026-07-19) — conjugator support for both constructions with
         hand-verified tests covering every irregular-gerund class in the
         dataset (golden rule 1).
-  - [ ] **UI** — Estudia tables + Práctica rebuild for both, tense triad
+  - [x] **UI** (2026-07-19) — Estudia tables + Práctica rebuild for both, tense triad
         extended visually (load prado-visual-craft; the star-free icon
         language rule applies), vosotros filtering respected, print styles.
-  - [ ] **AUDIO** — new forms speak via TTS fallback initially; owner
-        ElevenLabs run for the new-tense clips flagged as an owner action
-        (tools/generate-audio.mjs extension).
-  - [ ] **V** — suites green; docs (SPEC 4.x, STANDARDS honest framing:
-        stretch scaffolding, unscored); journal.
+  - [x] **AUDIO** (2026-07-19, loop side) — new forms speak via TTS
+        fallback (per-text `hasClip` gating — no silent buttons);
+        `tools/generate-audio.mjs --stretch` generates the 1,200
+        person-prefixed phrases when the owner runs it.
+  - [ ] **OWNER ACTION: run `node tools/generate-audio.mjs --stretch`**
+        (ElevenLabs key in .env; ~2,400 clips) then commit audio/ —
+        stretch 🔊 buttons light up automatically via the manifest probe.
+  - [x] **V** (2026-07-19) — suites green; docs (SPEC 4.3m, STANDARDS
+        honest framing: stretch scaffolding, unscored; about.html row +
+        public RAE-accuracy note on about + /docs, owner ask 2026-07-19);
+        journal.
   - [ ] **OWNER DECISION (later, separate):** whether stretch tenses join
         the star grid — changes STARS_PER_SET/600-total/nest derivation;
         never a loop's call. Until checked, they stay unscored.

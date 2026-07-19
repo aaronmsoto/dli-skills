@@ -65,6 +65,13 @@ export function clipMap() {
   return clipIndex?.map ?? null;
 }
 
+/** Whether a specific spoken text has a pre-generated clip. Stretch-tense
+ *  surfaces (M26) gate per-text: their clips don't exist until the owner's
+ *  ElevenLabs run, and a 🔊 button that plays nothing breaks rule 1. */
+export function hasClip(text) {
+  return !!clipIndex?.map[text];
+}
+
 /** Either backend works → audio UI may render. */
 export function audioAvailable() {
   return clipsAvailable() || ttsAvailable();

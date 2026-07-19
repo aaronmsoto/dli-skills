@@ -43,6 +43,7 @@ Novice High as its working ceiling**.
 | ✅ Elige (multiple-choice recognition) | Interpretive Reading, Novice Low–Mid — identify memorized/familiar written forms |
 | 🧱 Práctica (rebuild the table, unscored) | Interpretive active recall inside the chart's visual scaffold — the NBPTS Std IV bridge between studying and quizzing; pressure-free by design |
 | 🧩 Empareja (form ↔ person matching) | Interpretive Reading, Novice Low — recognition of familiar written chunks with strong visual scaffolding |
+| ⏭️🔄 Tiempos nuevos (ir a + inf., present progressive — M26) | Exposure-first stretch scaffolding toward Novice High sentence building. HONEST FRAMING: unscored by design (Estudia + Práctica only, no stars) — production accuracy in these constructions is not claimed at the Novice band; the RAE-verified engine guarantees the *models* are correct, not that mastery is measured |
 | ✏️ Escribe (typed production) | Presentational Writing, Novice Mid–High — write memorized words and phrases accurately |
 | Preterite & imperfect practice | Scaffolding toward Novice High storytelling and, beyond Novice, the Intermediate across-time-frames Can-Dos |
 | ⚔️ ¿Pretérito o imperfecto? (time-cue contrast) | The storytelling contrast behind Novice High narration, practiced with the conventional novice cue-word scaffold (una vez vs. muchas veces) |
