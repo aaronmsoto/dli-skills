@@ -28,30 +28,21 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue: M18 Ideas 1+2 COMPLETE on dev 2026-07-15 (five iterations, PRs
-#79-#83: Chispa + F1, Nido scene, Nido ceremonies + `?m18demo=1`, Vuelo core,
-Vuelo garnish) — they ship on the next dev→main release a human merges.
-M18.4 (Postales) stays BLOCKED on SME review + owner clip run — loops must
-not start it. M19 (🎧 reframe + 🪶 feather), M20 (a11y sprint), and M21
-(La Travesía — owner picked options A+B+C 2026-07-15) COMPLETE on dev
-2026-07-15 — all ride the next release a human merges. No loop-workable item
-is queued; the owner sets the next milestone. M22 (prado-visual-craft skill +
-cloud redesign), M23 (owner-reported bug sweep: Práctica scroll, Reto dark
-pill, sticky-hover gaps), and M24 (fixed a flaky e2e test M23 shipped — the
-PRODUCT fix was correct, the test's index math was not) COMPLETE on dev
-2026-07-17 — future visual work must load the skill. Nest-noun clips
-GENERATED 2026-07-15
-(`--nest` flag: 7 phrases x 2 speeds, 60 pre-hash orphan mp3s cleaned,
-manifest integrity now unit-tested). Post-release owner checklist: verify
-celebrations on the live site via `?m18demo=1`.**
-M16 tasks R (design extraction), G (gate), T (theme selector, Light
-default), I\* (per-screen migration), RT (regression), and FLIP (default
-the gate on + retire the old look) all landed on `dev`; the go-live deploy
-is the next dev→main release a human merges. M17 (round-2 audits) is the
-next loop work and runs against the now-default redesign.
-Prior milestones M0–M15 complete on dev; still awaiting owner as before:
-M5's SME copy review + human screen-reader pass, the M2 hold, the M4 pause.
-The queue line here — not milestone numbering — sets loop priority.
+**Queue (owner-approved plan, 2026-07-19): M25 (📱 PWA + offline Descargas)
+is ACTIVE and loop-workable NOW — work its acceptance criteria in order;
+visual work loads the prado-visual-craft skill. Next: M26 (⏭️ stretch
+tenses — the owner reactivated M4 with the unscored-first scope via the
+approved plan). M27 (🔄 anonymous sync codes) and M28 (📊 aggregate
+analytics beacon) are BLOCKED until the owner signs the privacy-amendment PR
+described inside M27 and completes Cloudflare setup — loops must not write
+code that calls any network endpoint before that checkbox is checked. M29
+(🍎 teacher mode) follows. Forward designs live in docs/SPEC.md §5.5-5.7 —
+implement THAT design, don't re-derive it. Still owner/SME-gated as before:
+M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M24 complete
+(M19-M24 shipped 2026-07-15..17).**
+The queue line here — not milestone numbering or file position — sets loop
+priority. (Historical per-milestone narratives live in each entry and in
+journal/.)
 
 - [x] **M0 — Core trainer (v0.1)** · shipped 2026-07-07
   Engine + 100 verbs + Estudia/Elige/Escribe/Empareja + stars + Pages deploy.
@@ -99,9 +90,9 @@ The queue line here — not milestone numbering — sets loop priority.
         options never reveal it in the prompt, slow replay uses a lower
         rate, mode hidden + route guarded without a voice; suites green.
   - Deferred (not blocking M3): typed Escucha variant — revisit with SME.
-- [ ] **M4 — Near-future & progressive (PAUSED indefinitely — owner
-  decision 2026-07-07; loops must NOT work on this until the owner
-  reactivates it here)**
+- [ ] **M4 — Near-future & progressive (REACTIVATED as M26, owner-approved
+  plan 2026-07-19, with the unscored-first scope — work it THERE; this
+  entry remains only as the original scope record)**
   `ir a + infinitive` and present progressive (gerund generation with
   irregular gerunds: leyendo, oyendo, diciendo, pidiendo, viniendo, …),
   same test rigor as existing tenses; UI framing "muy pronto ⏭️ / ahora
@@ -726,6 +717,145 @@ The queue line here — not milestone numbering — sets loop priority.
   - [x] **V** — unit 52/52 (new pluma test) · e2e PASS with three M19 blocks
         (9/9 → feather everywhere; 8/9 → nothing; listening-only → pluma;
         about.html carries the new rationale and not the stale claim).
+
+- [ ] **M25 — 📱 PWA: install + offline + Descargas (owner-approved plan
+  2026-07-19; ACTIVE — loop-workable now; design: docs/SPEC.md §5.5)**
+  Installable app + offline shell + downloadable audio. Zero conflict with
+  any existing privacy promise (everything stays same-origin and on-device);
+  directly closes the M19-documented offline+voiceless audio gap. Facts:
+  shell 59 KB gz; per-group audio ~2 MB; full corpus 39.4 MB.
+  Acceptance criteria, in order:
+  - [ ] **ICONS+MANIFEST** — `manifest.webmanifest` (name, colors from
+        Prado tokens, start_url `.`, display standalone) + real icon files
+        (192/512 + maskable) generated ONCE by a repo tool script (like
+        tools/generate-audio.mjs — the site itself stays build-free); load
+        prado-visual-craft for the icon design; e2e asserts manifest link +
+        icon files resolve.
+  - [ ] **SW CORE** — hand-written `sw.js` per SPEC §5.5: network-first
+        shell with cache fallback, `VERSION`-named shell cache,
+        skipWaiting+clients.claim, navigation fallback with
+        `ignoreSearch:true` ONLY offline (querystrings like `?m18demo=1`
+        untouched online). Registration gated on `!navigator.webdriver &&
+        !sessionStorage.getItem("conjuga.noSW")`; existing e2e blocks stay
+        untouched; ONE dedicated e2e block registers, asserts offline shell
+        + query preservation, unregisters.
+  - [ ] **DESCARGAS** — download manager UI (☰ entry + screen with standard
+        chrome): per-group download (~2 MB, progress, sequential
+        fetch+cache.put into `audio-gNN` caches), download-all
+        (resume-by-skip-existing), per-group delete, storage.estimate()
+        readout, persist() request on first download, iOS eviction warning,
+        bilingual copy; works fully with no SW/downloads (feature-detect).
+        Precache audio/manifest.json → offline 🎧 Escucha for downloaded
+        groups; e2e covers download/delete/estimate flows with stubbed
+        clips.
+  - [ ] **INSTALL UX** — iOS has no beforeinstallprompt: a small "Instalar
+        la app / Añadir a inicio" instructions panel (☰), Android/desktop
+        install prompt where available; about.html gains an offline/install
+        paragraph (go-live content rule).
+  - [ ] **V** — suites green incl. the SW-gating regression assertions;
+        payload budget green (sw.js + manifest join the budget); journal.
+  Owner actions: merge; install-test on a real iPhone/iPad; verify
+  `?m18demo=1` on the live site post-SW.
+
+- [ ] **M26 — ⏭️ Stretch tenses: M4 reactivated, unscored-first
+  (owner-approved plan 2026-07-19)**
+  `ir a + infinitive` (near future) + present progressive (estar + gerund,
+  incl. irregular gerunds: leyendo, oyendo, diciendo, pidiendo, viniendo,
+  durmiendo, pudiendo…) — original M4 scope, RAE-verified test rigor.
+  **Unscored-first (the owner's reactivation scope):** the two stretch
+  tenses appear on Estudia and Práctica ONLY, framed "muy pronto ⏭️ /
+  ahora mismo 🔄"; STARS_PER_SET stays 30; nest/vuelo/informe/e2e
+  denominators untouched; no recordResult.
+  Acceptance criteria:
+  - [ ] **ENGINE** — conjugator support for both constructions with
+        hand-verified tests covering every irregular-gerund class in the
+        dataset (golden rule 1).
+  - [ ] **UI** — Estudia tables + Práctica rebuild for both, tense triad
+        extended visually (load prado-visual-craft; the star-free icon
+        language rule applies), vosotros filtering respected, print styles.
+  - [ ] **AUDIO** — new forms speak via TTS fallback initially; owner
+        ElevenLabs run for the new-tense clips flagged as an owner action
+        (tools/generate-audio.mjs extension).
+  - [ ] **V** — suites green; docs (SPEC 4.x, STANDARDS honest framing:
+        stretch scaffolding, unscored); journal.
+  - [ ] **OWNER DECISION (later, separate):** whether stretch tenses join
+        the star grid — changes STARS_PER_SET/600-total/nest derivation;
+        never a loop's call. Until checked, they stay unscored.
+
+- [ ] **M27 — 🔄 Anonymous sync codes (BLOCKED — amendment + vendor setup
+  first; design: docs/SPEC.md §5.6)**
+  Cross-device progress sync with NO accounts, NO identities, NO PII: a
+  user-held 4-word Spanish code moves the ~21 KB zero-PII progress blob via
+  our own Cloudflare Worker + D1 (SQLite; in-repo `server/`; owner-deployed
+  via wrangler). Client-side per-key-max merge (recordResult semantics) =
+  conflict-free. Server stores sha256(code) + blob (64 KB cap) +
+  updated_at ONLY — never IPs. Codes expire 180 days after last write.
+  Rejected (do not resurrect): Google/Apple OAuth for children, passwords,
+  Supabase (free-tier idle pausing breaks sync silently).
+  - [ ] **GATE (owner): SIGN THE PRIVACY AMENDMENT** — one PR updating
+        together: invariant 2 + Non-goals below, about.html Privacy,
+        README, CLAUDE.md golden rule 2, docs/STANDARDS.md,
+        js/standards-info.js. Replacement invariant 2 (sign verbatim):
+        "Static site: no build step, no dependencies, no login, no
+        third-party trackers, no advertising, no personal data collection.
+        Progress lives in localStorage; the only optional network features
+        are (a) anonymous sync codes — an opt-in, user-held code that moves
+        a progress blob (scores/stars/timestamps, zero personal
+        information) between devices via our own server, expiring 180 days
+        after last use — and (b) aggregate visit counting on that same
+        server, which stores counts only and never stores IP addresses or
+        any identifier. Both run on infrastructure we control with in-repo
+        source; nothing identifies or profiles a learner." about.html
+        Privacy replacement names COPPA's "support for internal operations"
+        (2025 rule notice-disclosure duty). LOOPS MUST NOT write code that
+        calls any network endpoint until this box is checked.
+  - [ ] **GATE (owner): vendor setup** — Cloudflare account,
+        api.dliskills.com DNS, D1 database, first `wrangler deploy`.
+  - [ ] **SERVER** — `server/` Worker (~150 lines vanilla JS, no
+        framework): POST /sync (create→code), GET/PUT /sync/:code, rate
+        limiting, 64 KB cap, JSON-schema validation, 180-day expiry sweep;
+        unit-tested pure handlers; kid-safe 1,024-word Spanish wordlist
+        (data file + test).
+  - [ ] **CLIENT** — "Sincronizar" UI (☰): create/show code, redeem+merge
+        (per-key max), offline-tolerant errors, bilingual copy; e2e against
+        a stubbed endpoint only (no secrets in CI).
+  - [ ] **V** — suites green; docs in sync; journal. Phase-2 note (not
+        queued): adult email-OTP convenience layer.
+
+- [ ] **M28 — 📊 Aggregate analytics beacon (BLOCKED on the same M27
+  amendment + backend; design: docs/SPEC.md §5.7)**
+  ~30-line addition to the same Worker: POST /beacon increments
+  (date, page, event) counters in D1 — IP/cookie/identifier never stored;
+  retention enforced by our own code. No third-party analytics script,
+  ever (GA4/Firebase/Cloudflare-Web-Analytics/GoatCounter researched and
+  rejected — see Exclusions). Client beacon no-ops on localhost, webdriver,
+  and `conjuga.noSW`; respects Global Privacy Control. Owner dashboard =
+  static admin page reading a public aggregates endpoint or `wrangler d1`
+  queries. Accepted trade-off: no bot filtering (order-of-magnitude signal).
+  - [ ] Server counters table + endpoint; - [ ] client beacon (page views +
+    a handful of feature events, named in SPEC before shipping); - [ ] V:
+    e2e asserts the no-op guards; docs; journal.
+
+- [ ] **M29 — 🍎 Teacher mode (loop-workable after M25; no amendment)**
+  Classroom value without accounts: (a) **printable class packs** — one
+  print flow bundling a group's study sheets + blank Práctica tables +
+  answer keys (builds on the existing print CSS + M5 headers); (b) **QR
+  deep links** — per-group QR codes (tiny in-repo generator tool, no
+  runtime dependency) linking to `#/set/<n>` for station work; (c) a
+  teacher landing section on about.html or docs. Load prado-visual-craft
+  for layout. e2e print-emulation coverage. Owner action: print-test.
+
+- [x] **M-PLAN 2026-07-19 — next-era planning (this entry).** Research +
+  adversarially-refined plan for M25-M29 (repo-facts brief + design agent
+  with COPPA/vendor/PWA research; owner approved). Key evidence: COPPA 2025
+  "support for internal operations" permits aggregate analysis with
+  notice-disclosure; IPs/persistent IDs are personal info under 16 CFR
+  312.2; Supabase free-tier idle-pausing; D1 export = plain SQLite; iOS 17+
+  Home-Screen quota ≈60% disk. EXCLUSIONS (researched, rejected — do not
+  revisit): GA4/ad-tech analytics · Firebase · Cloudflare Web Analytics ·
+  Plausible/Umami hosted · Supabase · passwords · Google/Apple OAuth for
+  children · push notifications · Workbox/any bundled SW · typed-Escucha
+  (SME-gated) for the fifth slot. Forward designs: docs/SPEC.md §5.5-5.7.
 
 - [x] **M24 — 🧪 Fix a flaky e2e test that briefly failed the release PR
   (2026-07-17; complete on dev 2026-07-17, loop/20260717-m24-hover-flake)**
