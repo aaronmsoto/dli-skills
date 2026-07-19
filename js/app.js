@@ -426,7 +426,9 @@ function renderHome() {
       menuButton(),
       el("h1", { class: "home-title" }, createLola(76, { markup: seasonalHeroMarkup() ?? undefined }).el, "Conjuga"),
       el("p", { class: "brand-sub", lang: "en" }, "part of DLIskills.com"),
-      el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
+      el("p", { class: "lola-greeting" }, seasonalHeroMarkup()
+        ? "¡Lola felicita a España por su victoria en el Mundial!"
+        : "¡Hola! Soy Lola la Lechuza."),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
       el("p", { class: "tagline-en", lang: "en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
       el("p", { class: "total-stars" }, `⭐ ${totalEarned} / ${SETS.length * STARS_PER_SET} estrellas`),

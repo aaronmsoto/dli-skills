@@ -25,6 +25,15 @@ no external references (the only "http" is the SVG namespace).
   screen keeps the standard Lola.
 - **sw.js** — SHELL += js/mascot-jersey.js; VERSION → shell-v5.
 
+## Addendum (same day): Mundial greeting
+
+Owner follow-up: through July the home greeting also swaps —
+"¡Lola felicita a España por su victoria en el Mundial!" replaces
+"¡Hola! Soy Lola la Lechuza.", on the SAME July-2026 gate, reverting
+together with the jersey on August 1. The general home e2e assertion
+became date-agnostic (both greetings contain "Lola"); the
+clock-injected block pins the exact text on each side of the boundary.
+
 ## Verification
 
 - e2e (clock injection, both sides of the boundary): July 2026 → home

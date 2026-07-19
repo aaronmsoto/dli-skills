@@ -81,7 +81,9 @@ await assertNoStrayNull("home");
 await page.waitForSelector(".home-title .lola-wrap .lola");
 if ((await page.locator(".lola-wrap").getAttribute("aria-hidden")) !== "true") fail("home: Lola must be aria-hidden");
 const greeting = await page.locator(".lola-greeting").innerText();
-if (!greeting.includes("Lola la Lechuza")) fail(`home: greeting missing, got "${greeting}"`);
+// date-agnostic: the July-2026 Mundial greeting or the standard one —
+// the seasonal block below pins each side with an injected clock
+if (!greeting.includes("Lola")) fail(`home: greeting missing, got "${greeting}"`);
 await page.screenshot({ path: `${SHOTS}/home.png` });
 ok("home renders 20 groups + Lola greeter");
 
@@ -2810,6 +2812,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (!j.lids || !j.head) fail("jersey: animation hooks (.lola-head/.lola-lids) missing from the variant");
   if (!j.idle) fail("jersey: variant must keep the is-idle bob/blink class");
   if (j.hidden !== "true") fail("jersey: hero must stay aria-hidden (decorative)");
+  const julGreeting = await jul.locator(".lola-greeting").innerText();
+  if (!julGreeting.includes("felicita a España")) fail(`jersey: July greeting should congratulate Spain, got "${julGreeting}"`);
   // Every other screen keeps the standard owl, even in July.
   await jul.goto(`${BASE}/#/practica/1/present`);
   await jul.waitForSelector(".match-title .lola");
@@ -2827,6 +2831,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const a = await heroState(aug);
   if (a.jersey) fail("jersey: August must auto-revert to the standard Lola");
   if (!a.standard) fail("jersey: August hero should be the token-colored standard owl");
+  const augGreeting = await aug.locator(".lola-greeting").innerText();
+  if (!augGreeting.includes("¡Hola! Soy Lola la Lechuza.")) fail(`jersey: August greeting must revert, got "${augGreeting}"`);
   await aug.close();
   ok("🇪🇸 seasonal hero: jersey in July 2026 (hooks + aria intact, home only), standard owl from August");
 }
