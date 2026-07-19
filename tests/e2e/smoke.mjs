@@ -81,7 +81,9 @@ await assertNoStrayNull("home");
 await page.waitForSelector(".home-title .lola-wrap .lola");
 if ((await page.locator(".lola-wrap").getAttribute("aria-hidden")) !== "true") fail("home: Lola must be aria-hidden");
 const greeting = await page.locator(".lola-greeting").innerText();
-if (!greeting.includes("Lola la Lechuza")) fail(`home: greeting missing, got "${greeting}"`);
+// date-agnostic: the July-2026 Mundial greeting or the standard one —
+// the seasonal block below pins each side with an injected clock
+if (!greeting.includes("Lola")) fail(`home: greeting missing, got "${greeting}"`);
 await page.screenshot({ path: `${SHOTS}/home.png` });
 ok("home renders 20 groups + Lola greeter");
 
@@ -2775,6 +2777,64 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     await sp.close();
   }
   ok("M30.4 menu polish: owner order, switch controls persist, Tema stacked, static pages share the live drawer");
+}
+
+// ---------- 🇪🇸 seasonal hero: Spain jersey in July 2026, auto-revert in August ----------
+{
+  const fakeNow = (iso) => `
+    const RealDate = Date;
+    const fixed = new RealDate("${iso}");
+    window.Date = class extends RealDate {
+      constructor(...a) { if (a.length === 0) { super(fixed.getTime()); } else { super(...a); } }
+      static now() { return fixed.getTime(); }
+    };`;
+  const heroState = (p) => p.evaluate(() => {
+    const svg = document.querySelector(".home-title .lola");
+    return {
+      jersey: !!svg.querySelector('[fill="#c8362f"]'),
+      standard: !!svg.querySelector('[fill="var(--lola-body)"]'),
+      lids: !!svg.querySelector(".lola-lids"),
+      head: !!svg.querySelector(".lola-head"),
+      idle: svg.classList.contains("is-idle"),
+      hidden: svg.closest(".lola-wrap")?.getAttribute("aria-hidden"),
+    };
+  });
+
+  // Mid-July 2026: the home hero wears the jersey, with every hook intact.
+  const jul = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(jul);
+  await jul.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await jul.addInitScript(fakeNow("2026-07-25T12:00:00"));
+  await jul.goto(`${BASE}/`);
+  await jul.waitForSelector(".home-title .lola");
+  const j = await heroState(jul);
+  if (!j.jersey) fail("jersey: July 2026 home hero should wear the Spain jersey");
+  if (!j.lids || !j.head) fail("jersey: animation hooks (.lola-head/.lola-lids) missing from the variant");
+  if (!j.idle) fail("jersey: variant must keep the is-idle bob/blink class");
+  if (j.hidden !== "true") fail("jersey: hero must stay aria-hidden (decorative)");
+  const julGreeting = await jul.locator(".lola-greeting").innerText();
+  if (!julGreeting.includes("felicita a España")) fail(`jersey: July greeting should congratulate Spain, got "${julGreeting}"`);
+  // Every other screen keeps the standard owl, even in July.
+  await jul.goto(`${BASE}/#/practica/1/present`);
+  await jul.waitForSelector(".match-title .lola");
+  const other = await jul.evaluate(() => !!document.querySelector(".match-title .lola [fill=\"#c8362f\"]"));
+  if (other) fail("jersey: non-home screens must keep the standard Lola");
+  await jul.close();
+
+  // August 2026: the standard owl is back on home — no deploy needed.
+  const aug = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(aug);
+  await aug.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await aug.addInitScript(fakeNow("2026-08-02T12:00:00"));
+  await aug.goto(`${BASE}/`);
+  await aug.waitForSelector(".home-title .lola");
+  const a = await heroState(aug);
+  if (a.jersey) fail("jersey: August must auto-revert to the standard Lola");
+  if (!a.standard) fail("jersey: August hero should be the token-colored standard owl");
+  const augGreeting = await aug.locator(".lola-greeting").innerText();
+  if (!augGreeting.includes("¡Hola! Soy Lola la Lechuza.")) fail(`jersey: August greeting must revert, got "${augGreeting}"`);
+  await aug.close();
+  ok("🇪🇸 seasonal hero: jersey in July 2026 (hooks + aria intact, home only), standard owl from August");
 }
 
 // ---------- wrap up ----------

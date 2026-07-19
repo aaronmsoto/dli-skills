@@ -67,11 +67,13 @@ function svgMarkup(size) {
  * `el` is an aria-hidden wrapper span; `setState("is-hop")` etc. swaps the
  * state class (unknown names are ignored). One-shot states self-reset.
  */
-export function createLola(size = 64) {
+export function createLola(size = 64, { markup } = {}) {
   const wrap = document.createElement("span");
   wrap.className = "lola-wrap";
   wrap.setAttribute("aria-hidden", "true");
-  wrap.innerHTML = svgMarkup(size);
+  // trusted static templates only — the default owl or a seasonal
+  // variant module (never user-derived strings)
+  wrap.innerHTML = (markup ?? svgMarkup)(size);
   const svg = wrap.querySelector("svg");
   let timer = null;
 
