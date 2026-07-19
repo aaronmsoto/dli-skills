@@ -640,3 +640,20 @@ h1 .info-btn { vertical-align: middle; margin-left: 10px; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ---------- M29 🍎 class pack (teacher print flow) ---------- */
+.pack-blank { height: 2.4em; min-width: 6ch; }
+.pack-sheet { margin: 1.2em 0; }
+.pack-hint { margin: 0.2em 0 0.6em; }
+.teacher-line { margin-top: 1.4em; font-size: 0.95rem; }
+@media print {
+  /* one sheet per page; keys ride at the back like a teacher's edition */
+  .pack-sheet { break-after: page; page-break-after: always; }
+  .pack-sheet:last-child { break-after: auto; page-break-after: auto; }
+  .pack-help, .pack-actions { display: none; }
+}
+
+/* M29.2 station card */
+.pack-station { text-align: center; }
+.station-qr { display: inline-block; max-width: 220px; background: #fff; border-radius: 8px; }
+.station-caption { margin-top: 0.4em; }

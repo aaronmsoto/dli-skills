@@ -1059,3 +1059,10 @@
   mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 12a8 8 0 1 1-2.4-5.7'/><path d='M20.5 2.5v4.2h-4.2'/></svg>");
 }
 :root[data-redesign] .stretch-card .mode-free { color: var(--ink-soft); }
+
+/* ---------- M29 🍎 class pack ---------- */
+:root[data-redesign] .teacher-line { color: var(--ink-soft); }
+:root[data-redesign] .teacher-line a { color: var(--brand); }
+:root[data-redesign] .pack-help { color: var(--ink); }
+:root[data-redesign] .pack-hint { color: var(--ink-soft); }
+:root[data-redesign] .pack-blank { background: var(--card); }

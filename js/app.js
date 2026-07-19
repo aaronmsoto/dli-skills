@@ -420,6 +420,7 @@ function parseRoute() {
   if (parts[0] === "informe") return { screen: "report" };
   if (parts[0] === "nido") return { screen: "nido" };
   if (parts[0] === "descargas") return { screen: "descargas" };
+  if (parts[0] === "pack" && SETS[+parts[1] - 1]) return { screen: "pack", setId: +parts[1] };
   return { screen: "home" };
 }
 
@@ -484,6 +485,7 @@ function routeTitle(r) {
   if (r.screen === "report") return "Informe / Status · Conjuga";
   if (r.screen === "nido") return "El Nido de Lola · Conjuga";
   if (r.screen === "descargas") return "Descargas · Conjuga";
+  if (r.screen === "pack") return `Pack de clase · Grupo ${r.setId} · Conjuga`;
   return "Conjuga — Spanish Verb Skills Builder (K-5 DLI)";
 }
 
@@ -500,6 +502,7 @@ function render() {
   else if (route.screen === "report") renderReport();
   else if (route.screen === "nido") renderNido();
   else if (route.screen === "descargas") renderDescargas();
+  else if (route.screen === "pack") renderPack(route.setId);
   else renderPlay(route.setId, route.tense, route.mode);
 }
 
@@ -760,6 +763,91 @@ function renderSet(setId) {
           el("span", { class: "mode-en", lang: "en" }, STRETCH_LABELS[t].en),
           el("span", { class: "mode-free" }, "sin estrellas · unscored"),
         ))),
+
+    // M29 teacher affordance — quiet one-liner, not a card (kids' screen).
+    el("p", { class: "teacher-line no-print" },
+      "🍎 Para maestros: ",
+      el("a", { class: "pack-link", href: `#/pack/${set.id}` },
+        "🖨️ Pack de clase / Class pack")),
+    renderFooter(),
+  );
+}
+
+// ---------------------------------------------------------------- teacher pack (M29)
+
+function packTable(set, tense, persons, { blank, speakable }) {
+  return el("table", { class: "conj-table pack-table" },
+    el("thead", {}, el("tr", {},
+      el("th", { scope: "col" }, ""),
+      set.verbs.map((v) => el("th", { scope: "col" },
+        el("span", { class: "th-inf" }, v.inf),
+        el("span", { class: "th-gloss", lang: "en" }, v.en))))),
+    el("tbody", {}, persons.map((p) =>
+      el("tr", {},
+        el("th", { scope: "row" }, personDisplay(p)),
+        set.verbs.map((v) => {
+          if (blank) return el("td", { class: "pack-blank" }, "");
+          const form = formsFor(v, tense)[p];
+          return el("td", {}, speakable
+            ? el("button", { class: "cell-speak", onclick: () => sayForm(p, form) }, form)
+            : form);
+        })))));
+}
+
+/** 🍎 M29 class pack: blank practice sheets + answer keys for every tense
+ *  (core + stretch) in ONE print flow. Teacher-facing; unscored; builds on
+ *  the existing conj-table print styles and M5 Nombre/Fecha headers. */
+function renderPack(setId) {
+  const set = SETS[setId - 1];
+  const { vosotros } = store.getSettings();
+  const persons = [0, 1, 2, 3, 4, 5].filter((p) => vosotros || p !== 4);
+  const allTenses = [...TENSES, ...STRETCH_TENSES];
+  const canSpeak = (t) => (isStretch(t) ? stretchSpeakable(set, t) : audioAvailable());
+
+  mount(
+    el("nav", { class: "crumbs" },
+      el("a", { href: `#/set/${setId}` }, `← Grupo ${setId}`),
+      menuButton()),
+    el("h1", {}, `🍎 Pack de clase — Grupo ${setId}`),
+    el("p", { class: "pack-help no-print" },
+      "Hojas de práctica en blanco + claves de respuesta para toda la clase, en una sola impresión. ",
+      el("span", { class: "h-en", lang: "en" },
+        "Blank practice sheets + answer keys for the whole group in one print job. Each sheet starts on its own page.")),
+    el("div", { class: "pack-actions no-print" },
+      el("button", { class: "btn primary print-btn", onclick: () => window.print() }, "🖨️ Imprimir el pack")),
+
+    // Station card: a scannable QR to this group for classroom stations
+    // (committed SVG from tools/generate-qr.mjs; links to the LIVE site).
+    el("section", { class: "pack-sheet pack-station" },
+      el("h2", {}, "📱 Estación — Grupo " + setId,
+        el("span", { class: "h-en", lang: "en" }, " (scan to practice this group)")),
+      el("img", {
+        class: "station-qr", src: `qr/g${String(setId).padStart(2, "0")}.svg`,
+        alt: `Código QR para practicar el Grupo ${setId} en dliskills.com`,
+        width: "220", height: "220",
+      }),
+      el("p", { class: "station-caption" },
+        `Escanea y practica el Grupo ${setId} en tu tableta. `,
+        el("span", { class: "h-en", lang: "en" }, "Scan on a tablet to open this group."))),
+
+    // Blank practice sheets, one page each.
+    allTenses.map((t) =>
+      el("section", { class: "pack-sheet" },
+        el("h2", {}, `✏️ ${tenseLabel(t).es} — hoja de práctica`,
+          el("span", { class: "h-en", lang: "en" }, ` (${tenseLabel(t).en})`)),
+        el("p", { class: "print-fields" },
+          `Grupo ${setId} · Nombre: `, el("span", { class: "fill-line" }, ""),
+          "  Fecha: ", el("span", { class: "fill-line short" }, "")),
+        el("p", { class: "pack-hint" }, `${tenseMeta(t).hint} — ej.: `, el("em", {}, tenseMeta(t).example)),
+        packTable(set, t, persons, { blank: true }))),
+
+    // Answer keys, grouped at the back like a teacher's edition.
+    el("section", { class: "pack-keys" },
+      el("h2", {}, "🔑 Claves de respuesta ", el("span", { class: "h-en", lang: "en" }, "(answer keys)")),
+      allTenses.map((t) =>
+        el("section", { class: "pack-sheet pack-key" },
+          el("h3", {}, `🔑 ${tenseLabel(t).es}`),
+          packTable(set, t, persons, { blank: false, speakable: canSpeak(t) })))),
     renderFooter(),
   );
 }
