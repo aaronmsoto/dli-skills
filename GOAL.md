@@ -51,7 +51,12 @@ Loops must not call any live network endpoint before that gate box is
 checked, and must never self-unpause a milestone or check an owner gate
 themselves. Forward designs live in docs/SPEC.md §5.5-5.7 —
 implement THAT design, don't re-derive it. Still owner/SME-gated as before:
-M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M26 complete
+M18.4 Postales, M2 sentence bank, M5 copy review. PARKED (asset-gated,
+2026-07-19): homepage Lola jersey variant (Spain/Argentina, July-only
+with August auto-revert) — waiting on real SVGs from the design side;
+premise-checked: the referenced assets/lola-*.svg do NOT exist in repo
+history, and mascot changes stay governed by docs/MASCOT.md.
+History: M0-M26 complete
 (M19-M24 shipped 2026-07-15..17; M25+M26 shipped 2026-07-19).**
 The queue line here — not milestone numbering or file position — sets loop
 priority. (Historical per-milestone narratives live in each entry and in
