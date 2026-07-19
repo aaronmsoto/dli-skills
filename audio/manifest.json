@@ -13438,5 +13438,532 @@
  "la flor y la pluma": {
   "n": "clips/la-flor-y-la-pluma-nw3k9h-n.mp3",
   "s": "clips/la-flor-y-la-pluma-nw3k9h-s.mp3"
+ },
+ "tú vas a ser": {
+  "s": "clips/tu-vas-a-ser-8yqxzj-s.mp3",
+  "n": "clips/tu-vas-a-ser-8yqxzj-n.mp3"
+ },
+ "yo voy a ser": {
+  "n": "clips/yo-voy-a-ser-p24thz-n.mp3",
+  "s": "clips/yo-voy-a-ser-p24thz-s.mp3"
+ },
+ "él va a ser": {
+  "n": "clips/el-va-a-ser-j2h83t-n.mp3",
+  "s": "clips/el-va-a-ser-j2h83t-s.mp3"
+ },
+ "nosotros vamos a ser": {
+  "n": "clips/nosotros-vamos-a-ser-17b3nae-n.mp3",
+  "s": "clips/nosotros-vamos-a-ser-17b3nae-s.mp3"
+ },
+ "vosotros vais a ser": {
+  "n": "clips/vosotros-vais-a-ser-h0cnvj-n.mp3",
+  "s": "clips/vosotros-vais-a-ser-h0cnvj-s.mp3"
+ },
+ "ellos van a ser": {
+  "n": "clips/ellos-van-a-ser-1jt8tzh-n.mp3",
+  "s": "clips/ellos-van-a-ser-1jt8tzh-s.mp3"
+ },
+ "yo estoy siendo": {
+  "n": "clips/yo-estoy-siendo-188li6c-n.mp3",
+  "s": "clips/yo-estoy-siendo-188li6c-s.mp3"
+ },
+ "tú estás siendo": {
+  "n": "clips/tu-estas-siendo-6vgt58-n.mp3",
+  "s": "clips/tu-estas-siendo-6vgt58-s.mp3"
+ },
+ "él está siendo": {
+  "n": "clips/el-esta-siendo-11b4naq-n.mp3",
+  "s": "clips/el-esta-siendo-11b4naq-s.mp3"
+ },
+ "nosotros estamos siendo": {
+  "n": "clips/nosotros-estamos-siendo-6j6x3p-n.mp3",
+  "s": "clips/nosotros-estamos-siendo-6j6x3p-s.mp3"
+ },
+ "vosotros estáis siendo": {
+  "n": "clips/vosotros-estais-siendo-1duzgnw-n.mp3",
+  "s": "clips/vosotros-estais-siendo-1duzgnw-s.mp3"
+ },
+ "ellos están siendo": {
+  "n": "clips/ellos-estan-siendo-1ve5az2-n.mp3",
+  "s": "clips/ellos-estan-siendo-1ve5az2-s.mp3"
+ },
+ "yo voy a estar": {
+  "n": "clips/yo-voy-a-estar-2a0sj2-n.mp3",
+  "s": "clips/yo-voy-a-estar-2a0sj2-s.mp3"
+ },
+ "tú vas a estar": {
+  "n": "clips/tu-vas-a-estar-kn6js6-n.mp3",
+  "s": "clips/tu-vas-a-estar-kn6js6-s.mp3"
+ },
+ "él va a estar": {
+  "n": "clips/el-va-a-estar-1y0f7c0-n.mp3",
+  "s": "clips/el-va-a-estar-1y0f7c0-s.mp3"
+ },
+ "nosotros vamos a estar": {
+  "n": "clips/nosotros-vamos-a-estar-1u20i65-n.mp3",
+  "s": "clips/nosotros-vamos-a-estar-1u20i65-s.mp3"
+ },
+ "vosotros vais a estar": {
+  "n": "clips/vosotros-vais-a-estar-92onp2-n.mp3",
+  "s": "clips/vosotros-vais-a-estar-92onp2-s.mp3"
+ },
+ "ellos van a estar": {
+  "n": "clips/ellos-van-a-estar-75axyc-n.mp3",
+  "s": "clips/ellos-van-a-estar-75axyc-s.mp3"
+ },
+ "yo estoy estando": {
+  "n": "clips/yo-estoy-estando-ydmtz8-n.mp3",
+  "s": "clips/yo-estoy-estando-ydmtz8-s.mp3"
+ },
+ "tú estás estando": {
+  "n": "clips/tu-estas-estando-cke5mk-n.mp3",
+  "s": "clips/tu-estas-estando-cke5mk-s.mp3"
+ },
+ "él está estando": {
+  "n": "clips/el-esta-estando-wngeom-n.mp3",
+  "s": "clips/el-esta-estando-wngeom-s.mp3"
+ },
+ "nosotros estamos estando": {
+  "n": "clips/nosotros-estamos-estando-1zvkb7-n.mp3",
+  "s": "clips/nosotros-estamos-estando-1zvkb7-s.mp3"
+ },
+ "vosotros estáis estando": {
+  "n": "clips/vosotros-estais-estando-1ulff58-n.mp3",
+  "s": "clips/vosotros-estais-estando-1ulff58-s.mp3"
+ },
+ "ellos están estando": {
+  "n": "clips/ellos-estan-estando-15uk2yi-n.mp3",
+  "s": "clips/ellos-estan-estando-15uk2yi-s.mp3"
+ },
+ "yo voy a tener": {
+  "n": "clips/yo-voy-a-tener-2i0n9d-n.mp3",
+  "s": "clips/yo-voy-a-tener-2i0n9d-s.mp3"
+ },
+ "tú vas a tener": {
+  "n": "clips/tu-vas-a-tener-kv6eih-n.mp3",
+  "s": "clips/tu-vas-a-tener-kv6eih-s.mp3"
+ },
+ "él va a tener": {
+  "n": "clips/el-va-a-tener-1y8f22b-n.mp3",
+  "s": "clips/el-va-a-tener-1y8f22b-s.mp3"
+ },
+ "nosotros vamos a tener": {
+  "n": "clips/nosotros-vamos-a-tener-1ua0cwg-n.mp3",
+  "s": "clips/nosotros-vamos-a-tener-1ua0cwg-s.mp3"
+ },
+ "vosotros vais a tener": {
+  "n": "clips/vosotros-vais-a-tener-9aoifd-n.mp3",
+  "s": "clips/vosotros-vais-a-tener-9aoifd-s.mp3"
+ },
+ "ellos van a tener": {
+  "n": "clips/ellos-van-a-tener-7dason-n.mp3",
+  "s": "clips/ellos-van-a-tener-7dason-s.mp3"
+ },
+ "yo estoy teniendo": {
+  "n": "clips/yo-estoy-teniendo-bbf1ay-n.mp3",
+  "s": "clips/yo-estoy-teniendo-bbf1ay-s.mp3"
+ },
+ "tú estás teniendo": {
+  "n": "clips/tu-estas-teniendo-19g2m5e-n.mp3",
+  "s": "clips/tu-estas-teniendo-19g2m5e-s.mp3"
+ },
+ "él está teniendo": {
+  "n": "clips/el-esta-teniendo-sszx54-n.mp3",
+  "s": "clips/el-esta-teniendo-sszx54-s.mp3"
+ },
+ "nosotros estamos teniendo": {
+  "n": "clips/nosotros-estamos-teniendo-1wih9n-n.mp3",
+  "s": "clips/nosotros-estamos-teniendo-1wih9n-s.mp3"
+ },
+ "vosotros estáis teniendo": {
+  "n": "clips/vosotros-estais-teniendo-flghte-n.mp3",
+  "s": "clips/vosotros-estais-teniendo-flghte-s.mp3"
+ },
+ "ellos están teniendo": {
+  "n": "clips/ellos-estan-teniendo-tsplr8-n.mp3",
+  "s": "clips/ellos-estan-teniendo-tsplr8-s.mp3"
+ },
+ "yo voy a hacer": {
+  "n": "clips/yo-voy-a-hacer-2bcc1a-n.mp3",
+  "s": "clips/yo-voy-a-hacer-2bcc1a-s.mp3"
+ },
+ "tú vas a hacer": {
+  "n": "clips/tu-vas-a-hacer-koi3ae-n.mp3",
+  "s": "clips/tu-vas-a-hacer-koi3ae-s.mp3"
+ },
+ "él va a hacer": {
+  "n": "clips/el-va-a-hacer-1y1qqu8-n.mp3",
+  "s": "clips/el-va-a-hacer-1y1qqu8-s.mp3"
+ },
+ "nosotros vamos a hacer": {
+  "n": "clips/nosotros-vamos-a-hacer-1u3c1od-n.mp3",
+  "s": "clips/nosotros-vamos-a-hacer-1u3c1od-s.mp3"
+ },
+ "vosotros vais a hacer": {
+  "n": "clips/vosotros-vais-a-hacer-94077a-n.mp3",
+  "s": "clips/vosotros-vais-a-hacer-94077a-s.mp3"
+ },
+ "ellos van a hacer": {
+  "n": "clips/ellos-van-a-hacer-76mhgk-n.mp3",
+  "s": "clips/ellos-van-a-hacer-76mhgk-s.mp3"
+ },
+ "yo estoy haciendo": {
+  "n": "clips/yo-estoy-haciendo-rpip71-n.mp3",
+  "s": "clips/yo-estoy-haciendo-rpip71-s.mp3"
+ },
+ "tú estás haciendo": {
+  "n": "clips/tu-estas-haciendo-1pu6a1h-n.mp3",
+  "s": "clips/tu-estas-haciendo-1pu6a1h-s.mp3"
+ },
+ "él está haciendo": {
+  "n": "clips/el-esta-haciendo-1973l17-n.mp3",
+  "s": "clips/el-esta-haciendo-1973l17-s.mp3"
+ },
+ "nosotros estamos haciendo": {
+  "n": "clips/nosotros-estamos-haciendo-iam55q-n.mp3",
+  "s": "clips/nosotros-estamos-haciendo-iam55q-s.mp3"
+ },
+ "vosotros estáis haciendo": {
+  "n": "clips/vosotros-estais-haciendo-vzk5ph-n.mp3",
+  "s": "clips/vosotros-estais-haciendo-vzk5ph-s.mp3"
+ },
+ "ellos están haciendo": {
+  "n": "clips/ellos-estan-haciendo-1a6t9nb-n.mp3",
+  "s": "clips/ellos-estan-haciendo-1a6t9nb-s.mp3"
+ },
+ "yo voy a ir": {
+  "n": "clips/yo-voy-a-ir-wvxc2a-n.mp3",
+  "s": "clips/yo-voy-a-ir-wvxc2a-s.mp3"
+ },
+ "tú vas a ir": {
+  "n": "clips/tu-vas-a-ir-imb76i-n.mp3",
+  "s": "clips/tu-vas-a-ir-imb76i-s.mp3"
+ },
+ "él va a ir": {
+  "n": "clips/el-va-a-ir-1srslk0-n.mp3",
+  "s": "clips/el-va-a-ir-1srslk0-s.mp3"
+ },
+ "nosotros vamos a ir": {
+  "n": "clips/nosotros-vamos-a-ir-ak8rhf-n.mp3",
+  "s": "clips/nosotros-vamos-a-ir-ak8rhf-s.mp3"
+ },
+ "vosotros vais a ir": {
+  "n": "clips/vosotros-vais-a-ir-pr45vu-n.mp3",
+  "s": "clips/vosotros-vais-a-ir-pr45vu-s.mp3"
+ },
+ "ellos van a ir": {
+  "n": "clips/ellos-van-a-ir-xvn0gs-n.mp3",
+  "s": "clips/ellos-van-a-ir-xvn0gs-s.mp3"
+ },
+ "yo estoy yendo": {
+  "n": "clips/yo-estoy-yendo-63kyib-n.mp3",
+  "s": "clips/yo-estoy-yendo-63kyib-s.mp3"
+ },
+ "tú estás yendo": {
+  "n": "clips/tu-estas-yendo-e252ln-n.mp3",
+  "s": "clips/tu-estas-yendo-e252ln-s.mp3"
+ },
+ "él está yendo": {
+  "n": "clips/el-esta-yendo-1fpa98l-n.mp3",
+  "s": "clips/el-esta-yendo-1fpa98l-s.mp3"
+ },
+ "nosotros estamos yendo": {
+  "n": "clips/nosotros-estamos-yendo-1a4kipu-n.mp3",
+  "s": "clips/nosotros-estamos-yendo-1a4kipu-s.mp3"
+ },
+ "vosotros estáis yendo": {
+  "n": "clips/vosotros-estais-yendo-198ecbf-n.mp3",
+  "s": "clips/vosotros-estais-yendo-198ecbf-s.mp3"
+ },
+ "ellos están yendo": {
+  "n": "clips/ellos-estan-yendo-1pu65m1-n.mp3",
+  "s": "clips/ellos-estan-yendo-1pu65m1-s.mp3"
+ },
+ "yo voy a decir": {
+  "n": "clips/yo-voy-a-decir-297ppe-n.mp3",
+  "s": "clips/yo-voy-a-decir-297ppe-s.mp3"
+ },
+ "tú vas a decir": {
+  "n": "clips/tu-vas-a-decir-kmdgyi-n.mp3",
+  "s": "clips/tu-vas-a-decir-kmdgyi-s.mp3"
+ },
+ "él va a decir": {
+  "n": "clips/el-va-a-decir-1xzm4ic-n.mp3",
+  "s": "clips/el-va-a-decir-1xzm4ic-s.mp3"
+ },
+ "nosotros vamos a decir": {
+  "n": "clips/nosotros-vamos-a-decir-1u17fch-n.mp3",
+  "s": "clips/nosotros-vamos-a-decir-1u17fch-s.mp3"
+ },
+ "vosotros vais a decir": {
+  "n": "clips/vosotros-vais-a-decir-91vkve-n.mp3",
+  "s": "clips/vosotros-vais-a-decir-91vkve-s.mp3"
+ },
+ "ellos van a decir": {
+  "n": "clips/ellos-van-a-decir-74hv4o-n.mp3",
+  "s": "clips/ellos-van-a-decir-74hv4o-s.mp3"
+ },
+ "yo estoy diciendo": {
+  "n": "clips/yo-estoy-diciendo-tu72qh-n.mp3",
+  "s": "clips/yo-estoy-diciendo-tu72qh-s.mp3"
+ },
+ "tú estás diciendo": {
+  "n": "clips/tu-estas-diciendo-1ryunkx-n.mp3",
+  "s": "clips/tu-estas-diciendo-1ryunkx-s.mp3"
+ },
+ "él está diciendo": {
+  "n": "clips/el-esta-diciendo-1bbrykn-n.mp3",
+  "s": "clips/el-esta-diciendo-1bbrykn-s.mp3"
+ },
+ "nosotros estamos diciendo": {
+  "n": "clips/nosotros-estamos-diciendo-kfaip6-n.mp3",
+  "s": "clips/nosotros-estamos-diciendo-kfaip6-s.mp3"
+ },
+ "vosotros estáis diciendo": {
+  "n": "clips/vosotros-estais-diciendo-y48j8x-n.mp3",
+  "s": "clips/vosotros-estais-diciendo-y48j8x-s.mp3"
+ },
+ "ellos están diciendo": {
+  "n": "clips/ellos-estan-diciendo-1cbhn6r-n.mp3",
+  "s": "clips/ellos-estan-diciendo-1cbhn6r-s.mp3"
+ },
+ "yo voy a poder": {
+  "n": "clips/yo-voy-a-poder-2fznc9-n.mp3",
+  "s": "clips/yo-voy-a-poder-2fznc9-s.mp3"
+ },
+ "tú vas a poder": {
+  "n": "clips/tu-vas-a-poder-kt5eld-n.mp3",
+  "s": "clips/tu-vas-a-poder-kt5eld-s.mp3"
+ },
+ "él va a poder": {
+  "n": "clips/el-va-a-poder-1y6e257-n.mp3",
+  "s": "clips/el-va-a-poder-1y6e257-s.mp3"
+ },
+ "nosotros vamos a poder": {
+  "n": "clips/nosotros-vamos-a-poder-1u7zczc-n.mp3",
+  "s": "clips/nosotros-vamos-a-poder-1u7zczc-s.mp3"
+ },
+ "vosotros vais a poder": {
+  "n": "clips/vosotros-vais-a-poder-98nii9-n.mp3",
+  "s": "clips/vosotros-vais-a-poder-98nii9-s.mp3"
+ },
+ "ellos van a poder": {
+  "n": "clips/ellos-van-a-poder-7b9srj-n.mp3",
+  "s": "clips/ellos-van-a-poder-7b9srj-s.mp3"
+ },
+ "yo estoy pudiendo": {
+  "n": "clips/yo-estoy-pudiendo-1j3pepk-n.mp3",
+  "s": "clips/yo-estoy-pudiendo-1j3pepk-s.mp3"
+ },
+ "tú estás pudiendo": {
+  "n": "clips/tu-estas-pudiendo-i78xkw-n.mp3",
+  "s": "clips/tu-estas-pudiendo-i78xkw-s.mp3"
+ },
+ "él está pudiendo": {
+  "n": "clips/el-esta-pudiendo-1k68km-n.mp3",
+  "s": "clips/el-esta-pudiendo-1k68km-s.mp3"
+ },
+ "nosotros estamos pudiendo": {
+  "n": "clips/nosotros-estamos-pudiendo-19osuo9-n.mp3",
+  "s": "clips/nosotros-estamos-pudiendo-19osuo9-s.mp3"
+ },
+ "vosotros estáis pudiendo": {
+  "n": "clips/vosotros-estais-pudiendo-1ndqv80-n.mp3",
+  "s": "clips/vosotros-estais-pudiendo-1ndqv80-s.mp3"
+ },
+ "ellos están pudiendo": {
+  "n": "clips/ellos-estan-pudiendo-2jvx6q-n.mp3",
+  "s": "clips/ellos-estan-pudiendo-2jvx6q-s.mp3"
+ },
+ "yo voy a ver": {
+  "n": "clips/yo-voy-a-ver-p24vq2-n.mp3",
+  "s": "clips/yo-voy-a-ver-p24vq2-s.mp3"
+ },
+ "tú vas a ver": {
+  "n": "clips/tu-vas-a-ver-8yr07m-n.mp3",
+  "s": "clips/tu-vas-a-ver-8yr07m-s.mp3"
+ },
+ "él va a ver": {
+  "n": "clips/el-va-a-ver-j2habw-n.mp3",
+  "s": "clips/el-va-a-ver-j2habw-s.mp3"
+ },
+ "nosotros vamos a ver": {
+  "n": "clips/nosotros-vamos-a-ver-17b3pih-n.mp3",
+  "s": "clips/nosotros-vamos-a-ver-17b3pih-s.mp3"
+ },
+ "vosotros vais a ver": {
+  "n": "clips/vosotros-vais-a-ver-h0cq3m-n.mp3",
+  "s": "clips/vosotros-vais-a-ver-h0cq3m-s.mp3"
+ },
+ "ellos van a ver": {
+  "n": "clips/ellos-van-a-ver-1jt8w7k-n.mp3",
+  "s": "clips/ellos-van-a-ver-1jt8w7k-s.mp3"
+ },
+ "yo estoy viendo": {
+  "n": "clips/yo-estoy-viendo-19nqdcx-n.mp3",
+  "s": "clips/yo-estoy-viendo-19nqdcx-s.mp3"
+ },
+ "tú estás viendo": {
+  "n": "clips/tu-estas-viendo-8alobt-n.mp3",
+  "s": "clips/tu-estas-viendo-8alobt-s.mp3"
+ },
+ "él está viendo": {
+  "n": "clips/el-esta-viendo-12q9ihb-n.mp3",
+  "s": "clips/el-esta-viendo-12q9ihb-s.mp3"
+ },
+ "nosotros estamos viendo": {
+  "n": "clips/nosotros-estamos-viendo-7ybsaa-n.mp3",
+  "s": "clips/nosotros-estamos-viendo-7ybsaa-s.mp3"
+ },
+ "vosotros estáis viendo": {
+  "n": "clips/vosotros-estais-viendo-1fa4buh-n.mp3",
+  "s": "clips/vosotros-estais-viendo-1fa4buh-s.mp3"
+ },
+ "ellos están viendo": {
+  "n": "clips/ellos-estan-viendo-1wta65n-n.mp3",
+  "s": "clips/ellos-estan-viendo-1wta65n-s.mp3"
+ },
+ "yo voy a dar": {
+  "n": "clips/yo-voy-a-dar-p24ia4-n.mp3",
+  "s": "clips/yo-voy-a-dar-p24ia4-s.mp3"
+ },
+ "tú vas a dar": {
+  "n": "clips/tu-vas-a-dar-8yqmro-n.mp3",
+  "s": "clips/tu-vas-a-dar-8yqmro-s.mp3"
+ },
+ "él va a dar": {
+  "n": "clips/el-va-a-dar-j2gwvy-n.mp3",
+  "s": "clips/el-va-a-dar-j2gwvy-s.mp3"
+ },
+ "nosotros vamos a dar": {
+  "n": "clips/nosotros-vamos-a-dar-17b3c2j-n.mp3",
+  "s": "clips/nosotros-vamos-a-dar-17b3c2j-s.mp3"
+ },
+ "vosotros vais a dar": {
+  "n": "clips/vosotros-vais-a-dar-h0ccno-n.mp3",
+  "s": "clips/vosotros-vais-a-dar-h0ccno-s.mp3"
+ },
+ "ellos van a dar": {
+  "n": "clips/ellos-van-a-dar-1jt8irm-n.mp3",
+  "s": "clips/ellos-van-a-dar-1jt8irm-s.mp3"
+ },
+ "yo estoy dando": {
+  "n": "clips/yo-estoy-dando-5ryq3m-n.mp3",
+  "s": "clips/yo-estoy-dando-5ryq3m-s.mp3"
+ },
+ "tú estás dando": {
+  "n": "clips/tu-estas-dando-dqiu6y-n.mp3",
+  "s": "clips/tu-estas-dando-dqiu6y-s.mp3"
+ },
+ "él está dando": {
+  "n": "clips/el-esta-dando-1fdo0tw-n.mp3",
+  "s": "clips/el-esta-dando-1fdo0tw-s.mp3"
+ },
+ "nosotros estamos dando": {
+  "n": "clips/nosotros-estamos-dando-19syab5-n.mp3",
+  "s": "clips/nosotros-estamos-dando-19syab5-s.mp3"
+ },
+ "vosotros estáis dando": {
+  "n": "clips/vosotros-estais-dando-18ws3wq-n.mp3",
+  "s": "clips/vosotros-estais-dando-18ws3wq-s.mp3"
+ },
+ "ellos están dando": {
+  "n": "clips/ellos-estan-dando-1pijx7c-n.mp3",
+  "s": "clips/ellos-estan-dando-1pijx7c-s.mp3"
+ },
+ "yo voy a saber": {
+  "n": "clips/yo-voy-a-saber-2he1tk-n.mp3",
+  "s": "clips/yo-voy-a-saber-2he1tk-s.mp3"
+ },
+ "tú vas a saber": {
+  "n": "clips/tu-vas-a-saber-kujt2o-n.mp3",
+  "s": "clips/tu-vas-a-saber-kujt2o-s.mp3"
+ },
+ "él va a saber": {
+  "n": "clips/el-va-a-saber-1y7sgmi-n.mp3",
+  "s": "clips/el-va-a-saber-1y7sgmi-s.mp3"
+ },
+ "nosotros vamos a saber": {
+  "n": "clips/nosotros-vamos-a-saber-1u9drgn-n.mp3",
+  "s": "clips/nosotros-vamos-a-saber-1u9drgn-s.mp3"
+ },
+ "vosotros vais a saber": {
+  "n": "clips/vosotros-vais-a-saber-9a1wzk-n.mp3",
+  "s": "clips/vosotros-vais-a-saber-9a1wzk-s.mp3"
+ },
+ "ellos van a saber": {
+  "n": "clips/ellos-van-a-saber-7co78u-n.mp3",
+  "s": "clips/ellos-van-a-saber-7co78u-s.mp3"
+ },
+ "yo estoy sabiendo": {
+  "n": "clips/yo-estoy-sabiendo-1o5w2kj-n.mp3",
+  "s": "clips/yo-estoy-sabiendo-1o5w2kj-s.mp3"
+ },
+ "tú estás sabiendo": {
+  "n": "clips/tu-estas-sabiendo-n9flfv-n.mp3",
+  "s": "clips/tu-estas-sabiendo-n9flfv-s.mp3"
+ },
+ "él está sabiendo": {
+  "n": "clips/el-esta-sabiendo-6mcwfl-n.mp3",
+  "s": "clips/el-esta-sabiendo-6mcwfl-s.mp3"
+ },
+ "nosotros estamos sabiendo": {
+  "n": "clips/nosotros-estamos-sabiendo-1eqzij8-n.mp3",
+  "s": "clips/nosotros-estamos-sabiendo-1eqzij8-s.mp3"
+ },
+ "vosotros estáis sabiendo": {
+  "n": "clips/vosotros-estais-sabiendo-1sfxj2z-n.mp3",
+  "s": "clips/vosotros-estais-sabiendo-1sfxj2z-s.mp3"
+ },
+ "ellos están sabiendo": {
+  "n": "clips/ellos-estan-sabiendo-7m2l1p-n.mp3",
+  "s": "clips/ellos-estan-sabiendo-7m2l1p-s.mp3"
+ },
+ "yo voy a querer": {
+  "n": "clips/yo-voy-a-querer-5aybxj-n.mp3",
+  "s": "clips/yo-voy-a-querer-5aybxj-s.mp3"
+ },
+ "tú vas a querer": {
+  "n": "clips/tu-vas-a-querer-6e0cz3-n.mp3",
+  "s": "clips/tu-vas-a-querer-6e0cz3-s.mp3"
+ },
+ "él va a querer": {
+  "n": "clips/el-va-a-querer-1953hkl-n.mp3",
+  "s": "clips/el-va-a-querer-1953hkl-s.mp3"
+ },
+ "nosotros vamos a querer": {
+  "n": "clips/nosotros-vamos-a-querer-1sknxh4-n.mp3",
+  "s": "clips/nosotros-vamos-a-querer-1sknxh4-s.mp3"
+ },
+ "vosotros vais a querer": {
+  "n": "clips/vosotros-vais-a-querer-2w6067-n.mp3",
+  "s": "clips/vosotros-vais-a-querer-2w6067-s.mp3"
+ },
+ "ellos van a querer": {
+  "n": "clips/ellos-van-a-querer-e6gw4x-n.mp3",
+  "s": "clips/ellos-van-a-querer-e6gw4x-s.mp3"
+ },
+ "yo estoy queriendo": {
+  "n": "clips/yo-estoy-queriendo-1rl0waa-n.mp3",
+  "s": "clips/yo-estoy-queriendo-1rl0waa-s.mp3"
+ },
+ "tú estás queriendo": {
+  "n": "clips/tu-estas-queriendo-1k4n0ve-n.mp3",
+  "s": "clips/tu-estas-queriendo-1k4n0ve-s.mp3"
+ },
+ "él está queriendo": {
+  "n": "clips/el-esta-queriendo-11h3vgk-n.mp3",
+  "s": "clips/el-esta-queriendo-11h3vgk-s.mp3"
+ },
+ "nosotros estamos queriendo": {
+  "n": "clips/nosotros-estamos-queriendo-1jvfv29-n.mp3",
+  "s": "clips/nosotros-estamos-queriendo-1jvfv29-s.mp3"
+ },
+ "vosotros estáis queriendo": {
+  "n": "clips/vosotros-estais-queriendo-1i6207u-n.mp3",
+  "s": "clips/vosotros-estais-queriendo-1i6207u-s.mp3"
+ },
+ "ellos están queriendo": {
+  "n": "clips/ellos-estan-queriendo-1w882i0-n.mp3"
  }
 }
