@@ -37,11 +37,12 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue (2026-07-19, post-M28): NO ACTIVE loop milestone — M25, M26,
-M28, and M29 are all shipped; the beacon is LIVE at
-api.dliskills.com (dashboard at the root URL). The M26
-star-grid question is DECIDED: stretch stays unscored. Next work awaits
-owner direction.
+**Queue (owner-directed 2026-07-19): M30 (🛠️ fixes & improvements
+sprint) is ACTIVE and loop-workable NOW — work its checkboxes in order;
+menu work loads the prado-visual-craft skill. History: M25, M26, M28,
+M29 shipped 2026-07-19; the beacon is LIVE at api.dliskills.com
+(dashboard at the root URL); the M26 star-grid question is DECIDED
+(stretch stays unscored).
 M27 (🔄 anonymous sync codes) is PAUSED indefinitely (owner,
 2026-07-19 — progress syncing is not a priority). M28 (📊 aggregate
 analytics beacon) is INDEPENDENT of M27: its amendment was SIGNED
@@ -913,6 +914,36 @@ journal/.)
   runtime dependency) linking to `#/set/<n>` for station work; (c) a
   teacher landing section on about.html or docs. Load prado-visual-craft
   for layout. e2e print-emulation coverage. Owner action: print-test.
+
+- [ ] **M30 — 🛠️ Fixes & improvements sprint (owner-directed 2026-07-19)**
+  Three owner reports: ⭐ stars appear reset (🎧 seems intact) on web +
+  PWA; the ☰ menu needs a true hamburger overhaul (no icons, a Settings
+  group); the Install dialog opens UNDER the still-open menu.
+  Investigation (agent, full-day diff trace): NO code regression — stars
+  and badges share one storage object/key template; the symptom is a
+  storage-context event (iOS PWA container is separate from Safari BY
+  SYSTEM DESIGN; WebKit 7-day ITP eviction; or ?m18demo=1 rounds which
+  record nothing) and "badges intact" is most plausibly the static 🎧
+  iconography. Confirmed menu bugs: .menu-panel z-index 45 over
+  .info-overlay 40; menu stays open under dialogs.
+  - [x] **M30.1 DURABILITY** (2026-07-19) — `navigator.storage.persist()` at boot;
+        populated-profile e2e fixture (stars AND earned badges assert
+        together, incl. an at-less legacy entry); about/docs paragraph:
+        installed iOS app keeps its own progress, separate from Safari
+        (system behavior); Android/desktop share.
+  - [ ] **M30.2 MENU** — hamburger overhaul per APG disclosure-nav:
+        text-only rows, Ajustes/Settings expandable group (Sonido, Tema,
+        Pistas, Vosotros, Borrar — mirrors footer via applySetting),
+        scrim + scroll lock, dialogs open ABOVE and CLOSE the menu
+        (overlay z 70 > panel 45 > scrim 44), full focus management,
+        ≥44px rows, reduced-motion parity. e2e: aria/Escape/scrim/focus
+        return, settings apply, elementFromPoint proves the install
+        dialog is on top.
+  - [ ] **M30.3 REVALIDATE** — axe gate extended to menu-open, settings-
+        expanded, Descargas, Pack, install-dialog states (zero
+        critical/serious); keyboard-only e2e pass; light/dark/360
+        screenshot sweep vs the prado checklist; SPEC §4.3k rewritten;
+        journal; close M30.
 
 - [x] **M-PLAN 2026-07-19 — next-era planning (this entry).** Research +
   adversarially-refined plan for M25-M29 (repo-facts brief + design agent
