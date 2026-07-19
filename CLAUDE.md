@@ -147,10 +147,15 @@ never become an app dependency.
   sets `data-redesign` UNCONDITIONALLY — so the Prado look is the default
   (the `?redesign=1` preview trigger is retired). redesign tokens win by
   specificity; styles.css tokens remain as fallback (e.g. `--brand-soft`),
-  so don't delete it. Theme selector (☰ menu) is Auto/Light/Dark, **Light
-  default** — an unset theme applies `data-theme="light"`; Auto follows the
-  OS. Both the inline loader and `themeSelector()` in js/app.js encode that
-  default; keep them in sync.
+  so don't delete it. Theme selector (☰ menu) is Auto/Light/Dark, **Auto
+  default** (owner 2026-07-19, reversing the 2026-07-09 Light default) —
+  an unset theme leaves `data-theme` off so the OS scheme drives; explicit
+  Light/Dark pin it. The inline loaders in every HTML head and
+  `themeSelector()` in js/menu.js encode that default; keep them in sync.
+  The ☰ drawer itself is SHARED code: js/menu.js (used by the app via
+  hooks in js/app.js and by about.html + docs/ via js/static-menu.js) —
+  settings order Vosotros → Pistas → Sonido (switch rows) → Tema
+  (stacked) → Borrar is an owner decision (2026-07-19).
 - Persons are always indexed 0-5 (yo, tú, él/ella/Ud., nosotros, vosotros,
   ellos/Uds.); vosotros (index 4) is filtered at the UI layer per user setting,
   never removed from data.

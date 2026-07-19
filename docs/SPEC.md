@@ -203,11 +203,17 @@ A top-right hamburger on every screen (WAI-ARIA APG
 disclosure-navigation: normal tab stops, no role=menu/roving arrows).
 TEXT-ONLY rows (owner: no icons): Inicio, Informe, Descargas, Instalar
 la app, Acerca de / Standards, Documentación, and an expandable
-**Ajustes / Settings** sub-group (aria-expanded + ▾/▴ caret) holding
-Sonido, Tema (Auto/Claro/Oscuro — Light default), Pistas, Incluir
-vosotros/as, and Borrar progreso — mirroring the footer controls via the
-same mid-round-safe apply semantics (mid-round changes save without
-re-rendering; the footer keeps its own copies). A visual-only scrim
+**Ajustes / Settings** sub-group (aria-expanded + ▾/▴ caret). M30.4
+(owner-directed): settings order is **Vosotros → Pistas → Sonido → Tema
+→ Borrar**; the first three are role="switch" rows (label left, visible
+track+thumb right — state is position + tint, never color alone); Tema
+stacks its Auto/Claro/Oscuro options under the label, **Auto default**
+(owner 2026-07-19, reversing the 2026-07-09 Light default — unset theme
+follows the OS; the inline head loaders match). Mirrors the footer
+controls via the same mid-round-safe apply semantics. The drawer is
+SHARED code (js/menu.js): the app wires hooks in js/app.js; about.html
+and docs/ mount it via js/static-menu.js for consistent sitewide nav
+(no beacon on static pages). A visual-only scrim
 (pointer-events: none) dims the page while open; outside clicks close
 via the document listener. Dialog handoff: any menu row that opens an
 overlay (Instalar) CLOSES the menu first, and overlays layer at z 70 >
