@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="140" viewBox="0 0 120 140" role="img" aria-label="Lola la Lechuza en camiseta de España">
-  <defs><clipPath id="espBody"><ellipse cx="60" cy="96" rx="33" ry="38"></ellipse></clipPath></defs>
+  <defs><clipPath id="espWingL"><ellipse cx="24" cy="101" rx="12" ry="24" transform="rotate(14 24 101)"></ellipse></clipPath><clipPath id="espWingR"><ellipse cx="96" cy="101" rx="12" ry="24" transform="rotate(-14 96 101)"></ellipse></clipPath><clipPath id="espBody"><ellipse cx="60" cy="96" rx="33" ry="38"></ellipse></clipPath></defs>
   
   <g>
-    <ellipse cx="24" cy="101" rx="12" ry="24" fill="#b08447" transform="rotate(14 24 101)"></ellipse>
-    <ellipse cx="96" cy="101" rx="12" ry="24" fill="#b08447" transform="rotate(-14 96 101)"></ellipse>
+    <ellipse cx="24" cy="101" rx="12" ry="24" fill="#b08447" transform="rotate(14 24 101)"></ellipse><g clip-path="url(#espWingL)"><rect x="6" y="74" width="36" height="15" fill="#23306a" transform="rotate(14 24 101)"></rect><rect x="6" y="89" width="36" height="2" fill="#e0a54a" transform="rotate(14 24 101)"></rect></g>
+    <ellipse cx="96" cy="101" rx="12" ry="24" fill="#b08447" transform="rotate(-14 96 101)"></ellipse><g clip-path="url(#espWingR)"><rect x="78" y="74" width="36" height="15" fill="#23306a" transform="rotate(-14 96 101)"></rect><rect x="78" y="89" width="36" height="2" fill="#e0a54a" transform="rotate(-14 96 101)"></rect></g>
     <ellipse cx="27" cy="84" rx="13" ry="15" fill="#23306a" transform="rotate(12 27 84)"></ellipse>
     <ellipse cx="93" cy="84" rx="13" ry="15" fill="#23306a" transform="rotate(-12 93 84)"></ellipse>
     <ellipse cx="27" cy="94" rx="12.5" ry="4" fill="#1a2450" transform="rotate(12 27 94)"></ellipse>

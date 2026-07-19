@@ -19,10 +19,12 @@ export function jerseyMarkup(size) {
   const height = Math.round((size * 140) / 120);
   return `
 <svg class="lola is-idle" width="${size}" height="${height}" viewBox="0 0 120 140">
-  <defs><clipPath id="espBody"><ellipse cx="60" cy="96" rx="33" ry="38"/></clipPath></defs>
+  <defs><clipPath id="espWingL"><ellipse cx="24" cy="101" rx="12" ry="24" transform="rotate(14 24 101)"/></clipPath><clipPath id="espWingR"><ellipse cx="96" cy="101" rx="12" ry="24" transform="rotate(-14 96 101)"/></clipPath><clipPath id="espBody"><ellipse cx="60" cy="96" rx="33" ry="38"/></clipPath></defs>
   <g class="lola-body-g">
     <ellipse cx="24" cy="101" rx="12" ry="24" fill="#b08447" transform="rotate(14 24 101)"/>
+    <g clip-path="url(#espWingL)"><rect x="6" y="74" width="36" height="15" fill="#23306a" transform="rotate(14 24 101)"/><rect x="6" y="89" width="36" height="2" fill="#e0a54a" transform="rotate(14 24 101)"/></g>
     <ellipse cx="96" cy="101" rx="12" ry="24" fill="#b08447" transform="rotate(-14 96 101)"/>
+    <g clip-path="url(#espWingR)"><rect x="78" y="74" width="36" height="15" fill="#23306a" transform="rotate(-14 96 101)"/><rect x="78" y="89" width="36" height="2" fill="#e0a54a" transform="rotate(-14 96 101)"/></g>
     <ellipse cx="60" cy="96" rx="33" ry="38" fill="#c8362f"/>
     <g clip-path="url(#espBody)">
       <rect x="27" y="58" width="66" height="76" fill="#c8362f"/>
