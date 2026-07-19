@@ -17,6 +17,7 @@ import { createLola, createNest } from "./mascot.js";
 import { createNido, nestTier, tierMeta, PLUMA } from "./nido.js";
 import { STANDARDS_INFO } from "./standards-info.js";
 import { downloadsSupported, clipUrlsForSet, groupStatus, downloadGroup, deleteGroup, storageSnapshot, requestPersistence, fmtMB } from "./descargas.js";
+import { pageView, feature } from "./beacon.js";
 
 const MODES = ["choice", "type", "match"];
 // Escucha is a parallel track: badges, not stars — never in MODES, so no
@@ -156,6 +157,7 @@ function installMenuItem() {
     class: "menu-link install-link", type: "button", "aria-expanded": "false",
     onclick: () => {
       if (overlay) return close();
+      feature(parseRoute().screen, "install");
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const en = (t) => el("span", { class: "h-en", lang: "en" }, ` ${t}`);
       const how = deferredInstall
@@ -492,6 +494,7 @@ function routeTitle(r) {
 function render() {
   const route = parseRoute();
   document.title = routeTitle(route);
+  pageView(route.screen); // M28 aggregate view count (all guards inside)
   app.replaceChildren();
   window.scrollTo(0, 0);
   if (route.screen === "home") renderHome();
@@ -1591,6 +1594,7 @@ function descargasRow(set, map, storageLine) {
     dlBusy = false;
     announce(ok ? `Grupo ${set.id} descargado. Group downloaded.`
       : `Grupo ${set.id}: descarga incompleta — inténtalo otra vez. Download incomplete.`);
+    if (ok) feature("descargas", "dl");
     await refresh();
   };
   descargasRow.queue.set(set.id, run); // download-all reuses each row's runner

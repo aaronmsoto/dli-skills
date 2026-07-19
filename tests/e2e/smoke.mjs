@@ -2536,6 +2536,33 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M25.2 PWA: SW active, offline shell (20 groups), ?m18demo=1 preserved offline+online, noSW gate holds");
 }
 
+// ---------- M28.2 📊 beacon guards: the harness must fire ZERO analytics requests ----------
+{
+  let beacons = 0;
+  const guardPage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(guardPage);
+  await guardPage.route("**/beacon", (r) => { beacons++; r.fulfill({ status: 204 }); });
+  // webdriver context (like the whole suite): must stay silent
+  await guardPage.goto(`${BASE}/`);
+  await guardPage.waitForSelector(".set-card");
+  await guardPage.click('a[href="#/set/1"]');
+  await guardPage.waitForSelector(".tense-card");
+  // even with webdriver hidden, localhost + GPC must each block
+  await guardPage.close();
+  const gpcPage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(gpcPage);
+  await gpcPage.route("**/beacon", (r) => { beacons++; r.fulfill({ status: 204 }); });
+  await gpcPage.addInitScript(() => {
+    Object.defineProperty(navigator, "webdriver", { get: () => false });
+    Object.defineProperty(navigator, "globalPrivacyControl", { get: () => true });
+  });
+  await gpcPage.goto(`${BASE}/`);
+  await gpcPage.waitForSelector(".set-card");
+  await gpcPage.close();
+  if (beacons !== 0) fail(`m28.2: ${beacons} beacon request(s) escaped the guards`);
+  ok("M28.2 beacon guards: zero analytics requests from webdriver, localhost, and GPC contexts");
+}
+
 // ---------- wrap up ----------
 if (errors.length) fail(`console/page errors: ${JSON.stringify(errors)}`);
 await browser.close();

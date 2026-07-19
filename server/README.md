@@ -1,5 +1,12 @@
 # server/ — Cloudflare setup runbook (owner actions)
 
+> **STATUS (2026-07-19): DEPLOYED.** The M28 beacon Worker is live at
+> **https://conjuga-api.soto-c30.workers.dev** (D1 `conjuga-db`, region
+> ENAM). The dashboard is the root URL; raw JSON at `/aggregates`;
+> ad-hoc queries via `npx wrangler d1 execute conjuga-db --remote
+> --command "SELECT …"`. Redeploy after edits: `npx wrangler deploy`
+> from this directory (token in the git-ignored .env).
+
 This directory will hold the in-repo Cloudflare Worker (vanilla JS, no
 framework) for the M28 analytics beacon — and, only if M27 ever unpauses,
 the sync-code endpoints join the same Worker. Design: docs/SPEC.md §5.7
