@@ -302,6 +302,50 @@ sessionStorage; mastery in localStorage under versioned key `conjuga.v1`.
 GitHub Actions workflow publishes the repository root to GitHub Pages on push
 to `main` (and manually via workflow_dispatch). No build step.
 
+### 5.5 Forward design — PWA/offline (M25, planned 2026-07-19)
+Hand-written `sw.js` (no build step, ever — Workbox excluded): NETWORK-FIRST
+with cache fallback for the entire ~59 KB gz shell (freshness beats speed on
+a no-hash site; stale-while-revalidate risks version skew between unhashed
+JS modules), a hand-bumped `VERSION` constant naming the shell cache,
+`skipWaiting()+clients.claim()`. CACHE-FIRST only for named per-group audio
+caches (`audio-g01`…`audio-g20`, ~2 MB each; full corpus 39.4 MB) populated
+exclusively by the Descargas UI (sequential fetch+cache.put with progress,
+per-group delete, `navigator.storage.estimate()` readout, `persist()` on
+first download, iOS eviction warning). Navigation fallback serves cached
+`index.html` with `ignoreSearch: true` ONLY when offline — `?m18demo=1` and
+all querystrings pass through untouched online. SW registration is gated on
+`!navigator.webdriver && !sessionStorage.getItem("conjuga.noSW")` so the e2e
+harness's manifest-204 stubs stay deterministic; one dedicated e2e block
+registers, asserts, unregisters. `manifest.webmanifest` + real icon files
+(192/512 + maskable) generated once by a repo tool script. Precaching
+`audio/manifest.json` makes 🎧 Escucha fully offline for downloaded groups
+(closes the M19-documented offline+voiceless gap).
+
+### 5.6 Forward design — anonymous sync (M27, planned 2026-07-19)
+No accounts, no identities, no PII. Device A `POST`s the localStorage blob
+(full profile ≈ 21 KB; zero personal information by construction) and gets a
+4-word kid-friendly Spanish code (1,024-word list → 40 bits entropy). Device
+B redeems (`GET`), merges CLIENT-SIDE per-key max — the same semantics
+`recordResult` already uses (best score/stars/plays maxima), so merge is
+conflict-free — then `PUT`s the merged superset. Server (Cloudflare Worker +
+D1/SQLite, source in-repo under `server/`, deployed only by the owner via
+wrangler) stores `sha256(code)`, blob (64 KB cap, schema-validated), and
+`updated_at` ONLY — IPs are never written. Rate limit ~10 redeems/min/IP;
+codes expire 180 days after last write (owner-tunable). Loops develop and
+e2e against a stubbed endpoint; no secrets in CI. Adult email-OTP is a
+deferred phase-2 note; Google/Apple OAuth rejected (child account minimums,
+shared classroom devices). BLOCKED until the owner signs the privacy
+amendment described in GOAL.md M27.
+
+### 5.7 Forward design — aggregate analytics beacon (M28, planned 2026-07-19)
+`POST /beacon` on the same Worker increments `(date, page, event)` counters
+in D1 — no IP, cookie, or identifier is ever stored (the strongest reading
+of COPPA's "support for internal operations" exception; the 2025 rule's
+notice-disclosure duty is satisfied by the amended about.html Privacy text).
+No third-party analytics script ever loads. Client no-ops on localhost,
+webdriver, and `conjuga.noSW`; respects Global Privacy Control. Accepted
+trade-off: no bot filtering — order-of-magnitude usage signal only.
+
 ## 6. Validation performed
 
 v0.1:
