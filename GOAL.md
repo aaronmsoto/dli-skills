@@ -34,11 +34,12 @@ visual work loads the prado-visual-craft skill. Next: M26 (⏭️ stretch
 tenses — the owner reactivated M4 with the unscored-first scope via the
 approved plan). Then M29 (🍎 teacher mode). M27 (🔄 anonymous sync codes)
 is PAUSED indefinitely (owner, 2026-07-19 — progress syncing is not a
-priority); M28 (📊 aggregate analytics beacon) pauses with it (same
-amendment, shares its Worker). If ever unpaused, both still require the
-owner-signed privacy-amendment PR described inside M27 plus Cloudflare
-setup first — loops must not write code that calls any network endpoint
-before that checkbox is checked, and must never self-unpause a milestone.
+priority). M28 (📊 aggregate analytics beacon) is INDEPENDENT of M27 —
+owner-gated, not paused: it becomes loop-workable the moment the owner
+checks its own beacon-only amendment + Cloudflare gates inside the M28
+entry, even while M27 stays paused. Loops must not write code that calls
+any network endpoint before the relevant gate boxes are checked, and must
+never self-unpause a milestone or check an owner gate themselves.
 Forward designs live in docs/SPEC.md §5.5-5.7 —
 implement THAT design, don't re-derive it. Still owner/SME-gated as before:
 M18.4 Postales, M2 sentence bank, M5 copy review. History: M0-M24 complete
@@ -811,11 +812,15 @@ journal/.)
         any identifier. Both run on infrastructure we control with in-repo
         source; nothing identifies or profiles a learner." about.html
         Privacy replacement names COPPA's "support for internal operations"
-        (2025 rule notice-disclosure duty). LOOPS MUST NOT write code that
-        calls any network endpoint until this box is checked.
+        (2025 rule notice-disclosure duty). If the M28 beacon-only
+        amendment was already signed, this fuller text supersedes it.
+        LOOPS MUST NOT write code that calls any network endpoint until
+        this box is checked.
   - [ ] **GATE (owner): vendor setup** — Cloudflare account,
-        api.dliskills.com DNS, D1 database, first `wrangler deploy`.
-  - [ ] **SERVER** — `server/` Worker (~150 lines vanilla JS, no
+        api.dliskills.com DNS, D1 database, first `wrangler deploy`
+        (skip — already done — if M28 shipped first).
+  - [ ] **SERVER** — sync endpoints join the `server/` Worker (created by
+        M28 if it shipped first; ~150 lines vanilla JS, no
         framework): POST /sync (create→code), GET/PUT /sync/:code, rate
         limiting, 64 KB cap, JSON-schema validation, 180-day expiry sweep;
         unit-tested pure handlers; kid-safe 1,024-word Spanish wordlist
@@ -826,19 +831,43 @@ journal/.)
   - [ ] **V** — suites green; docs in sync; journal. Phase-2 note (not
         queued): adult email-OTP convenience layer.
 
-- [ ] **M28 — 📊 Aggregate analytics beacon (PAUSED with M27 — needs its
-  amendment AND its Worker backend; design: docs/SPEC.md §5.7)**
-  ~30-line addition to the same Worker: POST /beacon increments
-  (date, page, event) counters in D1 — IP/cookie/identifier never stored;
-  retention enforced by our own code. No third-party analytics script,
-  ever (GA4/Firebase/Cloudflare-Web-Analytics/GoatCounter researched and
-  rejected — see Exclusions). Client beacon no-ops on localhost, webdriver,
-  and `conjuga.noSW`; respects Global Privacy Control. Owner dashboard =
+- [ ] **M28 — 📊 Aggregate analytics beacon (owner-gated, INDEPENDENT of
+  M27 — its own amendment + vendor gates below; design: docs/SPEC.md §5.7)**
+  A standalone `server/` Worker (~50 lines vanilla JS, no framework —
+  does NOT wait for M27): POST /beacon increments (date, page, event)
+  counters in D1 — IP/cookie/identifier never stored; retention enforced
+  by our own code. No third-party analytics script, ever (GA4/Firebase/
+  Cloudflare-Web-Analytics/GoatCounter researched and rejected — see
+  Exclusions). Client beacon no-ops on localhost, webdriver, and
+  `conjuga.noSW`; respects Global Privacy Control. Owner dashboard =
   static admin page reading a public aggregates endpoint or `wrangler d1`
-  queries. Accepted trade-off: no bot filtering (order-of-magnitude signal).
-  - [ ] Server counters table + endpoint; - [ ] client beacon (page views +
-    a handful of feature events, named in SPEC before shipping); - [ ] V:
-    e2e asserts the no-op guards; docs; journal.
+  queries. Accepted trade-off: no bot filtering (order-of-magnitude
+  signal). If M27 ever unpauses, its sync endpoints join this same Worker.
+  - [ ] **GATE (owner): SIGN THE BEACON-ONLY PRIVACY AMENDMENT** — one PR
+        updating together: invariant 2 + Non-goals below, about.html
+        Privacy, README, CLAUDE.md golden rule 2, docs/STANDARDS.md,
+        js/standards-info.js. Replacement invariant 2 (sign verbatim):
+        "Static site: no build step, no dependencies, no login, no
+        third-party trackers, no advertising, no personal data collection.
+        Progress lives in localStorage and never leaves the device; the
+        only network feature beyond fetching the site's own assets is
+        aggregate visit counting on our own server, which stores counts
+        only and never stores IP addresses or any identifier. It runs on
+        infrastructure we control with in-repo source; nothing identifies
+        or profiles a learner." about.html Privacy replacement names
+        COPPA's "support for internal operations" (2025 rule
+        notice-disclosure duty). (Superseded by M27's fuller text if sync
+        ever ships.) LOOPS MUST NOT write code that calls any network
+        endpoint until this box is checked.
+  - [ ] **GATE (owner): vendor setup** — runbook: server/README.md.
+        Cloudflare account, D1 database, first `wrangler deploy`;
+        workers.dev URL is fine to start (Cloudflare DNS NOT required —
+        api.dliskills.com is the optional branded upgrade).
+  - [ ] **SERVER** — `server/` Worker: counters table + POST /beacon
+        (rate limiting, payload validation); unit-tested pure handlers.
+  - [ ] **CLIENT** — beacon for page views + a handful of feature events
+        (named in SPEC before shipping); no-op guards above.
+  - [ ] **V** — e2e asserts the no-op guards; docs in sync; journal.
 
 - [ ] **M29 — 🍎 Teacher mode (loop-workable after M25; no amendment)**
   Classroom value without accounts: (a) **printable class packs** — one
