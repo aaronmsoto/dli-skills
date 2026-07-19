@@ -876,12 +876,18 @@ journal/.)
         notice-disclosure duty). (Superseded by M27's fuller text if sync
         ever ships.) LOOPS MUST NOT write code that calls any network
         endpoint until this box is checked.
-  - [ ] **GATE (owner): vendor setup** — runbook: server/README.md.
-        Cloudflare account, D1 database, first `wrangler deploy`;
-        workers.dev URL is fine to start (Cloudflare DNS NOT required —
-        api.dliskills.com is the optional branded upgrade).
-  - [ ] **SERVER** — `server/` Worker: counters table + POST /beacon
-        (rate limiting, payload validation); unit-tested pure handlers.
+  - [x] **GATE (owner): vendor setup** — executed in-session at owner
+        direction 2026-07-19 with the owner's scoped token: D1
+        `conjuga-db` created, schema applied, Worker deployed at
+        https://conjuga-api.soto-c30.workers.dev (runbook Option A —
+        no DNS changes; api.dliskills.com stays an optional upgrade).
+  - [x] **SERVER** (2026-07-19) — `server/` Worker: counters + POST
+        /beacon (strict allowlist validation; per-IP rate limiting
+        deliberately absent — storing IPs violates the amendment) +
+        owner-approved anonymous uniques (rotating daily/monthly
+        salted hashes, salts destroyed on rotation) + /aggregates +
+        dashboard; unit-tested pure handlers incl. a no-raw-IP/UA
+        SQL-parameter sweep.
   - [ ] **CLIENT** — beacon for page views + a handful of feature events
         (named in SPEC before shipping); no-op guards above.
   - [ ] **V** — e2e asserts the no-op guards; docs in sync; journal.
