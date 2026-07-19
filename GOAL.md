@@ -19,8 +19,13 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 ## Product invariants (violating these fails review — see CLAUDE.md)
 
 1. Linguistic accuracy is test-gated; RAE tables are the reference.
-2. Static site: no build step, no dependencies, no server, no login,
-   no analytics. Progress lives only in localStorage.
+2. Static site: no build step, no dependencies, no login, no third-party
+   trackers, no advertising, no personal data collection. Progress lives
+   in localStorage and never leaves the device; the only network feature
+   beyond fetching the site's own assets is aggregate visit counting on
+   our own server, which stores counts only and never stores IP addresses
+   or any identifier. It runs on infrastructure we control with in-repo
+   source; nothing identifies or profiles a learner.
 3. Novice-first, non-punitive pedagogy; bilingual (Spanish-first) UI.
 4. K-5 accessibility: big targets, dark mode, reduced motion, ARIA live.
 5. Production = `main` = the live GitHub Pages site. Only a human merge
@@ -843,7 +848,8 @@ journal/.)
   static admin page reading a public aggregates endpoint or `wrangler d1`
   queries. Accepted trade-off: no bot filtering (order-of-magnitude
   signal). If M27 ever unpauses, its sync endpoints join this same Worker.
-  - [ ] **GATE (owner): SIGN THE BEACON-ONLY PRIVACY AMENDMENT** — one PR
+  - [x] **GATE (owner): SIGN THE BEACON-ONLY PRIVACY AMENDMENT** (signed
+        by merging PR #104, 2026-07-19) — one PR
         updating together: invariant 2 + Non-goals below, about.html
         Privacy, README, CLAUDE.md golden rule 2, docs/STANDARDS.md,
         js/standards-info.js. Replacement invariant 2 (sign verbatim):
@@ -1049,13 +1055,17 @@ journal/.)
 ## Non-goals (do not build)
 
 
-Accounts, servers, dashboards, analytics, other languages (until M5 is done
-and a human re-scopes), external services, and economy-style gamification
+Accounts, third-party servers or services, third-party analytics/trackers,
+ad-tech, other languages (until M5 is done and a human re-scopes), external
+services, and economy-style gamification
 (currencies, shops, random loot, competitive leaderboards, streak-guilt
 mechanics). The mascot companion (M6) is explicitly IN scope. ⭐ stars and
 🎧 badges remain the only *scorekeeping*; celebration layers (nest, flight,
 album) must be fully derived from them — deterministic, unscored, and never
-a new currency (owner-amended 2026-07-15 for M18).
+a new currency (owner-amended 2026-07-15 for M18). The ONLY permitted
+server is the in-repo `server/` Cloudflare Worker (M28 beacon; M27 sync
+endpoints join it only if that milestone is ever unpaused), and the only
+permitted dashboard is M28's aggregates page (owner-amended 2026-07-19).
 
 ## Definition of done (any milestone item)
 

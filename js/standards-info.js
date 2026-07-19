@@ -48,7 +48,7 @@ export const STANDARDS_INFO = {
   },
   report: {
     kid: "Tu progreso, listo para compartir.",
-    en: "A printable snapshot of stars and 🎧 badges per group — students share progress with teachers and families on paper. No accounts, no data collection; everything lives on this device.",
+    en: "A printable snapshot of stars and 🎧 badges per group — students share progress with teachers and families on paper. No accounts, no personal data collection; progress lives only on this device.",
     cites: ["NBPTS Std IV (progress over time)", "COPPA/FERPA-friendly by design"],
   },
   nido: {
