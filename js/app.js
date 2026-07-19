@@ -519,6 +519,12 @@ if ("serviceWorker" in navigator && !navigator.webdriver
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
+// M30.1: ask the browser to protect this origin's storage from eviction.
+// WebKit's 7-day ITP sweep can silently erase localStorage on rarely
+// visited sites; persisted origins and installed apps are exempt. Silent
+// no-op wherever unsupported or denied.
+requestPersistence();
+
 // M25.4: capture the install prompt where the browser offers one
 // (Android/desktop Chrome). iOS never fires this — the panel shows
 // "Añadir a inicio" steps instead.

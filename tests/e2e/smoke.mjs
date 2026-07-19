@@ -2536,6 +2536,44 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M25.2 PWA: SW active, offline shell (20 groups), ?m18demo=1 preserved offline+online, noSW gate holds");
 }
 
+// ---------- M30.1 ⭐ durability: a populated legacy profile renders stars AND badges ----------
+{
+  // The suites' other seeds round-trip within one session; THIS fixture
+  // simulates a returning learner: realistic pre-existing data, incl. a
+  // legacy at-less entry, loaded by the CURRENT build. It exists so a
+  // selective star-read break can never hide behind the static 🎧
+  // iconography again (2026-07-19 owner report).
+  const profilePage = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(profilePage);
+  await profilePage.route("**/audio/manifest.json", (r) => r.fulfill({ status: 204 }));
+  await profilePage.addInitScript(() => {
+    localStorage.setItem("conjuga.v1", JSON.stringify({
+      settings: { vosotros: false, sound: true, hints: true },
+      best: {
+        "1.present.choice": { score: 10, total: 10, stars: 3, plays: 2, at: 1752000000000 },
+        "1.present.type": { score: 8, total: 10, stars: 2, plays: 1, at: 1752000000000 },
+        "1.present.match": { score: 6, total: 6, stars: 3, plays: 1 }, // legacy: no `at`
+        "1.preterite.choice": { score: 9, total: 10, stars: 2, plays: 1, at: 1752000000000 },
+        "1.past.contrast": { score: 10, total: 10, stars: 3, plays: 1, at: 1752000000000 },
+        "2.present.listen": { score: 10, total: 10, stars: 3, plays: 1, at: 1752000000000 },
+      },
+    }));
+  });
+  await profilePage.goto(`${BASE}/`);
+  await profilePage.waitForSelector(".set-card");
+  const card1 = await profilePage.locator(".set-card").nth(0).innerText();
+  const card2 = await profilePage.locator(".set-card").nth(1).innerText();
+  if (!card1.includes("⭐ 13/30")) fail(`m30.1: group 1 should show ⭐ 13/30, got "${card1}"`);
+  if (!card2.includes("🎧 3/9")) fail(`m30.1: group 2 should show earned badges 🎧 3/9, got "${card2}"`);
+  if (!card2.includes("⭐ 0/30")) fail("m30.1: group 2 stars should be 0/30 (badges are a separate track)");
+  // informe totals agree with the same data
+  await profilePage.goto(`${BASE}/#/informe`);
+  const informe = await profilePage.locator("#app").innerText();
+  if (!informe.includes("13")) fail("m30.1: informe missing group 1 star total");
+  await profilePage.close();
+  ok("M30.1 durability: legacy populated profile renders ⭐ 13/30 + 🎧 3/9 (stars and badges together)");
+}
+
 // ---------- M28.2 📊 beacon guards: the harness must fire ZERO analytics requests ----------
 {
   let beacons = 0;
