@@ -2400,6 +2400,43 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   ok("M26 stretch: set cards (unscored), Estudia RAE phrases, Práctica placement, voiceless parity, no play routes");
 }
 
+// ---------- M29.1 🍎 class pack: sheets, keys, print emulation ----------
+{
+  await page.goto(`${BASE}/#/set/1`);
+  await page.waitForSelector(".teacher-line");
+  if (!(await page.locator('.pack-link[href="#/pack/1"]').count())) fail("m29.1: set screen missing the pack link");
+
+  await page.click(".pack-link");
+  await page.waitForSelector(".pack-sheet");
+  // 5 blank sheets (3 core + 2 stretch) + 5 answer keys.
+  const sheets = await page.locator(".pack-sheet:not(.pack-key)").count();
+  const keys = await page.locator(".pack-key").count();
+  if (sheets !== 5) fail(`m29.1: expected 5 blank sheets, got ${sheets}`);
+  if (keys !== 5) fail(`m29.1: expected 5 answer keys, got ${keys}`);
+  // Blank sheets are actually blank; keys carry RAE forms incl. stretch.
+  const blankText = await page.locator(".pack-sheet:not(.pack-key) .pack-blank").first().innerText();
+  if (blankText.trim() !== "") fail("m29.1: blank cell is not blank");
+  const keysText = await page.locator(".pack-keys").innerText();
+  for (const form of ["soy", "fuiste", "éramos", "voy a ser", "estoy siendo"]) {
+    if (!keysText.includes(form)) fail(`m29.1: answer keys missing "${form}"`);
+  }
+  // Print emulation: chrome + screen-only helpers vanish, sheets remain.
+  await page.emulateMedia({ media: "print" });
+  const printState = await page.evaluate(() => ({
+    crumbs: getComputedStyle(document.querySelector(".crumbs")).display,
+    actions: getComputedStyle(document.querySelector(".pack-actions")).display,
+    teacherSheet: getComputedStyle(document.querySelector(".pack-sheet")).display,
+    breakAfter: getComputedStyle(document.querySelector(".pack-sheet")).breakAfter,
+  }));
+  await page.emulateMedia({ media: "screen" });
+  if (printState.crumbs !== "none") fail("m29.1: crumbs visible in print");
+  if (printState.actions !== "none") fail("m29.1: print button visible in print");
+  if (printState.teacherSheet === "none") fail("m29.1: sheets hidden in print");
+  if (printState.breakAfter !== "page") fail(`m29.1: sheets missing page breaks (${printState.breakAfter})`);
+  await assertNoStrayNull("pack");
+  ok("M29.1 class pack: link, 5 blank sheets + 5 keys (incl. stretch), print emulation clean");
+}
+
 // ---------- M25.4 📲 install UX: ☰ row, panel steps, Descargas link ----------
 {
   await page.goto(`${BASE}/`);
