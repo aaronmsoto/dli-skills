@@ -304,7 +304,7 @@ sessionStorage; mastery in localStorage under versioned key `conjuga.v1`.
 GitHub Actions workflow publishes the repository root to GitHub Pages on push
 to `main` (and manually via workflow_dispatch). No build step.
 
-### 5.5 Forward design — PWA/offline (M25, planned 2026-07-19)
+### 5.5 PWA/offline (M25 — designed and SHIPPED 2026-07-19, iterations M25.1-M25.4)
 Hand-written `sw.js` (no build step, ever — Workbox excluded): NETWORK-FIRST
 with cache fallback for the entire ~59 KB gz shell (freshness beats speed on
 a no-hash site; stale-while-revalidate risks version skew between unhashed
