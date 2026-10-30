@@ -686,7 +686,7 @@ function renderJuego(story, n, act) {
   const panel = panelMode === "none" ? null : passagePanel(level, { open: panelMode === "open" });
   const lola = createLola(44);
   const header = el("div", { class: "play-header cu-play-header" });
-  const stage = el("div", { class: "stage cu-stage" });
+  const stage = el("div", { class: "stage cu-stage", "data-act": act });
 
   mount(
     crumbs(
@@ -1096,7 +1096,9 @@ function renderInforme() {
         "  Fecha: ", el("span", { class: "fill-line short" }, today)),
       el("p", { class: "report-total" },
         `⭐ Total: ${totalStars} / ${STORIES.length * STARS_PER_STORY} estrellas · 🎧 ${totalBadges} / ${STORIES.length * 9} insignias`),
-      el("div", { class: "table-scroll" },
+      // axe scrollable-region-focusable: the table may overflow on narrow
+      // screens / fallback fonts, so the scroller is keyboard-reachable.
+      el("div", { class: "table-scroll", tabindex: "0", role: "region", "aria-label": "Tabla de progreso / Progress table" },
         el("table", { class: "conj-table report-table cu-report-table" },
           el("caption", { class: "sr-only" }, "Estrellas por cuento, nivel y actividad"),
           el("thead", {},
