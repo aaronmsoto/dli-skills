@@ -14,6 +14,7 @@ import { sampleTargets, buildChoices, buildMatchPairs, buildPracticaBank, buildC
 import * as store from "./storage.js";
 import { speak, ttsAvailable, audioAvailable, initClips, chirp, clipMap, hasClip } from "./audio.js";
 import { createLola, createNest } from "./mascot.js";
+import { jerseyMarkup } from "./mascot-jersey.js";
 import { createNido, nestTier, tierMeta, PLUMA } from "./nido.js";
 import { STANDARDS_INFO } from "./standards-info.js";
 import { downloadsSupported, clipUrlsForSet, groupStatus, downloadGroup, deleteGroup, storageSnapshot, requestPersistence, fmtMB } from "./descargas.js";
@@ -270,6 +271,15 @@ function earnedStars(setId) {
   );
 }
 
+/** 🇪🇸 Seasonal hero (Claude Design handoff, owner-approved 2026-07-19):
+ *  the HOME hero wears the Spain jersey for the rest of July 2026 and
+ *  auto-reverts on August 1 with no deploy (month-gated at render).
+ *  Home only — every other screen keeps the standard Lola. */
+function seasonalHeroMarkup() {
+  const now = new Date();
+  return now.getFullYear() === 2026 && now.getMonth() === 6 ? jerseyMarkup : null;
+}
+
 /** M18 testing flag (owner directive 2026-07-15): `?m18demo=1` on the URL
  *  (before the hash) forces the celebration surfaces with sample data and
  *  suppresses all progress writes, so the owner can verify ceremonies on the
@@ -414,9 +424,11 @@ function renderHome() {
   mount(
     el("header", { class: "hero" },
       menuButton(),
-      el("h1", { class: "home-title" }, createLola(76).el, "Conjuga"),
+      el("h1", { class: "home-title" }, createLola(76, { markup: seasonalHeroMarkup() ?? undefined }).el, "Conjuga"),
       el("p", { class: "brand-sub", lang: "en" }, "part of DLIskills.com"),
-      el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
+      el("p", { class: "lola-greeting" }, seasonalHeroMarkup()
+        ? "¡Lola felicita a España por su victoria en el Mundial!"
+        : "¡Hola! Soy Lola la Lechuza."),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
       el("p", { class: "tagline-en", lang: "en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
       el("p", { class: "total-stars" }, `⭐ ${totalEarned} / ${SETS.length * STARS_PER_SET} estrellas`),
