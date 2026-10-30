@@ -14,7 +14,7 @@
  */
 
 // Bump on any shell-file change that must invalidate old caches.
-const VERSION = "shell-v6";
+const VERSION = "shell-v7";
 const AUDIO_PREFIX = "audio-g";
 
 const SHELL = [
@@ -36,6 +36,7 @@ const SHELL = [
   "js/conjugator.js",
   "js/descargas.js",
   "js/game.js",
+  "js/mascot-jersey.js",
   "js/mascot.js",
   "js/menu.js",
   "js/nido.js",

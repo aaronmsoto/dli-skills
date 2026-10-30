@@ -467,8 +467,13 @@ Standalone in-repo Cloudflare Worker (`server/worker.js`; if M27 ever
 unpauses, its sync endpoints join this Worker). `POST /beacon` (text/plain
 JSON via sendBeacon — no preflight) increments `(UTC date, page, event)`
 counters in D1. **Events (final):** `view` on every screen render (pages:
-home, set, study, practica, play, contrast, report, nido, descargas,
-pack), `dl` on a completed Descargas group download, `install` on opening
+Conjuga — home, set, study, practica, play, contrast, report, nido,
+descargas, pack; site homepage — `site`; Cuentos — cuentos-home,
+cuentos-story, cuentos-lee, cuentos-juego, cuentos-report,
+cuentos-creditos; M31 2026-10-30 — Conjuga's names are route screens,
+not URL paths, so the /conjuga/ move keeps the historical series
+intact; the dashboard rolls views up per app from the name prefix),
+`dl` on a completed Descargas group download, `install` on opening
 the install panel. **Anonymous uniques (owner-approved 2026-07-19, both
 windows):** per view the Worker stores sha256(salt+ip+ua)-truncated
 tokens under independent DAILY and MONTHLY rotating salts kept in D1 and

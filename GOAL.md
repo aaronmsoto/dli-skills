@@ -40,8 +40,9 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 **Queue (2026-10-30): ACTIVE — M31 📚 Cuentos, phase A (the app at
 /cuentos/) is being built in an owner-attended session (not a loop
 milestone until the owner says so). Phases B (site homepage) and C
-(Conjuga → /conjuga/ with redirects) are OWNER-GATED — loops must not
-start them. Previous queue (2026-07-19, post-M30): NO ACTIVE loop
+(Conjuga → /conjuga/ with redirects) were owner-approved and built the
+same day (PR from the -site branch); phase F (Worker redeploy) is an
+owner action. Previous queue (2026-07-19, post-M30): NO ACTIVE loop
 milestone — next work awaits owner direction. History: M25, M26, M28, M29, M30 all shipped
 2026-07-19; the beacon is LIVE at api.dliskills.com (dashboard at the
 root URL); the M26 star-grid question is DECIDED (stretch stays
@@ -55,11 +56,13 @@ Loops must not call any live network endpoint before that gate box is
 checked, and must never self-unpause a milestone or check an owner gate
 themselves. Forward designs live in docs/SPEC.md §5.5-5.7 —
 implement THAT design, don't re-derive it. Still owner/SME-gated as before:
-M18.4 Postales, M2 sentence bank, M5 copy review. PARKED (asset-gated,
-2026-07-19): homepage Lola jersey variant (Spain/Argentina, July-only
-with August auto-revert) — waiting on real SVGs from the design side;
-premise-checked: the referenced assets/lola-*.svg do NOT exist in repo
-history, and mascot changes stay governed by docs/MASCOT.md.
+M18.4 Postales, M2 sentence bank, M5 copy review. SHIPPED same-day
+(2026-07-19, PR #130): the previously asset-gated homepage Lola jersey
+variant — the real Spain SVG arrived from the design side (committed at
+assets/lola-spain.svg), inlined with animation hooks re-applied as
+js/mascot-jersey.js, HOME hero only, July-2026-gated with automatic
+August revert (clock-injected e2e covers both sides); docs/MASCOT.md
+still governs the standard mascot.
 History: M0-M26 complete
 (M19-M24 shipped 2026-07-15..17; M25+M26 shipped 2026-07-19).**
 The queue line here — not milestone numbering or file position — sets loop
@@ -87,13 +90,23 @@ journal/.)
         credits, README). Reviewed by the owner before linking anywhere.
   - [ ] **A.1 — SME content review** (owner/SME): read the 15 texts and
         question sets; log fixes as GOAL.md notes or PR comments.
-  - [ ] **B — site homepage** (OWNER-GATED): dliskills.com/ becomes an
-        app chooser (Conjuga · Cuentos) with Lola; Conjuga's current home
-        becomes the Conjuga app home.
-  - [ ] **C — move Conjuga to /conjuga/** (OWNER-GATED): relocate the app,
-        keep `conjuga.v1`, redirect legacy hash routes and the printed QR
-        station URLs (qr/*.svg) so nothing a teacher printed breaks; update
-        sw.js scope, manifest, e2e, docs.
+  - [x] **B — site homepage** (owner-approved + built 2026-10-30): `/` is
+        the app chooser (index.html + js/home.js + css/home.css; Lola,
+        Conjuga · Cuentos cards with star counts, shared footer, ☰;
+        SPEC §4.7).
+  - [x] **C — move Conjuga to /conjuga/** (built 2026-10-30): the app
+        shell is conjuga/index.html; `conjuga.v1` and downloaded audio
+        untouched (../audio/ keeps the cache keys); the homepage's first
+        <head> script forwards legacy `/#/…` + `/?…#/…` (printed QR
+        cards) to `/conjuga/…`; qr/*.svg regenerated to the new URL;
+        sw shell-v7; site-level manifest (id/start_url/scope unchanged —
+        owner may later prefer per-app manifests).
+  - [ ] **F — analytics continuity** (owner redeploy gate): the Worker
+        allowlist now includes `site` (homepage) and `cuentos-*` pages
+        with a per-app dashboard rollup; Conjuga's page names are route
+        screens, so the /conjuga/ move changes nothing historically.
+        Clients already send the new names (dropped with 204 until the
+        redeploy). **Owner:** `npx wrangler deploy` from server/ (README).
   - [ ] **D — audio clips for stories** (owner-gated, needs the ElevenLabs
         key): extend tools/generate-audio.mjs with `--cuentos`; until then
         Cuentos speaks via local TTS only and hides audio when no voice.
