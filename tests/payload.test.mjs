@@ -28,11 +28,15 @@ function gzBytes(rel) {
 test("total app payload < 100 KB gzipped", () => {
   // manifest.webmanifest + sw.js ride the budget; icons/ PNGs are binary
   // assets outside it, like audio clips.
-  let total = gzBytes("index.html") + gzBytes("about.html")
+  // M31 B/C: Conjuga's page moved to conjuga/index.html; the root
+  // index.html is now the site homepage (its js/home.js + css/home.css
+  // ride along via the js/ and css/ sweeps below).
+  let total = gzBytes("index.html") + gzBytes("conjuga/index.html") + gzBytes("about.html")
     + gzBytes("manifest.webmanifest") + gzBytes("sw.js");
   for (const f of readdirSync(join(ROOT, "js"))) total += gzBytes(join("js", f));
   for (const f of readdirSync(join(ROOT, "css"))) total += gzBytes(join("css", f));
   assert.ok(total < 100_000, `payload ${total} gzipped bytes exceeds 100 KB budget`);
+  if (process.env.PAYLOAD_REPORT) console.log(`payload: ${total} gzipped bytes`);
 });
 
 test("mascot module stays lightweight (≤ 8 KB of the 15 KB budget)", () => {

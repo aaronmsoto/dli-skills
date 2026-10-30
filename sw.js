@@ -1,7 +1,8 @@
 /**
- * DLIskills service worker (M25 — design: docs/SPEC.md §5.5). Serves
- * Conjuga at the root and 📚 Cuentos under cuentos/ (docs/CUENTOS.md;
- * registered by both apps, same root scope). Hand-written;
+ * DLIskills service worker (M25 — design: docs/SPEC.md §5.5). Serves the
+ * site homepage at the root (M31 B/C), Conjuga under conjuga/ and
+ * 📚 Cuentos under cuentos/ (docs/CUENTOS.md). Registered by both apps
+ * as ../sw.js, so its scope is the whole origin. Hand-written;
  * the site has no build step, so every shell file below is unhashed:
  * the shell is NETWORK-FIRST with cache fallback (freshness beats speed —
  * stale-while-revalidate could pair a new app.js with a stale game.js).
@@ -13,11 +14,17 @@
  */
 
 // Bump on any shell-file change that must invalidate old caches.
-const VERSION = "shell-v6";
+const VERSION = "shell-v7";
 const AUDIO_PREFIX = "audio-g";
 
 const SHELL = [
+  // site homepage (M31 B/C) — the chooser + its tiny module
   "index.html",
+  "css/home.css",
+  "js/home.js",
+  // 🦉 Conjuga (moved from the root to conjuga/ in M31 B/C)
+  "conjuga/",
+  "conjuga/index.html",
   "about.html",
   "manifest.webmanifest",
   "css/styles.css",
@@ -95,12 +102,16 @@ async function navigate(req) {
   try {
     return await networkFirst(req);
   } catch {
-    // OFFLINE ONLY: ignoreSearch so /?m18demo=1 still reaches the shell.
-    // Each app falls back to its OWN shell (Cuentos lives under cuentos/).
+    // OFFLINE ONLY: ignoreSearch so /conjuga/?m18demo=1 still reaches the
+    // shell. Each app falls back to its OWN shell; anything else gets the
+    // site homepage (whose redirect shim forwards legacy /#/… links).
     const cache = await caches.open(VERSION);
-    const inCuentos = new URL(req.url).pathname.includes("/cuentos/");
+    const path = new URL(req.url).pathname;
+    const shell = path.includes("/conjuga/") ? "conjuga/index.html"
+      : path.includes("/cuentos/") ? "cuentos/index.html"
+      : "index.html";
     return (await cache.match(req, { ignoreSearch: true }))
-      || (await cache.match(inCuentos ? "cuentos/index.html" : "index.html"))
+      || (await cache.match(shell))
       || Response.error();
   }
 }

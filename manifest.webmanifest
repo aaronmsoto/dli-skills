@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Conjuga — DLI Skills",
-  "short_name": "Conjuga",
-  "description": "Práctica de conjugación de verbos en español para K-5. Spanish verb conjugation practice for K-5 dual language immersion learners.",
+  "name": "DLI Skills — Conjuga · Cuentos",
+  "short_name": "DLIskills",
+  "description": "Práctica de español para K-5 DLI: Conjuga (verbos) y Cuentos (comprensión lectora). Spanish practice for K-5 dual language immersion learners: Conjuga (verb conjugation) and Cuentos (reading comprehension).",
   "lang": "es",
   "start_url": ".",
   "scope": ".",

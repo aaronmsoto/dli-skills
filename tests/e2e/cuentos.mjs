@@ -610,11 +610,13 @@ await page.click(".menu-btn");
 await page.waitForSelector(".menu-panel:not([hidden])");
 {
   const rows = await page.locator(".menu-panel > .menu-link").allInnerTexts();
-  const want = ["Inicio", "Informe", "Créditos", "Conjuga", "Acerca de", "Documentación", "Ajustes"];
+  const want = ["Inicio", "Informe", "Créditos", "DLIskills", "Conjuga", "Acerca de", "Documentación", "Ajustes"];
   const got = want.map((w) => rows.findIndex((r) => r.startsWith(w)));
   if (got.includes(-1) || got.some((v, i) => i && v < got[i - 1])) fail(`menu: rows/order wrong: ${JSON.stringify(rows)}`);
   if (rows.some((r) => /Descargas|Instalar/.test(r))) fail("menu: no Descargas/Install rows in Cuentos v1");
-  if ((await page.locator('.menu-panel a[href="../"]').count()) !== 1) fail("menu: Conjuga link must be ../");
+  // M31 B/C: Conjuga moved to /conjuga/; the site homepage is ../
+  if ((await page.locator('.menu-panel a[href="../conjuga/"]').count()) !== 1) fail("menu: Conjuga link must be ../conjuga/");
+  if (!(await page.locator('.menu-panel a[href="../"]').innerText()).startsWith("DLIskills · Inicio")) fail("menu: site-home row (../) missing");
   await page.click(".settings-toggle");
   if (await page.locator(".setting-vosotros").count()) fail("menu: no Vosotros switch in Cuentos");
   if (!(await page.locator(".setting-hints").count())) fail("menu: Pistas switch missing");
@@ -637,7 +639,7 @@ await page.waitForSelector(".menu-panel:not([hidden])");
   if (!after[1].best?.["1.present.choice"]) fail("menu: Borrar must NOT touch conjuga.v1");
   if (!(await page.locator(".cu-book").first().innerText()).includes("⭐ 0/45")) fail("menu: shelf not re-rendered after Borrar");
 }
-ok("☰ menu: Inicio · Informe · Créditos · Conjuga · Acerca de · Documentación · Ajustes; no Vosotros; Borrar clears only cuentos.v1");
+ok("☰ menu: Inicio · Informe · Créditos · DLIskills · Conjuga · Acerca de · Documentación · Ajustes; no Vosotros; Borrar clears only cuentos.v1");
 
 // footer Borrar also scoped
 await go(`#/lee/${story.id}/1`);
