@@ -18,7 +18,7 @@ export default {
     url: "https://es.wikisource.org/wiki/La_mu%C3%B1eca_negra",
   },
   keyWords: [
-    { es: "la muñeca", en: "the doll", emoji: "🪆" },
+    { es: "la muñeca", en: "the doll", emoji: "🧸" },
     { es: "el cumpleaños", en: "the birthday", emoji: "🎂" },
     { es: "el regalo", en: "the gift", emoji: "🎁" },
     { es: "el vestido de seda", en: "the silk dress", emoji: "👗" },
@@ -54,6 +54,7 @@ export default {
         ],
       ],
       glossary: {
+        "negra": "black",
         "niña": "girl",
         "pequeña": "little",
         "mañana": "tomorrow",
@@ -154,6 +155,7 @@ export default {
         ],
       ],
       glossary: {
+        "luego": "then",
         "antes del": "before the",
         "cumpleaños": "birthday",
         "al día siguiente": "the next day",
@@ -357,7 +359,7 @@ export default {
       map: {
         personajes: { options: ["Piedad, su maestra y sus amigas", "Piedad, sus papás, Leonor y la muñeca nueva", "Leonor y una familia de muñecas"], answer: 1 },
         lugar: { options: ["una tienda de juguetes en la ciudad", "un parque lleno de niños", "la casa de Piedad, en su cumpleaños"], answer: 2 },
-        problema: { options: ["Con la muñeca nueva, Leonor se quedó sola y olvidada en el cuarto.", "Piedad no recibió ningún regalo.", "La muñeca nueva se rompió en la fiesta."], answer: 0 },
+        problema: { options: ["Con la muñeca nueva, Leonor se quedó sola en el cuarto.", "Piedad no recibió ningún regalo.", "La muñeca nueva se rompió en la fiesta."], answer: 0 },
         solucion: { options: ["Los papás devolvieron la muñeca nueva a la tienda.", "Leonor se escondió debajo de la cama.", "Piedad buscó a Leonor, la abrazó y le dijo que la quería más que a nadie."], answer: 2 },
       },
       listen: [[0, 2], [1, 2], [2, 0], [2, 2], [5, 4]],

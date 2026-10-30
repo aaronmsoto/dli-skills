@@ -41,7 +41,7 @@ export default {
         ],
         [
           "La liebre corre y corre.",
-          "—¡Tengo mucho tiempo! —piensa.",
+          "«¡Tengo mucho tiempo!», piensa la liebre.",
           "La liebre duerme bajo un árbol.",
         ],
         [
@@ -154,6 +154,9 @@ export default {
         ],
       ],
       glossary: {
+        "iba a ganar": "was going to win",
+        "pronto": "soon",
+        "dormida": "asleep",
         "había una vez": "once upon a time",
         "liebre": "hare",
         "corría": "ran",
@@ -199,7 +202,7 @@ export default {
         { q: "¿Por qué aceptó la liebre la carrera?", en: "Why did the hare accept the race?",
           options: ["Porque estaba segura de que iba a ganar.", "Porque quería ayudar a la tortuga.", "Porque el zorro se lo pidió."], answer: 0, evidence: [1, 2] },
         { q: "¿Qué hizo la liebre después de dejar atrás a la tortuga?", en: "What did the hare do after leaving the tortoise behind?",
-          options: ["Llegó a la meta.", "Se acostó a descansar.", "Volvió a buscar a la tortuga."], answer: 1, evidence: [3, 1] },
+          options: ["Ganó la carrera.", "Se acostó a descansar.", "Volvió a buscar a la tortuga."], answer: 1, evidence: [3, 1] },
         { q: "¿Qué aprendió la liebre?", en: "What did the hare learn?",
           options: ["Que dormir es muy importante.", "Que la tortuga corre rápido.", "Que no debe burlarse de nadie."], answer: 2, evidence: [5, 0] },
       ],
@@ -249,7 +252,7 @@ export default {
         [
           "La noticia voló por el bosque, y todos los animales vinieron a mirar.",
           "El búho, sabio y serio, fue el juez.",
-          "Marcó la meta al lado de un gran roble y gritó: —¡Preparados, listos, fuera!",
+          "Marcó la meta al lado de un gran roble y gritó: —¡En sus marcas, listos, fuera!",
           "La liebre salió disparada y en pocos segundos desapareció entre los árboles.",
         ],
         [
@@ -273,6 +276,9 @@ export default {
         ],
       ],
       glossary: {
+        "tardará": "will take (a long time)",
+        "con cariño": "fondly",
+        "cruzó": "crossed",
         "orgullosa": "proud",
         "veloces": "fast",
         "avanzaba": "was moving forward",
@@ -293,7 +299,7 @@ export default {
         "juez": "judge",
         "meta": "finish line",
         "roble": "oak tree",
-        "preparados listos fuera": "ready, set, go!",
+        "en sus marcas listos fuera": "on your mark, get set, go!",
         "salió disparada": "shot off",
         "desapareció": "disappeared",
         "a mitad del camino": "halfway",

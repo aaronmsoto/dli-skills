@@ -99,9 +99,9 @@ export default {
       ],
       order: [
         "La viejecita dice que es pobre.",
-        "Ella tiene mucha comida.",
-        "Ella tiene una casa grande y sirvientes.",
-        "Ella siempre se queja.",
+        "Tiene carne, pan, huevos, dulces y chocolate.",
+        "Vive en una casa grande con sirvientes y joyas.",
+        "Vive muchos años y siempre se queja.",
       ],
       vocab: [
         { word: "carne", ref: [1, 1], options: ["meat", "milk", "rice"], answer: 0 },
@@ -151,6 +151,8 @@ export default {
         ],
       ],
       glossary: {
+        "tenía calor": "was hot",
+        "tenía frío": "was cold",
         "había una vez": "once upon a time",
         "viejecita": "little old lady",
         "pobre": "poor",
@@ -203,14 +205,14 @@ export default {
         { s: "La viejecita comía frutas, dulces y pasteles.", en: "The little old lady ate fruit, sweets, and cakes.", answer: true, evidence: [1, 2] },
         { s: "La viejecita vivía en una casa pequeña sin jardín.", en: "The little old lady lived in a small house without a garden.", answer: false, evidence: [2, 0] },
         { s: "La viejecita tenía un coche con dos caballos.", en: "The little old lady had a carriage with two horses.", answer: true, evidence: [2, 1] },
-        { s: "La viejecita estaba contenta cuando llovía.", en: "The little old lady was happy when it rained.", answer: false, evidence: [3, 2] },
+        { s: "La viejecita estaba contenta cuando llovía.", en: "The little old lady was happy when it rained.", answer: false, evidence: [3, 0] },
         { s: "La viejecita vivió muchos años.", en: "The little old lady lived many years.", answer: true, evidence: [4, 0] },
       ],
       order: [
-        "La viejecita decía que no tenía nada que comer.",
-        "Por la mañana comía pan, huevos y chocolate.",
+        "Por la mañana comía pan, huevos y chocolate caliente.",
+        "Al mediodía comía carne, arroz, frijoles y sopa.",
         "Por la tarde comía frutas, dulces y pasteles.",
-        "Sus sirvientes le traían todo lo que quería.",
+        "Se quejaba todo el día: «¡Ay, qué pobre soy!».",
         "Vivió muchos años, siempre quejándose.",
       ],
       vocab: [
@@ -244,7 +246,7 @@ export default {
         ],
         [
           "Su casa tenía tantos cuartos que a veces ella se perdía en los pasillos.",
-          "Afuera había un jardín con fuentes, un coche elegante tirado por caballos y un cofre repleto de joyas.",
+          "Afuera había un jardín con fuentes y un coche elegante tirado por caballos; adentro, un cofre repleto de joyas.",
           "Nadie la cuidaba, excepto sus doce sirvientes, que corrían a atenderla día y noche.",
         ],
         [
@@ -263,6 +265,10 @@ export default {
         ],
       ],
       glossary: {
+        "a veces": "sometimes",
+        "tantos": "so many",
+        "afuera": "outside",
+        "adentro": "inside",
         "según ella": "according to her",
         "poeta": "poet",
         "la describió así": "described her like this",
@@ -330,10 +336,10 @@ export default {
         { s: "La viejecita estaba sola y nadie la atendía.", en: "The little old lady was alone and nobody took care of her.", answer: false, evidence: [2, 2] },
       ],
       order: [
-        "La viejecita decía que era la persona más pobre del mundo.",
         "Cada mañana le llevaban chocolate y pan a la cama.",
-        "Al mediodía y por la tarde comía muchas cosas deliciosas.",
-        "Ella decía, suspirando, que no tenía nada que comer.",
+        "Al mediodía la mesa se llenaba de sopas, carnes y arroz.",
+        "Por la tarde había pasteles, galletas y frutas.",
+        "Ella suspiraba: «No tengo nada que comer».",
         "Se quejaba del calor, del frío y de la sopa.",
         "Vivió muchos años, siempre quejándose.",
       ],

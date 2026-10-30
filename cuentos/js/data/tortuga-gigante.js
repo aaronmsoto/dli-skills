@@ -83,8 +83,8 @@ export default {
           options: ["el hombre", "un ratón", "un tigre"], answer: 2, evidence: [1, 0] },
         { q: "¿Por qué la tortuga ayuda al hombre?", en: "Why does the tortoise help the man?",
           options: ["Porque no olvida a su amigo.", "Porque quiere ir al zoológico.", "Porque tiene hambre."], answer: 0, evidence: [2, 1] },
-        { q: "¿Qué pasa después de que el tigre huye?", en: "What happens after the jaguar runs away?",
-          options: ["El hombre va al hospital.", "La tortuga camina a la ciudad.", "El hombre cuida a la tortuga."], answer: 2, evidence: [1, 3] },
+        { q: "¿Qué hace el hombre con la tortuga herida?", en: "What does the man do with the wounded tortoise?",
+          options: ["La lleva al zoológico.", "La deja sola en la selva.", "La cuida en su casa."], answer: 2, evidence: [1, 3] },
         { q: "¿Qué hace el hombre cada tarde?", en: "What does the man do every afternoon?",
           options: ["Camina en la selva.", "Visita a la tortuga en el zoológico.", "Va al hospital."], answer: 1, evidence: [3, 2] },
       ],
@@ -109,7 +109,7 @@ export default {
         { word: "espalda", ref: [2, 2], options: ["head", "back", "foot"], answer: 1 },
       ],
       map: {
-        personajes: { options: ["el hombre y la tortuga", "el tigre y el ratón", "el doctor y el tigre"], answer: 0 },
+        personajes: { options: ["el hombre y la tortuga", "el tigre y el ratón", "un mono y un león"], answer: 0 },
         lugar: { options: ["el mar", "la selva y la ciudad", "una granja"], answer: 1 },
         problema: { options: ["La tortuga no tiene casa.", "El tigre está enfermo.", "El hombre tiene mucha fiebre en la selva."], answer: 2 },
         solucion: { options: ["El tigre lleva al hombre a casa.", "La tortuga lleva al hombre a la ciudad.", "El doctor va a la selva."], answer: 1 },
@@ -210,7 +210,7 @@ export default {
         { s: "El doctor mandó al hombre a la selva.", en: "The doctor sent the man to the jungle.", answer: true, evidence: [0, 2] },
         { s: "En la selva, el hombre se puso más débil.", en: "In the jungle, the man got weaker.", answer: false, evidence: [1, 2] },
         { s: "El hombre le limpió la herida a la tortuga.", en: "The man cleaned the tortoise's wound.", answer: true, evidence: [2, 3] },
-        { s: "La tortuga caminó solo una hora.", en: "The tortoise walked for only one hour.", answer: false, evidence: [4, 3] },
+        { s: "La tortuga caminó solamente una hora.", en: "The tortoise walked for only one hour.", answer: false, evidence: [4, 3] },
         { s: "El hombre visitaba a la tortuga cada tarde.", en: "The man visited the tortoise every afternoon.", answer: true, evidence: [5, 2] },
       ],
       order: [
@@ -228,7 +228,7 @@ export default {
         { word: "se curó", ref: [5, 0], options: ["got better", "got lost", "got angry"], answer: 0 },
       ],
       map: {
-        personajes: { options: ["el doctor y el ratoncito", "el hombre, la tortuga y el tigre", "el tigre y el ratoncito"], answer: 1 },
+        personajes: { options: ["una jirafa y un mono", "el hombre, la tortuga y el tigre", "el tigre y el ratoncito"], answer: 1 },
         lugar: { options: ["el mar y una isla", "una granja", "la selva de Misiones y Buenos Aires"], answer: 2 },
         problema: { options: ["El hombre se enfermó en la selva y no podía caminar.", "La tortuga perdió su caparazón.", "El ratoncito no encontraba su casa."], answer: 0 },
         solucion: { options: ["El tigre llevó al hombre al hospital.", "La tortuga lo llevó en su caparazón hasta la ciudad.", "El doctor fue a buscarlo a la selva."], answer: 1 },
@@ -263,7 +263,7 @@ export default {
           "Tenía una fiebre terrible y estaba completamente solo.",
         ],
         [
-          "Entonces la tortuga, que nunca había olvidado su bondad, tomó una decisión.",
+          "Entonces la tortuga, que nunca había olvidado la bondad del hombre, tomó una decisión.",
           "Con gran esfuerzo, lo subió a su caparazón y lo ató con lianas.",
           "Caminó días y semanas, y cargaba agua en una cáscara para darle de beber.",
           "Casi no dormía, pero nunca se detuvo.",
@@ -277,6 +277,8 @@ export default {
         ],
       ],
       glossary: {
+        "invierno": "winter",
+        "fuerzas": "strength",
         "había una vez": "once upon a time",
         "débil": "weak",
         "apenas": "barely",
@@ -360,7 +362,7 @@ export default {
         { word: "cargaba", ref: [4, 2], options: ["carried", "dropped", "drank"], answer: 0 },
       ],
       map: {
-        personajes: { options: ["el médico y el ratoncito", "el tigre y sus hijos", "el hombre, la tortuga gigante y un tigre"], answer: 2 },
+        personajes: { options: ["un pescador y una jirafa", "el tigre y sus hijos", "el hombre, la tortuga gigante y un tigre"], answer: 2 },
         lugar: { options: ["la selva de Misiones y Buenos Aires", "una isla en el mar", "un desierto"], answer: 0 },
         problema: { options: ["El tigre se perdió en la ciudad.", "El hombre tenía una fiebre terrible y estaba solo en la selva.", "La tortuga no encontraba agua."], answer: 1 },
         solucion: { options: ["El médico fue a la selva a buscarlo.", "El ratoncito llamó a un doctor.", "La tortuga lo llevó en su caparazón hasta Buenos Aires."], answer: 2 },

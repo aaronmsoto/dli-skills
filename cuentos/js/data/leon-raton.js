@@ -19,8 +19,8 @@ export default {
   keyWords: [
     { es: "el león", en: "the lion", emoji: "🦁" },
     { es: "el ratón", en: "the mouse", emoji: "🐭" },
-    { es: "la red", en: "the net", emoji: "🕸️" },
-    { es: "los cazadores", en: "the hunters", emoji: "🧑‍🌾" },
+    { es: "la red", en: "the net", emoji: "🥅" },
+    { es: "los cazadores", en: "the hunters", emoji: "🏹" },
     { es: "ayudar", en: "to help", emoji: "🤝" },
   ],
   levels: [
@@ -50,9 +50,10 @@ export default {
         ],
       ],
       glossary: {
+        "atrapan": "catch",
         "duerme": "sleeps",
         "bosque": "forest",
-        "pasa": "walks past",
+        "pasa": "passes over",
         "cara": "face",
         "despierta": "wakes up",
         "atrapa": "catches",
@@ -83,7 +84,7 @@ export default {
           options: ["Porque el ratón corre rápido.", "Porque el león es bueno.", "Porque el león tiene sueño."], answer: 1, evidence: [1, 2] },
       ],
       tf: [
-        { s: "El ratón despierta al león.", en: "The mouse wakes the lion up.", answer: true, evidence: [0, 2] },
+        { s: "El ratón pasa por la cara del león.", en: "The mouse runs across the lion's face.", answer: true, evidence: [0, 1] },
         { s: "El león come al ratón.", en: "The lion eats the mouse.", answer: false, evidence: [1, 2] },
         { s: "Los cazadores atrapan al león con una red.", en: "The hunters catch the lion with a net.", answer: true, evidence: [2, 0] },
         { s: "El ratón tiene miedo y no ayuda al león.", en: "The mouse is scared and does not help the lion.", answer: false, evidence: [2, 2] },
@@ -103,7 +104,7 @@ export default {
         { word: "libre", ref: [2, 4], options: ["tired", "free", "hungry"], answer: 1 },
       ],
       map: {
-        personajes: { options: ["el león y el ratón", "el león y un cazador", "el ratón y un gato"], answer: 0 },
+        personajes: { options: ["el león y el ratón", "el león y un elefante", "el ratón y un gato"], answer: 0 },
         lugar: { options: ["la ciudad", "el bosque", "la playa"], answer: 1 },
         problema: { options: ["El ratón no tiene comida.", "El león pierde su casa.", "Unos cazadores atrapan al león con una red."], answer: 2 },
         solucion: { options: ["El ratón rompe la red con sus dientes.", "El león rompe la red con sus patas.", "Los cazadores dejan ir al león."], answer: 0 },
@@ -142,6 +143,10 @@ export default {
         ],
       ],
       glossary: {
+        "pusieron": "set up",
+        "cayó": "fell",
+        "le pareció": "it seemed to him",
+        "quedó": "ended up",
         "había una vez": "once upon a time",
         "dormía": "was sleeping",
         "despertó": "woke (him) up",
@@ -206,7 +211,7 @@ export default {
         { word: "libre", ref: [3, 3], options: ["tired", "free", "lost"], answer: 1 },
       ],
       map: {
-        personajes: { options: ["el león y los cazadores", "el león y el ratón", "el ratón y su familia"], answer: 1 },
+        personajes: { options: ["el león y una jirafa", "el león y el ratón", "el ratón y su familia"], answer: 1 },
         lugar: { options: ["la selva, entre los árboles", "una ciudad grande", "una cueva oscura"], answer: 0 },
         problema: { options: ["El ratón no tenía amigos.", "Los cazadores perdieron su red.", "El león cayó en una red y no podía moverse."], answer: 2 },
         solucion: { options: ["El león rompió la red con sus garras.", "El ratón mordió las cuerdas y liberó al león.", "Los cazadores dejaron ir al león."], answer: 1 },
@@ -255,6 +260,8 @@ export default {
         ],
       ],
       glossary: {
+        "soltó": "let out",
+        "bajó": "lowered",
         "lejana": "faraway",
         "rey": "king",
         "sombra": "shade",
@@ -271,7 +278,7 @@ export default {
         "devolveré el favor": "I will return the favor",
         "carcajada": "loud laugh",
         "graciosa": "funny",
-        "escapar": "escape",
+        "escapar": "to escape",
         "cazadores": "hunters",
         "escondió": "hid",
         "ramas": "branches",
