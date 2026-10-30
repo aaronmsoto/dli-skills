@@ -38,7 +38,7 @@ Cuentos only, CCSS ELA Reading: Literature grade 3 (RL.3.1–RL.3.5) via
 | Stars | per (story, level, activity): 5 ⭐ activities × 3 stars × 3 levels = **45 per story** |
 | Payload budget | **150 KB gzip for everything under `cuentos/`** (own test) |
 | Attribution | required and public: per-story source line + `#/creditos` + about.html |
-| Rollout | build Cuentos first; homepage + Conjuga move to `/conjuga/` come later (owner-gated) |
+| Rollout | build Cuentos first; homepage + Conjuga move to `/conjuga/` come later (owner-gated) — **shipped 2026-10-30 (M31 B/C):** `/` is the app-chooser homepage, Conjuga lives at `/conjuga/` (legacy `/#/…` links and printed QR cards forward via the homepage shim), Cuentos stays at `/cuentos/` |
 
 ## 3. Directory layout
 
@@ -75,9 +75,11 @@ Conjuga's payload test (js/ + css/) is unaffected; Cuentos has its own.
 Acerca de → `../about.html` · Docs → `../docs/` · Borrar progreso), standards
 note (NBPTS → NCSSFL-ACTFL → Common Core en Español), the owner credits line
 (A1/A2 pseudonyms only). ☰ rows for Cuentos: Inicio · Informe · Créditos ·
-Conjuga (`../`, labelled “Conjuga / Verbos”) · Acerca de · Docs · Ajustes
-(Pistas, Sonido, Tema, Borrar — **no Vosotros**, no Descargas/Install in v1).
-Cuentos is NOT linked from Conjuga until the owner links it (rule 5).
+DLIskills · Inicio / Site home (`../`) · Conjuga (`../conjuga/`, labelled
+“Conjuga / Verbos”) · Acerca de · Docs · Ajustes (Pistas, Sonido, Tema,
+Borrar — **no Vosotros**, no Descargas/Install in v1). Since M31 B/C the
+owner has linked Cuentos: the site homepage, Conjuga's ☰ (“Cuentos /
+Stories”), about.html's crumbs and the docs hub all point here.
 
 ## 5. Story data schema (`cuentos/js/data/<id>.js`, `export default {...}`)
 
@@ -186,8 +188,13 @@ helpers (`isDue`, `reviewIntervalMs`) drive 🔁 Repasa hoy.
 
 - `#/creditos` DOES carry an ℹ️ (key `creditos` — Std III culture note);
   the route table above predates that decision.
-- The aggregate beacon is not wired into Cuentos: `server/worker.js`
-  allowlists Conjuga's page names; extending it is an owner decision.
+- Aggregate beacon (M31, 2026-10-30): one `pageView` per route render with
+  the page names `cuentos-home` · `cuentos-story` · `cuentos-lee` ·
+  `cuentos-juego` · `cuentos-report` · `cuentos-creditos` (the contract
+  with `server/worker.js` PAGES, unit-tested in tests/site-home.test.mjs);
+  results count as the round's view; no feature events. The homepage
+  sends `site`. The Worker allowlist/dashboard update needs an owner
+  redeploy (server/README.md).
 - Correct answers auto-advance after ~1.2 s (any tap/key cancels; a
   "Siguiente ▶" button is still rendered); misses wait for a manual
   Siguiente so the evidence can be read (UX fix NH-6, 2026-10-30). The

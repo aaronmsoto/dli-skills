@@ -285,7 +285,8 @@ grid is a LATER owner decision recorded in GOAL M26.
 `#/pack/<setId>`: one print flow per group — a QR station card
 (committed SVGs in qr/, generated once by tools/generate-qr.mjs with the
 vendored MIT encoder tools/vendor/qrcode-generator.cjs; links to the
-live #/set/<n>), five blank practice sheets (core + stretch tenses, M5
+live `/conjuga/#/set/<n>` since M31 B/C — cards printed earlier encode
+`/#/set/<n>`, which the homepage shim forwards), five blank practice sheets (core + stretch tenses, M5
 Nombre/Fecha headers, 2.4em write-in cells), and the five answer keys
 at the back (tap-to-hear on screen under the standard audio gates).
 `break-after: page` = one sheet per page; chrome and screen helpers hide
@@ -345,9 +346,33 @@ phase A:
   highlights the evidence sentence.
 - **Audio:** TTS fallback only until the owner's ElevenLabs run (phase D);
   `speakable(text) = ttsAvailable() || hasClip(text)` gates every control.
-- **Deferred to owner-gated phases:** site homepage (B), moving Conjuga to
-  `/conjuga/` with redirects for printed QR cards (C), story clips (D),
-  more stories (E).
+- **Deferred to owner-gated phases:** story clips (D), more stories (E).
+  The site homepage (B) and the move of Conjuga to `/conjuga/` with a
+  redirect shim for printed QR cards (C) shipped 2026-10-30 — see §4.7.
+
+### 4.7 🏠 Site homepage (M31 B/C, 2026-10-30)
+`/` (root `index.html`) is a static app chooser — no framework, no app
+bundle: the shared Prado stylesheets + `css/home.css`, the shared ☰
+drawer via `js/static-menu.js` (`data-root="."`; rows Inicio · Informe →
+`conjuga/#/informe` · Conjuga · Cuentos · Descargas → `conjuga/#/descargas`
+· Instalar · Acerca de · Documentación · Ajustes), and `js/home.js`, which
+mounts Lola (decorative, `aria-hidden`) and fills each card's progress
+line read-only from the apps' own keys: `conjuga.v1` `best[*].stars`
+excluding `.listen`, `cuentos.v1` excluding `.escucha` (badges never count —
+rule 3); 0 → "¡Empieza aquí! / Start here"; every read is try/catch-guarded.
+Hero: h1 "DLIskills.com", "Dual-Language Immersion (DLI) Skills", Lola's
+greeting "¿Qué practicamos hoy?". Two whole-card links (≥44px, visible
+focus ring): 🦉 Conjuga → `conjuga/`, 📚 Cuentos → `cuentos/`; a "Para
+maestros y familias" line links about.html and docs/. Footer = Conjuga's
+footer markup minus the in-app controls (site name, Acerca de ·
+Documentación, NBPTS → NCSSFL-ACTFL, A1/A2 credits; no Common Core — that
+citation is Cuentos-only). No ℹ️ (rule 5: none on home screens). The
+redirect shim (§5.3) is the FIRST script in `<head>`. Conjuga's own home
+line "part of DLIskills.com · Inicio / Site home" links back to `../`, and
+Conjuga's ☰ gains "DLIskills · Inicio / Site home" and "Cuentos / Stories".
+Analytics: the homepage sends page `site`, Cuentos sends `cuentos-*` pages;
+Conjuga's names are unchanged; the Worker allowlist/dashboard update needs
+an owner redeploy (server/README.md).
 
 ## 5. Technical design
 
@@ -373,13 +398,23 @@ per irregularity class; structural invariants (exactly 100 unique verbs, ranks
 hand-verified against RAE conjugation tables.
 
 ### 5.3 State & routing
-Hash routing (`#/set/3`, `#/study/3/present`, `#/play/3/present/choice`) —
-back button works, no server config needed on Pages. Selected tense is kept in
+Site layout (M31 B/C, 2026-10-30): `/` is the static site homepage (§4.7),
+Conjuga lives at `/conjuga/`, Cuentos at `/cuentos/`. Conjuga uses hash
+routing (`/conjuga/#/set/3`, `#/study/3/present`, `#/play/3/present/choice`) —
+back button works, no server config needed on Pages. **Legacy links:** the
+first `<script>` in the root `index.html` forwards any `/#/<route>` (and
+any later in-page `#/…` hashchange) to `conjuga/` + `location.search` +
+hash via `location.replace` — printed QR station cards
+(`https://dliskills.com/#/set/N`), bookmarks and `/?m18demo=1#/…` keep
+working; plain `/` never redirects. App pages resolve site-level assets
+one level up (`../css/`, `../js/`, `../audio/`, `../sw.js`). Selected tense is kept in
 sessionStorage; mastery in localStorage under versioned key `conjuga.v1`.
 
 ### 5.4 Deployment
 GitHub Actions workflow publishes the repository root to GitHub Pages on push
-to `main` (and manually via workflow_dispatch). No build step.
+to `main` (and manually via workflow_dispatch). No build step. The root
+`index.html` is the site homepage; `conjuga/index.html` and
+`cuentos/index.html` are the app shells (Pages serves `dir/` → `dir/index.html`).
 
 ### 5.5 PWA/offline (M25 — designed and SHIPPED 2026-07-19, iterations M25.1-M25.4)
 Hand-written `sw.js` (no build step, ever — Workbox excluded): NETWORK-FIRST
@@ -391,7 +426,10 @@ caches (`audio-g01`…`audio-g20`, ~2 MB each; full corpus 39.4 MB) populated
 exclusively by the Descargas UI (sequential fetch+cache.put with progress,
 per-group delete, `navigator.storage.estimate()` readout, `persist()` on
 first download, iOS eviction warning). Navigation fallback serves cached
-`index.html` with `ignoreSearch: true` ONLY when offline — `?m18demo=1` and
+shell with `ignoreSearch: true` ONLY when offline — per app since M31 B/C:
+`/conjuga/…` → `conjuga/index.html`, `/cuentos/…` → `cuentos/index.html`,
+anything else → the homepage `index.html` (whose shim forwards legacy
+`/#/…` links) — `?m18demo=1` and
 all querystrings pass through untouched online. SW registration is gated on
 `!navigator.webdriver && !sessionStorage.getItem("conjuga.noSW")` so the e2e
 harness's manifest-204 stubs stay deterministic; one dedicated e2e block
@@ -399,6 +437,14 @@ registers, asserts, unregisters. `manifest.webmanifest` + real icon files
 (192/512 + maskable) generated once by a repo tool script. Precaching
 `audio/manifest.json` makes 🎧 Escucha fully offline for downloaded groups
 (closes the M19-documented offline+voiceless gap).
+**M31 B/C (2026-10-30):** both apps register `../sw.js`, so the worker's
+scope stays the whole origin; `VERSION` → `shell-v6` precaches the
+homepage (`index.html`, `css/home.css`, `js/home.js`) plus `conjuga/` and
+`conjuga/index.html`. The manifest is now SITE-level (`name` "DLI Skills —
+Conjuga · Cuentos", `short_name` "DLIskills", `start_url`/`scope` "." =
+the homepage) with `id: "./"` unchanged so existing installs keep their
+identity. Descargas cache keys are unchanged (`/audio/clips/…`; the app
+passes `../audio/` as the clip base), so pre-move downloads stay valid.
 
 ### 5.6 Forward design — anonymous sync (M27, planned 2026-07-19)
 No accounts, no identities, no PII. Device A `POST`s the localStorage blob

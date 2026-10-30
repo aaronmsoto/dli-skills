@@ -8,6 +8,15 @@ time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
 **Since M31 (2026-10-30) the site hosts a second app, 📚 Cuentos**
 (`/cuentos/` — Spanish reading comprehension; binding spec docs/CUENTOS.md).
 Every rule in this file applies to both apps unless CUENTOS.md says otherwise.
+**Site layout (M31 B/C, 2026-10-30):** `/` is a static app-chooser
+homepage (root `index.html` + `js/home.js` + `css/home.css`; SPEC §4.7);
+Conjuga lives at `/conjuga/` (`conjuga/index.html` loads `../js/app.js`);
+Cuentos at `/cuentos/`. The FIRST `<script>` in the root `index.html` is a
+redirect shim forwarding legacy `/#/…` links (bookmarks, printed QR
+station cards `https://dliskills.com/#/set/N`, `/?m18demo=1#/…`) to
+`/conjuga/` with query + hash preserved — never remove it. App pages
+reach site-level assets one level up (`../css/`, `../audio/`, `../sw.js`,
+`../about.html`, `../docs/`).
 
 ## Golden rules
 
@@ -132,7 +141,7 @@ never become an app dependency.
   classes; decorative/aria-hidden; silent — TTS is for Spanish forms only;
   binding design spec in docs/MASCOT.md; keep within the 15 KB budget and
   the payload test in tests/payload.test.mjs).
-- `js/app.js` — hash-routed screens (`#/set/3`, `#/study/3/present`,
+- `js/app.js` — hash-routed screens under `/conjuga/` (`/conjuga/#/set/3`, `#/study/3/present`,
   `#/practica/3/present`, `#/play/3/present/choice`, `#/play/3/contrast`,
   `#/informe`). 🧱 Práctica (`renderPractica`) is the unscored table rebuild
   — never give it stars/badges or a hint button. DOM built with
@@ -171,8 +180,16 @@ never become an app dependency.
   e2e in `tests/e2e/cuentos.mjs` (chained into `npm run e2e`). Standards for
   Cuentos ONLY may also cite Common Core en Español RL.3 (owner, 2026-10-30).
   Story texts are public-domain retellings with mandatory attribution (story
-  screen, `#/creditos`, about.html). Cuentos is NOT linked from Conjuga until
-  the owner ships the site homepage (M31 phase B).
+  screen, `#/creditos`, about.html). Since M31 B/C the owner has linked
+  Cuentos (homepage, Conjuga's ☰, about.html crumbs, docs hub).
+- `sw.js` + `manifest.webmanifest` are SITE-level (M31 B/C): both apps
+  register `../sw.js` (scope = whole origin); offline navigation falls back
+  per app (`conjuga/index.html`, `cuentos/index.html`, else the homepage).
+  Bump `VERSION` on shell changes and list every new shell file in SHELL.
+  The manifest names the site ("DLI Skills — Conjuga · Cuentos", start_url
+  = the homepage) and keeps `id: "./"` so existing installs keep identity.
+  Station QR SVGs (qr/) encode `https://dliskills.com/conjuga/#/set/N`
+  (`node tools/generate-qr.mjs`, vendored encoder).
 - Persons are always indexed 0-5 (yo, tú, él/ella/Ud., nosotros, vosotros,
   ellos/Uds.); vosotros (index 4) is filtered at the UI layer per user setting,
   never removed from data.
