@@ -13,7 +13,7 @@
  */
 
 // Bump on any shell-file change that must invalidate old caches.
-const VERSION = "shell-v5";
+const VERSION = "shell-v6";
 const AUDIO_PREFIX = "audio-g";
 
 const SHELL = [
