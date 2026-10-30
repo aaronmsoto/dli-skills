@@ -145,6 +145,8 @@ a { color: var(--brand); }
 .footer-std { color: var(--brand); }
 .footer-credits { font-size: 0.8rem; margin-top: 6px; } /* no opacity: 4.5:1 at this size (WCAG-1) */
 .footer-applied { width: 100%; margin: 0; color: var(--good); font-weight: 600; }
+/* NH-20 (Cuentos audit): footer links/buttons are real ≥44px touch targets */
+.site-footer a, .site-footer button { min-height: 44px; display: inline-flex; align-items: center; }
 
 /* NN-3: "start here" pill on the first unstarted group. In the card's
    normal flow (owner fix 2026-07-08): the old absolutely-positioned
