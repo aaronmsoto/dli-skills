@@ -5,7 +5,7 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseBeacon, uniqueHash, getSalt, handleBeacon, handleAggregates, PAGES, EVENTS } from "../server/worker.js";
+import { parseBeacon, uniqueHash, getSalt, handleBeacon, handleAggregates, PAGES, EVENTS, appOf } from "../server/worker.js";
 
 /** Minimal fake D1: records every bound parameter; simulates the three
  *  tables just enough for the handlers' SQL. */
@@ -120,4 +120,21 @@ test("handleAggregates returns JSON with CORS and prunes old day tokens", async 
   assert.equal(res.headers.get("content-type"), "application/json");
   const body = JSON.parse(await res.text());
   assert.ok("counters" in body && "dau" in body && "mau" in body);
+});
+
+test("M31: homepage + Cuentos pages are allowlisted; Conjuga names unchanged; rollup by prefix", () => {
+  for (const p of ["home", "set", "study", "practica", "play", "contrast", "report", "nido", "descargas", "pack"]) {
+    assert.ok(PAGES.includes(p), `Conjuga page "${p}" must stay (historical series continuity)`);
+    assert.equal(appOf(p), "Conjuga");
+  }
+  assert.deepEqual(parseBeacon(JSON.stringify({ page: "site", event: "view" })), { page: "site", event: "view" });
+  assert.equal(appOf("site"), "Sitio / Site");
+  for (const p of ["cuentos-home", "cuentos-story", "cuentos-lee", "cuentos-juego", "cuentos-report", "cuentos-creditos"]) {
+    assert.deepEqual(parseBeacon(JSON.stringify({ page: p, event: "view" })), { page: p, event: "view" });
+    assert.equal(appOf(p), "Cuentos");
+  }
+  // still strict: URL-path-shaped or unknown names are dropped
+  assert.equal(parseBeacon(JSON.stringify({ page: "/cuentos/", event: "view" })), null);
+  assert.equal(parseBeacon(JSON.stringify({ page: "cuentos", event: "view" })), null);
+  assert.equal(parseBeacon(JSON.stringify({ page: "cuentos-home", event: "dl" })) !== null, true, "events stay global by design");
 });
