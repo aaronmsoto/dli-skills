@@ -1,5 +1,7 @@
 /**
- * Conjuga service worker (M25 — design: docs/SPEC.md §5.5). Hand-written;
+ * DLIskills service worker (M25 — design: docs/SPEC.md §5.5). Serves
+ * Conjuga at the root and 📚 Cuentos under cuentos/ (docs/CUENTOS.md;
+ * registered by both apps, same root scope). Hand-written;
  * the site has no build step, so every shell file below is unhashed:
  * the shell is NETWORK-FIRST with cache fallback (freshness beats speed —
  * stale-while-revalidate could pair a new app.js with a stale game.js).
@@ -11,7 +13,7 @@
  */
 
 // Bump on any shell-file change that must invalidate old caches.
-const VERSION = "shell-v4";
+const VERSION = "shell-v5";
 const AUDIO_PREFIX = "audio-g";
 
 const SHELL = [
@@ -36,6 +38,21 @@ const SHELL = [
   "js/verbs.js",
   "js/vuelo.js",
   "audio/manifest.json",
+  // 📚 Cuentos shell — list every file explicitly (no build step)
+  "cuentos/",
+  "cuentos/index.html",
+  "cuentos/css/cuentos.css",
+  "cuentos/js/app.js",
+  "cuentos/js/activities.js",
+  "cuentos/js/reader.js",
+  "cuentos/js/standards-info.js",
+  "cuentos/js/stories.js",
+  "cuentos/js/storage.js",
+  "cuentos/js/data/leon-raton.js",
+  "cuentos/js/data/liebre-tortuga.js",
+  "cuentos/js/data/pobre-viejecita.js",
+  "cuentos/js/data/tortuga-gigante.js",
+  "cuentos/js/data/muneca-negra.js",
 ];
 
 self.addEventListener("install", (event) => {
@@ -78,9 +95,11 @@ async function navigate(req) {
     return await networkFirst(req);
   } catch {
     // OFFLINE ONLY: ignoreSearch so /?m18demo=1 still reaches the shell.
+    // Each app falls back to its OWN shell (Cuentos lives under cuentos/).
     const cache = await caches.open(VERSION);
+    const inCuentos = new URL(req.url).pathname.includes("/cuentos/");
     return (await cache.match(req, { ignoreSearch: true }))
-      || (await cache.match("index.html"))
+      || (await cache.match(inCuentos ? "cuentos/index.html" : "index.html"))
       || Response.error();
   }
 }

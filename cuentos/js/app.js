@@ -474,9 +474,7 @@ function renderJuego(story, n, act) {
   const mapBoard = act === "mapa" ? mapaBoard(items) : null;
 
   function promptCard(item) {
-    const card = el("div", { class: "prompt cu-prompt" },
-      el("span", { class: "prompt-tense cue-chip" }, `${meta.icon} ${meta.es}`),
-      infoButton(act));
+    const card = el("div", { class: "prompt cu-prompt" }, infoButton(act));
     if (act === "preguntas") card.append(el("p", { class: "cu-q" }, item.prompt), ...(englishToggle(item.en) || []));
     else if (act === "verdad") {
       card.append(
@@ -660,7 +658,6 @@ function playOrdena({ story, n, level, act, lola, stage, panel, renderHeader }) 
 
   stage.replaceChildren(
     el("div", { class: "prompt cu-prompt" },
-      el("span", { class: "prompt-tense cue-chip" }, "🧩 Ordena el cuento"),
       infoButton(act),
       el("p", { class: "cu-q" }, "Toca los eventos en orden: ¿qué pasa primero?"),
       el("p", { class: "h-en cu-q-en", lang: "en" }, "Tap the events in order: what happens first?")),

@@ -118,8 +118,26 @@ function sentenceSpan(sentence, p, s, { glossary = null, audio = null } = {}) {
     span.append(sentence);
     return span;
   }
-  for (const seg of glossSegments(sentence, glossary)) {
-    span.append(seg.key ? glossButton(seg.text, seg.key, glossary[seg.key], audio) : seg.text);
+  // punctuation touching a word ("¡Por", "red.") rides inside the word's
+  // no-wrap wrapper so it never breaks onto its own line
+  const segs = glossSegments(sentence, glossary);
+  segs.forEach((seg, i) => {
+    if (!seg.key) return;
+    const prev = segs[i - 1];
+    const next = segs[i + 1];
+    const lead = prev && !prev.key ? prev.text.match(/\S*$/)[0] : "";
+    const trail = next && !next.key ? next.text.match(/^\S*/)[0] : "";
+    if (lead) prev.text = prev.text.slice(0, -lead.length);
+    if (trail) next.text = next.text.slice(trail.length);
+    seg.lead = lead;
+    seg.trail = trail;
+  });
+  for (const seg of segs) {
+    if (!seg.key) { if (seg.text) span.append(seg.text); continue; }
+    const wrap = glossButton(seg.text, seg.key, glossary[seg.key], audio);
+    if (seg.lead) wrap.prepend(seg.lead);
+    if (seg.trail) wrap.querySelector(".cu-gloss").after(seg.trail);
+    span.append(wrap);
   }
   return span;
 }
