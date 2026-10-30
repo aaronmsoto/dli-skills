@@ -88,6 +88,18 @@ zero-setup, and usable from any browser without registration or data collection.
   ARIA live announcements, dark mode, reduced-motion support
 - **Bilingual UI** — Spanish-forward with English support, as befits DLI
 
+## 📚 Cuentos — the second app (reading comprehension, M31)
+
+`/cuentos/` is a sibling app on the same site: five public-domain stories
+(Esopo ×2, Rafael Pombo, Horacio Quiroga, José Martí) retold at three
+levels each, with a tap-word English glossary, read-along audio, prediction
+stops, and comprehension activities — ❓ Preguntas, ✅ ¿Verdad o mentira?,
+🧩 Ordena el cuento, 🔤 Palabras en contexto, 🗺️ Mapa del cuento (stars),
+🎧 Escucha (badges) and 📖 Lee (unscored). Built first for 3rd-grade DLI
+classes beginning Spanish reading comprehension. Spec: `docs/CUENTOS.md`;
+story credits: `cuentos/#/creditos`. Cuentos stays unlinked from Conjuga
+until the owner publishes the site homepage (GOAL.md M31 phases B/C).
+
 ## Standards grounding
 
 The design is grounded in two frameworks (see [docs/STANDARDS.md](docs/STANDARDS.md)

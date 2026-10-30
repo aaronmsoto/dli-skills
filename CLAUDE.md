@@ -5,6 +5,9 @@
 A static, no-build, no-login web app for K-5 Spanish Dual Language Immersion
 learners: conjugation practice for the 100 most common Spanish verbs, 5 at a
 time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
+**Since M31 (2026-10-30) the site hosts a second app, 📚 Cuentos**
+(`/cuentos/` — Spanish reading comprehension; binding spec docs/CUENTOS.md).
+Every rule in this file applies to both apps unless CUENTOS.md says otherwise.
 
 ## Golden rules
 
@@ -156,6 +159,20 @@ never become an app dependency.
   hooks in js/app.js and by about.html + docs/ via js/static-menu.js) —
   settings order Vosotros → Pistas → Sonido (switch rows) → Tema
   (stacked) → Borrar is an owner decision (2026-07-19).
+- **📚 Cuentos (M31)** lives entirely under `cuentos/` (own `index.html`,
+  `cuentos/js/{app,reader,activities,storage,standards-info,stories}.js`,
+  `cuentos/js/data/<id>.js` story modules, `cuentos/css/cuentos.css`) and
+  imports the shared `js/menu.js`, `js/mascot.js`, `js/audio.js`,
+  `js/storage.js` (settings only) and root `css/`. Progress key
+  `cuentos.v1`; stars per (story, nivel, activity) — 45/story; 🎧 badges
+  separate; 📖 Lee unscored. Story data is gated by
+  `tests/cuentos-data.test.mjs` (level word bands, evidence refs, glossary
+  coverage); its own 150 KB gzip budget in `tests/cuentos-payload.test.mjs`;
+  e2e in `tests/e2e/cuentos.mjs` (chained into `npm run e2e`). Standards for
+  Cuentos ONLY may also cite Common Core en Español RL.3 (owner, 2026-10-30).
+  Story texts are public-domain retellings with mandatory attribution (story
+  screen, `#/creditos`, about.html). Cuentos is NOT linked from Conjuga until
+  the owner ships the site homepage (M31 phase B).
 - Persons are always indexed 0-5 (yo, tú, él/ella/Ud., nosotros, vosotros,
   ellos/Uds.); vosotros (index 4) is filtered at the UI layer per user setting,
   never removed from data.
@@ -200,6 +217,8 @@ workflows or settings, and never weaken tests to get green.
 - `docs/SPEC.md` — product + technical specification and design decisions
 - `docs/STANDARDS.md` — NBPTS ECYA-WL and NCSSFL-ACTFL alignment (cite it when
   making pedagogy-affecting changes)
+- `docs/CUENTOS.md` — binding spec for the 📚 Cuentos app (schema, routes,
+  scoring, chrome, owner decisions of 2026-10-30)
 - `about.html` — learner/parent-facing standards & privacy page (keep in sync
   with docs/STANDARDS.md)
 - `docs/index.html` + `docs/usability.html` — PUBLIC pages (the repo's docs/

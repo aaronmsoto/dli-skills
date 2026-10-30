@@ -37,8 +37,12 @@ Can-Do Statements (docs/STANDARDS.md; national-only per owner
 
 ## Milestones
 
-**Queue (2026-07-19, post-M30): NO ACTIVE loop milestone — next work
-awaits owner direction. History: M25, M26, M28, M29, M30 all shipped
+**Queue (2026-10-30): ACTIVE — M31 📚 Cuentos, phase A (the app at
+/cuentos/) is being built in an owner-attended session (not a loop
+milestone until the owner says so). Phases B (site homepage) and C
+(Conjuga → /conjuga/ with redirects) are OWNER-GATED — loops must not
+start them. Previous queue (2026-07-19, post-M30): NO ACTIVE loop
+milestone — next work awaits owner direction. History: M25, M26, M28, M29, M30 all shipped
 2026-07-19; the beacon is LIVE at api.dliskills.com (dashboard at the
 root URL); the M26 star-grid question is DECIDED (stretch stays
 unscored).
@@ -61,6 +65,42 @@ History: M0-M26 complete
 The queue line here — not milestone numbering or file position — sets loop
 priority. (Historical per-milestone narratives live in each entry and in
 journal/.)
+
+- [ ] **M31 — 📚 Cuentos: Spanish reading-comprehension app (owner-directed
+  2026-10-30; spec docs/CUENTOS.md)**
+  DLIskills.com grows from one app into a family: **Cuentos** (reading
+  comprehension) joins Conjuga (verbs). Initial target: 3rd-grade DLI
+  classes beginning Spanish reading comprehension with strong English
+  reading. Owner decisions (2026-10-30): name **Cuentos** at `/cuentos/`;
+  first five stories — El león y el ratón (Esopo), La liebre y la tortuga
+  (Esopo), La pobre viejecita (Rafael Pombo, Colombia), La tortuga gigante
+  (Horacio Quiroga, Uruguay), La muñeca negra (José Martí, Cuba) — all
+  public domain, retold at **3 levels** each with public attribution;
+  tap-word English glossary; **45 ⭐ per story** (5 activities × 3 levels)
+  plus a 🎧 badge track; **150 KB gzip budget** for `cuentos/`; standards
+  framing adds **Common Core en Español RL.3** for Cuentos only.
+  - [ ] **A — the app** (session build): shelf, story screen, 📖 Lee reader
+        (glossary, read-along, prediction stops), ❓ ✅ 🧩 🔤 🗺️ star
+        activities, 🎧 Escucha badges, informe, créditos; shared ☰/Lola/
+        audio/tokens; `cuentos.v1` storage; data validator + unit + e2e +
+        axe; UX evaluation pass; docs (SPEC §4.6, STANDARDS §5, about.html
+        credits, README). Reviewed by the owner before linking anywhere.
+  - [ ] **A.1 — SME content review** (owner/SME): read the 15 texts and
+        question sets; log fixes as GOAL.md notes or PR comments.
+  - [ ] **B — site homepage** (OWNER-GATED): dliskills.com/ becomes an
+        app chooser (Conjuga · Cuentos) with Lola; Conjuga's current home
+        becomes the Conjuga app home.
+  - [ ] **C — move Conjuga to /conjuga/** (OWNER-GATED): relocate the app,
+        keep `conjuga.v1`, redirect legacy hash routes and the printed QR
+        station URLs (qr/*.svg) so nothing a teacher printed breaks; update
+        sw.js scope, manifest, e2e, docs.
+  - [ ] **D — audio clips for stories** (owner-gated, needs the ElevenLabs
+        key): extend tools/generate-audio.mjs with `--cuentos`; until then
+        Cuentos speaks via local TTS only and hides audio when no voice.
+  - [ ] **E — more stories**: Pombo (Rin Rin Renacuajo), Martí (Nené
+        traviesa), Quiroga (Las medias de los flamencos), Calleja, and CC BY
+        titles (StoryWeaver, Global Storybooks) — each through the validator
+        and SME review.
 
 - [x] **M0 — Core trainer (v0.1)** · shipped 2026-07-07
   Engine + 100 verbs + Estudia/Elige/Escribe/Empareja + stars + Pages deploy.

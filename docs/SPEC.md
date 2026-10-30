@@ -316,6 +316,39 @@ each classroom device keeps its own localStorage progress.
   aggregate beacon.
 - **Browser support:** evergreen browsers (ES2020 modules).
 
+### 4.6 📚 Cuentos — reading-comprehension sibling app (M31, 2026-10-30)
+
+Binding spec: [docs/CUENTOS.md](CUENTOS.md). Summary of what ships in
+phase A:
+- **Where:** `/cuentos/` — its own `index.html`, `cuentos/js/*`,
+  `cuentos/css/cuentos.css`; shares the root `css/` tokens, `js/menu.js`
+  (☰ + `el()`), `js/mascot.js` (Lola), `js/audio.js`, and the settings in
+  `conjuga.v1`. Progress lives in **`cuentos.v1`** (`best` per
+  `<story>.<nivel>.<activity>`, `reads` per `<story>.<nivel>`). Own payload
+  budget: 150 KB gzip over `cuentos/**`.
+- **Content:** 5 public-domain stories retold at 3 levels each
+  (🌱 60–100 words/present · 🌳 130–190/past · 🌲 210–290), with a
+  per-level glossary, key words, prediction stops (levels 2–3), and the
+  question sets below. Data modules in `cuentos/js/data/<id>.js`, gated by
+  `tests/cuentos-data.test.mjs`. Attribution on the story screen,
+  `#/creditos`, and about.html.
+- **Screens:** Biblioteca shelf → story screen (level picker + activities)
+  → 📖 Lee (tap-word glossary, per-paragraph 🔊/🐢, read-along, prediction
+  stops, links to every activity) → activity rounds → results; plus
+  `#/informe` and `#/creditos`. Standard chrome everywhere (crumbs, ☰ with
+  Pistas/Sonido/Tema/Borrar — no Vosotros — ℹ️ beside the heading, shared
+  footer with NBPTS → NCSSFL-ACTFL → Common Core en Español).
+- **Scoring tracks (rule 3):** ⭐ ❓ Preguntas · ✅ ¿Verdad o mentira? ·
+  🧩 Ordena · 🔤 Palabras · 🗺️ Mapa (5 × 3 stars × 3 levels = 45 per
+  story); 🎧 Escucha = badges only, renders only when `speakable()`;
+  📖 Lee unscored. Feedback is informative: a miss shows the answer and
+  highlights the evidence sentence.
+- **Audio:** TTS fallback only until the owner's ElevenLabs run (phase D);
+  `speakable(text) = ttsAvailable() || hasClip(text)` gates every control.
+- **Deferred to owner-gated phases:** site homepage (B), moving Conjuga to
+  `/conjuga/` with redirects for printed QR cards (C), story clips (D),
+  more stories (E).
+
 ## 5. Technical design
 
 ### 5.1 Conjugation engine (js/conjugator.js)
@@ -424,7 +457,7 @@ v0.2 (contrast mode, TTS, review queue, printables):
 
 ## 7. Out of scope (roadmap)
 
-Sentence-context items and story-retell (the bridge to Novice High storytelling);
+Sentence-context items (M2); story-retell beyond Cuentos' sequencing/map activities;
 listening-comprehension mode (hear → pick/type); more tenses (perífrasis
 ir a + inf., present progressive); other program languages (the engine/data
 split was designed to generalize); cross-student teacher dashboards (requires
