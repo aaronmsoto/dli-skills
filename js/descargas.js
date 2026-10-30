@@ -48,8 +48,8 @@ export function downloadsSupported() {
 }
 
 /** {cached, total} for a group — drives the row state. */
-export async function groupStatus(set, map) {
-  const urls = clipUrlsForSet(set, map);
+export async function groupStatus(set, map, base = "audio/") {
+  const urls = clipUrlsForSet(set, map, base);
   const cache = await caches.open(groupCacheName(set.id));
   const keys = await cache.keys();
   return { cached: keys.length, total: urls.length };
@@ -59,8 +59,8 @@ export async function groupStatus(set, map) {
  * Sequential fetch+put with skip-existing (resume for free). Calls
  * onProgress(done, total) after every clip. Returns {ok, failed}.
  */
-export async function downloadGroup(set, map, onProgress = () => {}) {
-  const urls = clipUrlsForSet(set, map);
+export async function downloadGroup(set, map, onProgress = () => {}, base = "audio/") {
+  const urls = clipUrlsForSet(set, map, base);
   const cache = await caches.open(groupCacheName(set.id));
   let done = 0;
   let failed = 0;

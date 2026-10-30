@@ -5,6 +5,18 @@
 A static, no-build, no-login web app for K-5 Spanish Dual Language Immersion
 learners: conjugation practice for the 100 most common Spanish verbs, 5 at a
 time, in present / preterite / imperfect. Deployed to GitHub Pages from `main`.
+**Since M31 (2026-10-30) the site hosts a second app, 📚 Cuentos**
+(`/cuentos/` — Spanish reading comprehension; binding spec docs/CUENTOS.md).
+Every rule in this file applies to both apps unless CUENTOS.md says otherwise.
+**Site layout (M31 B/C, 2026-10-30):** `/` is a static app-chooser
+homepage (root `index.html` + `js/home.js` + `css/home.css`; SPEC §4.7);
+Conjuga lives at `/conjuga/` (`conjuga/index.html` loads `../js/app.js`);
+Cuentos at `/cuentos/`. The FIRST `<script>` in the root `index.html` is a
+redirect shim forwarding legacy `/#/…` links (bookmarks, printed QR
+station cards `https://dliskills.com/#/set/N`, `/?m18demo=1#/…`) to
+`/conjuga/` with query + hash preserved — never remove it. App pages
+reach site-level assets one level up (`../css/`, `../audio/`, `../sw.js`,
+`../about.html`, `../docs/`).
 
 ## Golden rules
 
@@ -129,7 +141,7 @@ never become an app dependency.
   classes; decorative/aria-hidden; silent — TTS is for Spanish forms only;
   binding design spec in docs/MASCOT.md; keep within the 15 KB budget and
   the payload test in tests/payload.test.mjs).
-- `js/app.js` — hash-routed screens (`#/set/3`, `#/study/3/present`,
+- `js/app.js` — hash-routed screens under `/conjuga/` (`/conjuga/#/set/3`, `#/study/3/present`,
   `#/practica/3/present`, `#/play/3/present/choice`, `#/play/3/contrast`,
   `#/informe`). 🧱 Práctica (`renderPractica`) is the unscored table rebuild
   — never give it stars/badges or a hint button. DOM built with
@@ -156,6 +168,28 @@ never become an app dependency.
   hooks in js/app.js and by about.html + docs/ via js/static-menu.js) —
   settings order Vosotros → Pistas → Sonido (switch rows) → Tema
   (stacked) → Borrar is an owner decision (2026-07-19).
+- **📚 Cuentos (M31)** lives entirely under `cuentos/` (own `index.html`,
+  `cuentos/js/{app,reader,activities,storage,standards-info,stories}.js`,
+  `cuentos/js/data/<id>.js` story modules, `cuentos/css/cuentos.css`) and
+  imports the shared `js/menu.js`, `js/mascot.js`, `js/audio.js`,
+  `js/storage.js` (settings only) and root `css/`. Progress key
+  `cuentos.v1`; stars per (story, nivel, activity) — 45/story; 🎧 badges
+  separate; 📖 Lee unscored. Story data is gated by
+  `tests/cuentos-data.test.mjs` (level word bands, evidence refs, glossary
+  coverage); its own 150 KB gzip budget in `tests/cuentos-payload.test.mjs`;
+  e2e in `tests/e2e/cuentos.mjs` (chained into `npm run e2e`). Standards for
+  Cuentos ONLY may also cite Common Core en Español RL.3 (owner, 2026-10-30).
+  Story texts are public-domain retellings with mandatory attribution (story
+  screen, `#/creditos`, about.html). Since M31 B/C the owner has linked
+  Cuentos (homepage, Conjuga's ☰, about.html crumbs, docs hub).
+- `sw.js` + `manifest.webmanifest` are SITE-level (M31 B/C): both apps
+  register `../sw.js` (scope = whole origin); offline navigation falls back
+  per app (`conjuga/index.html`, `cuentos/index.html`, else the homepage).
+  Bump `VERSION` on shell changes and list every new shell file in SHELL.
+  The manifest names the site ("DLI Skills — Conjuga · Cuentos", start_url
+  = the homepage) and keeps `id: "./"` so existing installs keep identity.
+  Station QR SVGs (qr/) encode `https://dliskills.com/conjuga/#/set/N`
+  (`node tools/generate-qr.mjs`, vendored encoder).
 - Persons are always indexed 0-5 (yo, tú, él/ella/Ud., nosotros, vosotros,
   ellos/Uds.); vosotros (index 4) is filtered at the UI layer per user setting,
   never removed from data.
@@ -200,6 +234,8 @@ workflows or settings, and never weaken tests to get green.
 - `docs/SPEC.md` — product + technical specification and design decisions
 - `docs/STANDARDS.md` — NBPTS ECYA-WL and NCSSFL-ACTFL alignment (cite it when
   making pedagogy-affecting changes)
+- `docs/CUENTOS.md` — binding spec for the 📚 Cuentos app (schema, routes,
+  scoring, chrome, owner decisions of 2026-10-30)
 - `about.html` — learner/parent-facing standards & privacy page (keep in sync
   with docs/STANDARDS.md)
 - `docs/index.html` + `docs/usability.html` — PUBLIC pages (the repo's docs/

@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "e2e": "node tests/e2e/smoke.mjs",
+    "e2e": "node tests/e2e/smoke.mjs && node tests/e2e/cuentos.mjs",
     "start": "python3 -m http.server 8080"
   },
   "license": "MIT"

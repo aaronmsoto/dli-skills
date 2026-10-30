@@ -128,3 +128,84 @@ it; update both together, enforced by a unit test on the module's shape):
 | 🪺 Nido | El nido crece con tus estrellas. | Unscored celebration layer — NBPTS Std V |
 | ⚔️ Contraste | La palabra del tiempo es tu pista. | Toward Novice High storytelling — NBPTS Std IV |
 | 📄 Informe | Tu progreso, listo para compartir. | Paper progress sharing, no personal data collection — NBPTS Std IV |
+
+## 5. 📚 Cuentos — reading comprehension (M31, owner-approved 2026-10-30)
+
+Cuentos is the second DLIskills.com app: graded retellings of public-domain
+stories with before/during/after-reading activities. Initial target:
+**3rd-grade DLI classes whose students are beginning Spanish reading
+comprehension but read English well.** Design spec: docs/CUENTOS.md.
+
+### 5.1 Frameworks
+
+Conjuga's two national frameworks apply unchanged. Because Cuentos is a
+*Spanish language-arts* tool, the owner approved one addition **for Cuentos
+only** (2026-10-30): the Common Core ELA Reading: Literature standards for
+grade 3, in the Spanish-language edition DLI programs use —
+**Common Core en Español** (San Diego County Office of Education,
+https://commoncore-espanol.sdcoe.net/; English source text at
+https://www.thecorestandards.org/ELA-Literacy/RL/3/). Conjuga's citations
+and the public rule "NBPTS first, then NCSSFL-ACTFL" are unchanged; the
+Cuentos footer lists Common Core en Español third.
+
+### 5.2 NCSSFL-ACTFL Interpretive Reading — where each level sits
+
+| Cuentos level | Can-Do band (Interpretive Reading) | Text design |
+|---|---|---|
+| 🌱 Nivel 1 (60–100 words, present tense) | **Novice Mid → Novice High** — identify basic facts from familiar words and phrases with visual/glossary support; identify the topic and some isolated facts in simple sentences | ≤10-word sentences, highest-frequency verbs (Conjuga's 100), key words pre-taught with emoji |
+| 🌳 Nivel 2 (130–190 words, past narration) | **Novice High** — topic and isolated facts from simple sentences in short fictional texts | connectors (primero / después / al final), dialogue, prediction stops |
+| 🌲 Nivel 3 (210–290 words) | **Novice High → Intermediate Low (stretch)** — main idea and some details in short, simple texts on familiar topics | richer vocabulary, feelings, a central message to infer |
+
+**Honest framing:** the "central message" and story-map tasks at Nivel 3
+reach toward Intermediate Low. Cuentos positions them as *scaffolded
+stretch* (glossary, evidence highlighting, English hint line), not as a
+claim that beginning readers are Intermediate. Interpretive Listening
+(🎧 Escucha) remains a parallel badge track so progress never requires
+hearing (the M19 accessibility guarantee carries over).
+
+### 5.3 Feature → standard mapping
+
+| Cuentos feature | CCSS en Español (grade 3) | NCSSFL-ACTFL | NBPTS ECYA-WL |
+|---|---|---|---|
+| 📖 Lee — graded text, tap-word glossary, read-along, prediction stops | RL.3.10 (comprender literatura con andamiaje), RF.3.4 (fluidez: lectura guiada en voz alta) | Interpretive Reading + Listening | Std IV (comprehensible input, scaffolding), Std I (knowledge of students) |
+| Palabras clave (pre-reading chips) | RL.3.4 | Interpretive Reading NM | Std IV (activating schema) |
+| ❓ Preguntas · ✅ ¿Verdad o mentira? — every miss shows the evidence sentence | **RL.3.1** (preguntas y respuestas refiriéndose explícitamente al texto) | Interpretive Reading NM–NH | Std VII (timely, informative feedback) |
+| 🧩 Ordena el cuento (sequence the events) | **RL.3.2** (recontar cuentos, fábulas y leyendas de diversas culturas), RL.3.5 (partes del cuento que se construyen una sobre otra) | Interpretive Reading NH | Std IV |
+| 🔤 Palabras (meaning in context, English options) | **RL.3.4** (significado de palabras y frases en el texto) | Interpretive Reading NM | Std IV (L1 as a resource in DLI) |
+| 🗺️ Mapa del cuento (personajes · lugar · problema · solución) | **RL.3.3** (personajes y sus acciones), **RL.3.2** (mensaje central) | Interpretive Reading NH → IL | Std IV, Std VII |
+| 🎧 Escucha (hear a story sentence, pick it) | — | Interpretive Listening NM | Std V (access: badges never gate stars) |
+| Stories from Greece, Colombia, Uruguay, Cuba with public credits | RL.3.2 ("de diversas culturas") | — | **Std III (Knowledge of Culture)** — a first, explicit Std III contribution |
+| 🔁 Repasa hoy · ⭐ per level · 🖨️ Informe | — | — | Std IV (exposure over time), Std VII (progress reflection) |
+
+### 5.4 Reading-comprehension practices the design encodes
+
+- **Before / during / after structure** — strategy instruction sequenced
+  around the text (National Reading Panel, 2000; Duke & Pearson, 2002):
+  key-word pre-teaching and schema activation → glossary, read-along and
+  prediction (DR-TA, Stauffer 1969) → text-dependent questions, retelling
+  by sequencing (Morrow, 1985), and story-grammar maps (Idol, 1987).
+- **Text-dependent, evidence-based answering** — the passage stays open
+  during ❓ and ✅; a miss highlights the proving sentence instead of
+  scoring a penalty (RL.3.1; NBPTS Std VII).
+- **Vocabulary in context plus a tap glossary** — meaning is checked in
+  the sentence where it appears (Beck, McKeown & Kucan, 2002); the
+  glossary removes the dictionary detour that stalls beginning readers.
+- **Leveled retellings of the same story** — the same plot at three
+  difficulty bands lets a mixed class read "the same book"; rereading at a
+  higher level is rewarded with its own stars (repeated reading, Samuels
+  1979; comprehensible input one step above the reader's level).
+- **English as a bridge, Spanish as the medium** — cross-linguistic
+  transfer is a DLI asset (Cummins' interdependence hypothesis): English
+  appears only on demand (glossary, hint line, vocab options), never in the
+  passage.
+- **Public-domain, culturally rooted texts** — Esopo (via Samaniego),
+  Rafael Pombo (Colombia), Horacio Quiroga (Uruguay), José Martí (Cuba):
+  the canon DLI teachers already know, adapted with care (violence
+  softened, dignity preserved, attribution on every story and on
+  `#/creditos`).
+
+### 5.5 Per-screen ℹ️ panels (Cuentos)
+
+Copy lives in `cuentos/js/standards-info.js` (unit-tested shape); keys:
+lee · preguntas · verdad · ordena · palabras · mapa · escucha · report ·
+creditos. Home (Biblioteca) and the story screen carry no ℹ️ (rule 5).

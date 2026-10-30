@@ -7,7 +7,12 @@ Learners practice the **100 most common Spanish verbs** — five at a time — a
 three tenses (**present, preterite, imperfect**) through study tables and three
 game modes, with star-based mastery tracking stored privately on the device.
 
-**Live app:** https://dliskills.com/
+**Live site:** https://dliskills.com/ — the homepage is an app chooser;
+🦉 Conjuga lives at https://dliskills.com/conjuga/ and 📚 Cuentos at
+https://dliskills.com/cuentos/. Old links (`https://dliskills.com/#/set/3`,
+including the QR codes on station cards printed before the move) keep
+working: a redirect shim on the homepage forwards any `/#/…` link to
+`/conjuga/#/…` with the query string and hash intact.
 
 ## Why
 
@@ -88,6 +93,22 @@ zero-setup, and usable from any browser without registration or data collection.
   ARIA live announcements, dark mode, reduced-motion support
 - **Bilingual UI** — Spanish-forward with English support, as befits DLI
 
+## 📚 Cuentos — the second app (reading comprehension, M31)
+
+`/cuentos/` is a sibling app on the same site: five public-domain stories
+(Esopo ×2, Rafael Pombo, Horacio Quiroga, José Martí) retold at three
+levels each, with a tap-word English glossary, read-along audio, prediction
+stops, and comprehension activities — ❓ Preguntas, ✅ ¿Verdad o mentira?,
+🧩 Ordena el cuento, 🔤 Palabras en contexto, 🗺️ Mapa del cuento (stars),
+🎧 Escucha (badges) and 📖 Lee (unscored). Built first for 3rd-grade DLI
+classes beginning Spanish reading comprehension. Spec: `docs/CUENTOS.md`;
+story credits: `cuentos/#/creditos`. Since M31 B/C it is linked from the
+site homepage, Conjuga's ☰ menu, about.html and the docs hub.
+
+**Analytics:** the homepage sends page `site`, Cuentos sends `cuentos-*`
+pages; Conjuga's names are unchanged; the Worker allowlist/dashboard
+update needs an owner redeploy (server/README.md).
+
 ## Standards grounding
 
 The design is grounded in two frameworks (see [docs/STANDARDS.md](docs/STANDARDS.md)
@@ -116,8 +137,14 @@ npm run e2e        # headless-Chromium end-to-end suite (see tests/e2e/smoke.mjs
 ## Project structure
 
 ```
-index.html            App shell (single-page, hash-routed)
+index.html            Site homepage (app chooser) + legacy-link redirect shim
+css/home.css          Homepage-only styles (Prado tokens)
+js/home.js            Homepage module: Lola + per-app star lines (read-only)
+conjuga/index.html    Conjuga app shell (single-page, hash-routed; loads ../js/app.js)
+cuentos/              📚 Cuentos app (docs/CUENTOS.md)
 about.html            Standards & privacy page
+qr/                   Station-card QR codes (encode /conjuga/#/set/N)
+sw.js                 Site-wide service worker (scope /: homepage + both apps)
 css/styles.css        Structural base — layout, a11y, print, dark mode
 css/tokens.css        M16 "Prado" design tokens (Auto/Light/Dark, Light default)
 css/redesign.css      M16 Prado visual layer (the default look; gate always on)

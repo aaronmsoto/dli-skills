@@ -148,8 +148,20 @@ export function createMenuButton({
   onPromptUsed = () => {},
   links = {
     home: "#/", informe: "#/informe", descargas: "#/descargas",
-    acerca: "about.html", docs: "docs/",
+    acerca: "../about.html", docs: "../docs/", // M31: Conjuga lives at /conjuga/
   },
+  // Sibling-app options (Cuentos, 2026-10-30) — all defaulted so Conjuga's
+  // drawer is unchanged: a null/absent links.descargas hides that row,
+  // install:false hides the install row, extraLinks [{href,label}] render
+  // after Informe, switches picks the setting rows (owner order kept), and
+  // onBorrar (returns true when it erased) replaces the default
+  // confirm + store.resetProgress(). switchNotes { name: text } adds an
+  // optional sub-label under a switch's label (absent → DOM unchanged).
+  install = true,
+  extraLinks = [],
+  switches = ["vosotros", "hints", "sound"],
+  onBorrar = null,
+  switchNotes = {},
 } = {}) {
   let open = false;
   const scrim = el("div", { class: "menu-scrim no-print", hidden: true, "aria-hidden": "true" });
@@ -157,7 +169,7 @@ export function createMenuButton({
   // Standard on/off switch (M30.4 owner UX): label left, track+thumb
   // right; state = thumb position + track tint (never color alone).
   const switchRow = (label, name, { gate = () => true, onOn = () => {}, extraClass = "" } = {}) => {
-    if (!gate()) return null;
+    if (!switches.includes(name) || !gate()) return null;
     const sw = el("button", {
       class: `menu-link setting-row switch-row ${extraClass}`.trim(), type: "button",
       role: "switch", "aria-checked": String(!!store.getSettings()[name]),
@@ -170,7 +182,8 @@ export function createMenuButton({
         afterSetting(name, next);
       },
     },
-      el("span", { class: "switch-label" }, label),
+      el("span", { class: "switch-label" }, label,
+        switchNotes[name] ? el("span", { class: "switch-note" }, switchNotes[name]) : null),
       el("span", { class: "switch-track", "aria-hidden": "true" }, el("span", { class: "switch-thumb" })));
     return sw;
   };
@@ -184,8 +197,10 @@ export function createMenuButton({
     el("button", {
       class: "menu-link setting-row borrar-row", type: "button",
       onclick: () => {
-        if (confirm("¿Borrar todo el progreso? / Erase all progress?")) {
-          store.resetProgress();
+        const erased = onBorrar
+          ? onBorrar()
+          : confirm("¿Borrar todo el progreso? / Erase all progress?") && (store.resetProgress(), true);
+        if (erased) {
           close();
           onReset();
         }
@@ -204,8 +219,9 @@ export function createMenuButton({
   const panel = el("nav", { class: "menu-panel", id: "site-menu", hidden: true, "aria-label": "Páginas principales / Site menu" },
     el("a", { class: "menu-link", href: links.home }, "Inicio / Home"),
     el("a", { class: "menu-link", href: links.informe }, "Informe / Status"),
-    el("a", { class: "menu-link", href: links.descargas }, "Descargas / Offline audio"),
-    createInstallItem({ beforeOpen: () => close(), onOpen: installOnOpen, getPrompt, onPromptUsed }),
+    ...extraLinks.map((l) => el("a", { class: "menu-link", href: l.href }, l.label)),
+    links.descargas == null ? null : el("a", { class: "menu-link", href: links.descargas }, "Descargas / Offline audio"),
+    install ? createInstallItem({ beforeOpen: () => close(), onOpen: installOnOpen, getPrompt, onPromptUsed }) : null,
     el("a", { class: "menu-link", href: links.acerca }, "Acerca de / Standards"),
     el("a", { class: "menu-link", href: links.docs }, "Documentación / Docs"),
     settingsBtn,

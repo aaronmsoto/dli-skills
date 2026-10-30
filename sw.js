@@ -1,5 +1,8 @@
 /**
- * Conjuga service worker (M25 — design: docs/SPEC.md §5.5). Hand-written;
+ * DLIskills service worker (M25 — design: docs/SPEC.md §5.5). Serves the
+ * site homepage at the root (M31 B/C), Conjuga under conjuga/ and
+ * 📚 Cuentos under cuentos/ (docs/CUENTOS.md). Registered by both apps
+ * as ../sw.js, so its scope is the whole origin. Hand-written;
  * the site has no build step, so every shell file below is unhashed:
  * the shell is NETWORK-FIRST with cache fallback (freshness beats speed —
  * stale-while-revalidate could pair a new app.js with a stale game.js).
@@ -11,11 +14,17 @@
  */
 
 // Bump on any shell-file change that must invalidate old caches.
-const VERSION = "shell-v5";
+const VERSION = "shell-v7";
 const AUDIO_PREFIX = "audio-g";
 
 const SHELL = [
+  // site homepage (M31 B/C) — the chooser + its tiny module
   "index.html",
+  "css/home.css",
+  "js/home.js",
+  // 🦉 Conjuga (moved from the root to conjuga/ in M31 B/C)
+  "conjuga/",
+  "conjuga/index.html",
   "about.html",
   "manifest.webmanifest",
   "css/styles.css",
@@ -37,6 +46,21 @@ const SHELL = [
   "js/verbs.js",
   "js/vuelo.js",
   "audio/manifest.json",
+  // 📚 Cuentos shell — list every file explicitly (no build step)
+  "cuentos/",
+  "cuentos/index.html",
+  "cuentos/css/cuentos.css",
+  "cuentos/js/app.js",
+  "cuentos/js/activities.js",
+  "cuentos/js/reader.js",
+  "cuentos/js/standards-info.js",
+  "cuentos/js/stories.js",
+  "cuentos/js/storage.js",
+  "cuentos/js/data/leon-raton.js",
+  "cuentos/js/data/liebre-tortuga.js",
+  "cuentos/js/data/pobre-viejecita.js",
+  "cuentos/js/data/tortuga-gigante.js",
+  "cuentos/js/data/muneca-negra.js",
 ];
 
 self.addEventListener("install", (event) => {
@@ -78,10 +102,16 @@ async function navigate(req) {
   try {
     return await networkFirst(req);
   } catch {
-    // OFFLINE ONLY: ignoreSearch so /?m18demo=1 still reaches the shell.
+    // OFFLINE ONLY: ignoreSearch so /conjuga/?m18demo=1 still reaches the
+    // shell. Each app falls back to its OWN shell; anything else gets the
+    // site homepage (whose redirect shim forwards legacy /#/… links).
     const cache = await caches.open(VERSION);
+    const path = new URL(req.url).pathname;
+    const shell = path.includes("/conjuga/") ? "conjuga/index.html"
+      : path.includes("/cuentos/") ? "cuentos/index.html"
+      : "index.html";
     return (await cache.match(req, { ignoreSearch: true }))
-      || (await cache.match("index.html"))
+      || (await cache.match(shell))
       || Response.error();
   }
 }

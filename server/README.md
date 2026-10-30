@@ -1,5 +1,13 @@
 # server/ — Cloudflare setup runbook (owner actions)
 
+> **REDEPLOY NEEDED (M31, 2026-10-30):** `server/worker.js` now
+> allowlists the site homepage (`site`) and Cuentos (`cuentos-*`) page
+> names and adds a per-app rollup to the dashboard. Until the owner runs
+> `npx wrangler deploy` from this directory, those beacons are silently
+> dropped (204) — Conjuga's counts are unaffected either way, because its
+> page names are route screens, not URL paths (the `/conjuga/` move does
+> not change them). No schema change; no new data classes.
+>
 > **STATUS (2026-07-19): DEPLOYED.** The M28 beacon Worker is live at
 > **https://api.dliskills.com** (Workers Custom Domain — the
 > dliskills.com zone was already on Cloudflare, so the record + cert
