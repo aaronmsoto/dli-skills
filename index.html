@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <!-- M31 B/C redirect shim — MUST stay first: Conjuga moved from / to
+       /conjuga/. Legacy deep links and the printed QR station cards
+       (https://dliskills.com/#/set/N, /?m18demo=1#/play/…) land on
+       /conjuga/ with search + hash preserved. Plain / never redirects. -->
+  <script>(function(){function go(){var h=location.hash;if(/^#\/./.test(h)){location.replace("conjuga/"+location.search+h);}}go();addEventListener("hashchange",go);})();</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DLIskills.com — Dual-Language Immersion (DLI) Skills</title>
+  <meta name="description" content="Práctica de español gratis y sin registro para K-5 DLI: Conjuga (verbos) y Cuentos (comprensión lectora). Free, no-login Spanish practice for K-5 dual language immersion learners: verb conjugation and reading comprehension." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦉</text></svg>" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#2f6b4f" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <script>(function(){try{document.documentElement.setAttribute("data-redesign","");var d=JSON.parse(localStorage.getItem("conjuga.v1")||"{}");var t=d.settings&&d.settings.theme;if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/redesign.css" />
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+<body class="site-home">
+  <a id="skip" class="skip-link" href="#main">Saltar al contenido · Skip to content</a>
+  <span class="static-nav" data-root="."></span>
+  <script type="module" src="js/static-menu.js"></script>
+  <main id="main" tabindex="-1">
+    <header class="site-hero">
+      <span class="site-lola"></span>
+      <h1 class="site-title">DLIskills.com</h1>
+      <p class="site-sub" lang="en">Dual-Language Immersion (DLI) Skills</p>
+      <p class="site-greeting">¡Hola! Soy Lola la Lechuza. ¿Qué practicamos hoy?
+        <span class="h-en" lang="en">What shall we practice today?</span></p>
+    </header>
+
+    <nav class="app-cards" aria-label="Aplicaciones / Apps">
+      <a class="app-card" data-app="conjuga" href="conjuga/">
+        <span class="app-icon" aria-hidden="true">🦉</span>
+        <span class="app-body">
+          <span class="app-name">Conjuga</span>
+          <span class="app-desc">Verbos en español: presente, pretérito e imperfecto</span>
+          <span class="app-desc-en" lang="en">Spanish verb conjugation · 100 verbs, 5 at a time</span>
+          <span class="app-progress"></span>
+        </span>
+      </a>
+      <a class="app-card" data-app="cuentos" href="cuentos/">
+        <span class="app-icon" aria-hidden="true">📚</span>
+        <span class="app-body">
+          <span class="app-name">Cuentos</span>
+          <span class="app-desc">Lee cuentos clásicos y juega con ellos</span>
+          <span class="app-desc-en" lang="en">Spanish reading comprehension · 5 stories, 3 levels</span>
+          <span class="app-progress"></span>
+        </span>
+      </a>
+    </nav>
+
+    <p class="site-teachers">Para maestros y familias:
+      <a href="about.html">Acerca de / Standards</a> ·
+      <a href="docs/">Documentación / Docs</a></p>
+    <noscript><p>Las apps necesitan JavaScript. / The apps require JavaScript to run.</p></noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-top">
+      <span class="footer-site">Dual-Language Immersion (DLI) Skills</span>
+    </div>
+    <div class="footer-links">
+      <a class="linklike" href="about.html">Acerca de / Standards</a>
+      <a class="linklike footer-docs" href="docs/">Documentación / Docs</a>
+    </div>
+    <p class="footer-note">Gratis y sin registro · Free, no login · Aligned to
+      <a class="footer-std" href="https://www.nbpts.org/wp-content/uploads/2021/09/ECYA-WL.pdf" target="_blank" rel="noopener">NBPTS</a>
+      and
+      <a class="footer-std" href="https://www.actfl.org/uploads/files/general/Professional-Learning/Can-Do-Intro-Overview.pdf" target="_blank" rel="noopener">NCSSFL-ACTFL</a>
+      World Language standards</p>
+    <!-- owner-specified credits (M9 F3); kids appear ONLY as pseudonyms -->
+    <p class="footer-credits" lang="en">Created by Lucia Perales, EdD (wife/mother/educator) and Aaron Soto, MHCID (husband/father/technologist)<br />DLI K-5 Graduate “A1” (daughter/consultant) and DLI 3rd Grader “A2” (son/consultant)</p>
+  </footer>
+  <script type="module" src="js/home.js"></script>
+</body>
+</html>

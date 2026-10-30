@@ -1,0 +1,84 @@
+/* ===================================================================
+   🏠 Site homepage (M31 B/C — docs/SPEC.md §4.7). Loaded ONLY by the
+   root index.html, after the three shared stylesheets, so the Prado
+   tokens (css/tokens.css) drive light/dark. Counts toward the payload
+   budget (tests/payload.test.mjs).
+   =================================================================== */
+.site-home main { max-width: 760px; margin: 0 auto; padding: 16px 16px 8px; }
+.site-home .site-footer { max-width: 760px; margin: 28px auto 0; padding: 0 16px 40px; }
+
+.site-hero { text-align: center; padding: 28px 0 6px; }
+.site-lola { display: inline-flex; justify-content: center; }
+.site-title {
+  font-family: var(--font-display, inherit);
+  font-weight: var(--fw-extrabold, 800);
+  color: var(--brand);
+  font-size: 2.3rem;
+  margin: 4px 0 0;
+}
+.site-sub { color: var(--ink-soft); margin: 0 0 10px; font-weight: 600; }
+.site-greeting { font-size: 1.15rem; margin: 0.4em 0 0.2em; }
+.site-greeting .h-en { display: block; margin-top: 2px; }
+
+.app-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin: 22px 0 14px;
+}
+.app-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-height: 44px;
+  padding: 18px 18px 16px;
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg, 22px);
+  box-shadow: var(--shadow-card, 0 2px 8px rgba(0, 0, 0, 0.08));
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+:root[data-redesign] .app-card { color: var(--ink); }
+.app-card:hover { transform: translateY(-2px); border-color: var(--brand); }
+.app-card:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+  border-color: var(--brand);
+}
+.app-icon { font-size: 2.6rem; line-height: 1; flex: none; }
+.app-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.app-name {
+  font-family: var(--font-display, inherit);
+  font-weight: var(--fw-extrabold, 800);
+  font-size: 1.5rem;
+  color: var(--brand);
+}
+.app-desc { font-weight: 600; }
+.app-desc-en { color: var(--ink-soft); font-size: 0.92rem; }
+.app-progress {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 3px 12px;
+  border-radius: var(--radius-pill, 999px);
+  background: var(--star);
+  color: #243026; /* light amber in both palettes — dark ink always (see redesign .total-stars) */
+  font-weight: 700;
+}
+:root[data-redesign] .app-progress .h-en,
+.app-progress .h-en { color: #243026; }
+.app-progress.is-fresh { background: var(--accent); }
+
+.site-teachers { text-align: center; color: var(--ink-soft); }
+.site-teachers a { display: inline-flex; align-items: center; min-height: 44px; }
+
+@media (max-width: 420px) {
+  .site-title { font-size: 1.9rem; }
+  .app-cards { grid-template-columns: 1fr; }
+  .app-card { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-card { transition: none; }
+  .app-card:hover { transform: none; }
+}

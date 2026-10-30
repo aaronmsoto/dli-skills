@@ -19,6 +19,7 @@ import { createReader, passagePanel, markedSentence, stopReading, closeBubble, r
 import { el, createMenuButton } from "../../js/menu.js";
 import { speak, ttsAvailable, hasClip, initClips } from "../../js/audio.js";
 import { createLola } from "../../js/mascot.js";
+import { pageView } from "../../js/beacon.js";
 
 const LEVELS = [1, 2, 3];
 const LEVEL_META = {
@@ -243,7 +244,8 @@ function menuButton() {
     install: false,
     extraLinks: [
       { href: "#/creditos", label: "Créditos / Story credits" },
-      { href: "../", label: "Conjuga / Verbos" },
+      { href: "../", label: "DLIskills · Inicio / Site home" },
+      { href: "../conjuga/", label: "Conjuga / Verbos" },
     ],
     switches: ["hints", "sound"],
     switchNotes: { hints: "Muestra 📖 Ver el cuento en 🧩 Ordena y 🗺️ Mapa. / Shows the story during Order & Map." },
@@ -301,7 +303,19 @@ function render() {
   else if (route.screen === "informe") renderInforme();
   else if (route.screen === "creditos") renderCreditos();
   else renderHome();
+  pageView(BEACON_PAGES[route.screen]); // M28/M31 aggregate view count (all guards inside beacon.js)
 }
+
+// M31: Cuentos page names — the contract with server/worker.js PAGES
+// (one view per route render; results count as the round's view).
+const BEACON_PAGES = {
+  home: "cuentos-home",
+  cuento: "cuentos-story",
+  lee: "cuentos-lee",
+  juego: "cuentos-juego",
+  informe: "cuentos-report",
+  creditos: "cuentos-creditos",
+};
 
 window.addEventListener("hashchange", render);
 

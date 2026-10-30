@@ -148,7 +148,7 @@ export function createMenuButton({
   onPromptUsed = () => {},
   links = {
     home: "#/", informe: "#/informe", descargas: "#/descargas",
-    acerca: "about.html", docs: "docs/",
+    acerca: "../about.html", docs: "../docs/", // M31: Conjuga lives at /conjuga/
   },
   // Sibling-app options (Cuentos, 2026-10-30) — all defaulted so Conjuga's
   // drawer is unchanged: a null/absent links.descargas hides that row,

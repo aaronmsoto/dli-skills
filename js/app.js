@@ -20,6 +20,11 @@ import { downloadsSupported, clipUrlsForSet, groupStatus, downloadGroup, deleteG
 import { el, createMenuButton } from "./menu.js";
 import { pageView, feature } from "./beacon.js";
 
+// M31 B/C: the app page lives at /conjuga/ while audio stays site-level
+// at /audio/ (shared with Cuentos) — so clip URLs (and the Descargas cache
+// keys they resolve to: /audio/clips/…, unchanged from the root era) go up one.
+const CLIP_BASE = "../audio/";
+
 const MODES = ["choice", "type", "match"];
 // Escucha is a parallel track: badges, not stars — never in MODES, so no
 // star denominator, sampling, or next-mode logic ever counts it. This is an
@@ -118,7 +123,7 @@ function infoButton(key) {
           el("p", { class: "info-en" }, info.en),
           el("p", { class: "info-cites" }, info.cites.join(" · ")),
           el("p", { class: "info-more" }, "Más en el pie de página y en ",
-            el("a", { href: "about.html" }, "Acerca de / Standards"), ".")));
+            el("a", { href: "../about.html" }, "Acerca de / Standards"), ".")));
       document.body.append(overlay);
       btn.setAttribute("aria-expanded", "true");
       overlay.querySelector(".info-close").focus();
@@ -152,6 +157,11 @@ function menuButton() {
     installOnOpen: () => feature(parseRoute().screen, "install"),
     getPrompt: () => deferredInstall,
     onPromptUsed: () => { deferredInstall = null; },
+    // M31 B/C: sibling apps + the site homepage (owner-approved links).
+    extraLinks: [
+      { href: "../", label: "DLIskills · Inicio / Site home" },
+      { href: "../cuentos/", label: "Cuentos / Stories" },
+    ],
   });
 }
 
@@ -352,7 +362,7 @@ window.addEventListener("hashchange", render);
 // navigator.webdriver to opt in.
 if ("serviceWorker" in navigator && !navigator.webdriver
     && !sessionStorage.getItem("conjuga.noSW")) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
+  navigator.serviceWorker.register("../sw.js").catch(() => {});
 }
 
 // M30.1: ask the browser to protect this origin's storage from eviction.
@@ -415,7 +425,10 @@ function renderHome() {
     el("header", { class: "hero" },
       menuButton(),
       el("h1", { class: "home-title" }, createLola(76).el, "Conjuga"),
-      el("p", { class: "brand-sub", lang: "en" }, "part of DLIskills.com"),
+      // M31 B/C: Conjuga lives at /conjuga/; the brand line links the site home.
+      el("p", { class: "brand-sub", lang: "en" },
+        el("a", { class: "brand-home", href: "../" }, "part of DLIskills.com",
+          el("span", { lang: "es" }, " · Inicio"), " / Site home")),
       el("p", { class: "lola-greeting" }, "¡Hola! Soy Lola la Lechuza."),
       el("p", { class: "tagline" }, "Practica los verbos en español — ¡5 verbos a la vez!"),
       el("p", { class: "tagline-en", lang: "en" }, "Spanish verb practice for dual-language learners · present · preterite · imperfect"),
@@ -495,8 +508,8 @@ function renderFooter() {
     ),
     el("div", { class: "footer-links" },
       el("a", { class: "linklike", href: "#/informe" }, "Informe / Status"),
-      el("a", { class: "linklike", href: "about.html" }, "Acerca de / Standards"),
-      el("a", { class: "linklike footer-docs", href: "docs/" }, "Documentación / Docs"),
+      el("a", { class: "linklike", href: "../about.html" }, "Acerca de / Standards"),
+      el("a", { class: "linklike footer-docs", href: "../docs/" }, "Documentación / Docs"),
       el("button", {
         class: "linklike",
         onclick: () => {
@@ -667,7 +680,7 @@ function renderPack(setId) {
       el("h2", {}, "📱 Estación — Grupo " + setId,
         el("span", { class: "h-en", lang: "en" }, " (scan to practice this group)")),
       el("img", {
-        class: "station-qr", src: `qr/g${String(setId).padStart(2, "0")}.svg`,
+        class: "station-qr", src: `../qr/g${String(setId).padStart(2, "0")}.svg`,
         alt: `Código QR para practicar el Grupo ${setId} en dliskills.com`,
         width: "220", height: "220",
       }),
@@ -1402,7 +1415,7 @@ async function refreshStorageLine(node) {
 }
 
 function descargasRow(set, map, storageLine) {
-  const urls = clipUrlsForSet(set, map);
+  const urls = clipUrlsForSet(set, map, CLIP_BASE);
   const sizeLabel = `≈ ${fmtMB(urls.length * CLIP_AVG_BYTES)}`;
   const status = el("span", { class: "dl-status" }, sizeLabel);
   const fill = el("div", { class: "dl-bar-fill" });
@@ -1411,7 +1424,7 @@ function descargasRow(set, map, storageLine) {
   let delBtn = null;
 
   const refresh = async () => {
-    const s = await groupStatus(set, map);
+    const s = await groupStatus(set, map, CLIP_BASE);
     const complete = s.total > 0 && s.cached >= s.total;
     status.textContent = complete ? "✓ Descargado"
       : s.cached > 0 ? `${s.cached}/${s.total} · ${sizeLabel}` : sizeLabel;
@@ -1430,7 +1443,7 @@ function descargasRow(set, map, storageLine) {
     const { ok } = await downloadGroup(set, map, (done, total) => {
       fill.style.width = `${Math.round((done / total) * 100)}%`;
       status.textContent = `${done}/${total}`;
-    });
+    }, CLIP_BASE);
     bar.hidden = true;
     dlBtn.disabled = false;
     dlBusy = false;
@@ -1603,7 +1616,7 @@ function showResults(set, tense, mode, score, total, misses) {
 }
 
 // boot: learn whether clips exist, then paint (offline → instant fallback)
-initClips().finally(render);
+initClips(CLIP_BASE).finally(render);
 
 // M18.3b: warm the flight module's cache after first paint so the results-
 // screen surprise never waits on the network. Failures are silently ignored

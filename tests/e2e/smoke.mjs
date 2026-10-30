@@ -45,6 +45,9 @@ const server = createServer(async (req, res) => {
 });
 await new Promise((resolve) => server.listen(0, resolve));
 const BASE = `http://localhost:${server.address().port}`;
+// M31 B/C: Conjuga lives at /conjuga/; / is the site homepage (with a
+// redirect shim for legacy /#/… links). Every app route goes through APP.
+const APP = `${BASE}/conjuga`;
 
 const failures = [];
 const fail = (msg) => { console.error("FAIL:", msg); failures.push(msg); };
@@ -71,8 +74,146 @@ async function assertNoStrayNull(name) {
   if (/\bnull\b|\bundefined\b/.test(text)) fail(`${name}: stray null/undefined in rendered text`);
 }
 
+// ---------- 🏠 M31 B/C: site homepage (/) + legacy redirect shim ----------
+{
+  const { readFileSync } = await import("node:fs");
+  const axeSrc = readFileSync(join(ROOT, "tests/e2e/vendor/axe.min.js"), "utf8");
+  const axeBad = async (p) => p.evaluate(async () => {
+    const res = await window.axe.run(document, { resultTypes: ["violations"] });
+    return res.violations
+      .filter((v) => v.impact === "critical" || v.impact === "serious")
+      .map((v) => `${v.id}(${v.impact}) ×${v.nodes.length} e.g. ${v.nodes[0]?.target?.join(" ")}`);
+  });
+
+  // Empty storage: both cards say "¡Empieza aquí!"; plain / never redirects.
+  const fresh = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(fresh);
+  await fresh.goto(`${BASE}/`);
+  await fresh.waitForSelector(".app-card .app-progress:not(:empty)");
+  if (new URL(fresh.url()).pathname !== "/") fail(`site home: plain / must not redirect (got ${fresh.url()})`);
+  const cardInfo = await fresh.locator(".app-card").evaluateAll((as) =>
+    as.map((a) => ({ app: a.dataset.app, href: a.getAttribute("href"), text: a.innerText, h: a.getBoundingClientRect().height })));
+  const want = { conjuga: "conjuga/", cuentos: "cuentos/" };
+  if (cardInfo.length !== 2) fail(`site home: expected 2 app cards, got ${cardInfo.length}`);
+  for (const c of cardInfo) {
+    if (want[c.app] !== c.href) fail(`site home: ${c.app} card href ${c.href}`);
+    if (!c.text.includes("¡Empieza aquí!")) fail(`site home: ${c.app} card should say ¡Empieza aquí! when empty — "${c.text}"`);
+    if (c.h < 44) fail(`site home: ${c.app} card under 44px tall`);
+  }
+  if (!(await fresh.locator(".app-card[data-app=conjuga]").innerText()).includes("Verbos en español")) fail("site home: Conjuga card copy missing");
+  if (!(await fresh.locator(".app-card[data-app=cuentos]").innerText()).includes("Lee cuentos clásicos")) fail("site home: Cuentos card copy missing");
+  if ((await fresh.locator("h1").innerText()) !== "DLIskills.com") fail("site home: h1 must be DLIskills.com");
+  if (!(await fresh.locator(".site-greeting").innerText()).includes("¿Qué practicamos hoy?")) fail("site home: Lola greeting missing");
+  await fresh.waitForSelector(".site-lola .lola-wrap");
+  if ((await fresh.locator(".lola-wrap").getAttribute("aria-hidden")) !== "true") fail("site home: Lola must be aria-hidden");
+  if (await fresh.locator(".info-btn").count()) fail("site home: no ℹ️ on the homepage (rule 5)");
+  // footer: site name, NBPTS first then NCSSFL-ACTFL, no Common Core, A1/A2 credits
+  const foot = await fresh.locator(".site-footer").innerText();
+  if (!foot.includes("Dual-Language Immersion (DLI) Skills")) fail("site home: footer site name missing");
+  const stds = await fresh.locator(".footer-std").allInnerTexts();
+  if (stds.join("|") !== "NBPTS|NCSSFL-ACTFL") fail(`site home: footer standards must be NBPTS then NCSSFL-ACTFL, got ${stds}`);
+  if (/Common Core/.test(foot)) fail("site home: Common Core is Cuentos-only");
+  if (!foot.includes("“A1”") || !foot.includes("“A2”")) fail("site home: consultant pseudonyms missing");
+  for (const href of ["about.html", "docs/"]) {
+    if (!(await fresh.locator(`.site-footer a[href="${href}"]`).count())) fail(`site home: footer link ${href} missing`);
+  }
+  // ☰: shared drawer with Conjuga + Cuentos rows
+  await fresh.click(".menu-btn");
+  await fresh.waitForSelector(".menu-panel:not([hidden])");
+  const rows = await fresh.locator(".menu-panel a.menu-link").evaluateAll((as) => as.map((a) => [a.getAttribute("href"), a.textContent]));
+  for (const [href, label] of [["./", "Inicio"], ["./conjuga/", "Conjuga"], ["./cuentos/", "Cuentos"], ["./conjuga/#/informe", "Informe"]]) {
+    if (!rows.some(([h, t]) => h === href && t.startsWith(label))) fail(`site home ☰: missing ${label} → ${href} (${JSON.stringify(rows)})`);
+  }
+  await fresh.addScriptTag({ content: axeSrc });
+  const badMenu = await axeBad(fresh);
+  if (badMenu.length) fail(`site home axe (menu open): ${badMenu.join(" | ")}`);
+  await fresh.keyboard.press("Escape");
+  const bad = await axeBad(fresh);
+  if (bad.length) fail(`site home axe: ${bad.join(" | ")}`);
+  // keyboard: a card takes a visible focus ring
+  await fresh.focus(".app-card[data-app=conjuga]");
+  const ring = await fresh.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
+  if (ring === "none") fail("site home: app card keyboard focus ring missing");
+  await fresh.screenshot({ path: `${SHOTS}/home-site.png`, fullPage: true });
+  // whole card is the link → lands on Conjuga's home
+  await fresh.click(".app-card[data-app=conjuga]");
+  await fresh.waitForSelector(".set-card");
+  if (new URL(fresh.url()).pathname !== "/conjuga/") fail(`site home: Conjuga card landed on ${fresh.url()}`);
+  await fresh.close();
+
+  // Seeded progress: stars only (🎧 / escucha badges excluded).
+  const seeded = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(seeded);
+  await seeded.addInitScript(() => {
+    localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best: {
+      "1.present.choice": { stars: 3 }, "1.present.type": { stars: 2 }, "1.past.contrast": { stars: 1 },
+      "1.present.listen": { stars: 3 },
+    } }));
+    localStorage.setItem("cuentos.v1", JSON.stringify({ best: {
+      "leon-raton.1.preguntas": { stars: 3 }, "leon-raton.1.escucha": { stars: 3 },
+    } }));
+  });
+  await seeded.goto(`${BASE}/`);
+  await seeded.waitForSelector(".app-card .app-progress:not(:empty)");
+  const cj = await seeded.locator(".app-card[data-app=conjuga] .app-progress").innerText();
+  const cu = await seeded.locator(".app-card[data-app=cuentos] .app-progress").innerText();
+  if (!cj.startsWith("⭐ 6 estrellas")) fail(`site home: Conjuga line should read ⭐ 6 estrellas, got "${cj}"`);
+  if (!cu.startsWith("⭐ 3 estrellas")) fail(`site home: Cuentos line should read ⭐ 3 estrellas, got "${cu}"`);
+  await seeded.close();
+  // corrupt storage never breaks the page
+  const corrupt = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(corrupt);
+  await corrupt.addInitScript(() => localStorage.setItem("cuentos.v1", "{oops"));
+  await corrupt.goto(`${BASE}/`);
+  await corrupt.waitForSelector(".app-card .app-progress:not(:empty)");
+  if (!(await corrupt.locator(".app-card[data-app=cuentos] .app-progress").innerText()).includes("¡Empieza aquí!")) fail("site home: corrupt cuentos.v1 should fall back to ¡Empieza aquí!");
+  await corrupt.close();
+
+  // 360px phone: no horizontal scroll.
+  const phoneHome = await browser.newPage({ viewport: { width: 360, height: 740 } });
+  trackErrors(phoneHome);
+  await phoneHome.goto(`${BASE}/`);
+  await phoneHome.waitForSelector(".app-card .app-progress:not(:empty)");
+  if (await phoneHome.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) fail("site home: 360px overflows horizontally");
+  await phoneHome.screenshot({ path: `${SHOTS}/home-site-360.png`, fullPage: true });
+  await phoneHome.close();
+
+  // Dark (Auto default follows the OS) + axe in dark.
+  const darkHome = await browser.newPage({ viewport: { width: 900, height: 900 }, colorScheme: "dark" });
+  trackErrors(darkHome);
+  await darkHome.goto(`${BASE}/`);
+  await darkHome.waitForSelector(".app-card .app-progress:not(:empty)");
+  const darkBg = await darkHome.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  if (darkBg === "rgb(251, 246, 234)") fail("site home: dark scheme should not render the light Prado ground");
+  await darkHome.addScriptTag({ content: axeSrc });
+  const badDark = await axeBad(darkHome);
+  if (badDark.length) fail(`site home axe (dark): ${badDark.join(" | ")}`);
+  await darkHome.screenshot({ path: `${SHOTS}/home-site-dark.png`, fullPage: true });
+  await darkHome.close();
+
+  // Redirect shim: legacy deep links + printed QR cards (/#/set/N).
+  const shim = await browser.newPage({ viewport: { width: 900, height: 900 } });
+  trackErrors(shim);
+  await shim.goto(`${BASE}/#/set/3`);
+  await shim.waitForURL(/\/conjuga\/#\/set\/3$/);
+  await shim.waitForSelector(".tense-card");
+  if (!(await shim.locator("h1").first().innerText()).includes("Grupo 3")) fail("shim: /#/set/3 should render Grupo 3");
+  await shim.goto(`${BASE}/?m18demo=1#/play/1/present/choice`);
+  await shim.waitForURL(/\/conjuga\/\?m18demo=1#\/play\/1\/present\/choice$/);
+  await shim.waitForSelector(".site-footer");
+  await shim.goto(`${BASE}/#/informe`);
+  await shim.waitForURL(/\/conjuga\/#\/informe$/);
+  // in-page hash links on the homepage (e.g. the install panel's #/descargas) forward too
+  await shim.goto(`${BASE}/`);
+  await shim.waitForSelector(".app-card");
+  await shim.evaluate(() => { location.hash = "#/descargas"; });
+  await shim.waitForURL(/\/conjuga\/#\/descargas$/);
+  await shim.close();
+  ok("site homepage: 2 app cards (hrefs, ≥44px, focus ring), Lola aria-hidden, star lines from conjuga.v1/cuentos.v1 (badges excluded), ☰ rows, footer, no ℹ️, 360px, dark, axe clean; shim forwards /#/set/3, ?m18demo, #/informe, in-page hashes; plain / stays");
+}
+
 // ---------- home ----------
-await page.goto(`${BASE}/`);
+await page.goto(`${APP}/`);
 await page.waitForSelector(".set-card");
 const cards = await page.locator(".set-card").count();
 if (cards !== 20) fail(`home: expected 20 set cards, got ${cards}`);
@@ -100,7 +241,7 @@ ok("set screen renders tenses + activities + reto");
 
 // ---------- study tables: engine spot checks ----------
 for (const [tense, expected] of [["present", "soy"], ["preterite", "fui"], ["imperfect", "era"]]) {
-  await page.goto(`${BASE}/#/study/1/${tense}`);
+  await page.goto(`${APP}/#/study/1/${tense}`);
   await page.waitForSelector(".conj-table");
   const first = await page.locator(".conj-table tbody tr").first().locator("td").first().innerText();
   if (first !== expected) fail(`study ${tense}: expected "${expected}", got "${first}"`);
@@ -112,7 +253,7 @@ if (await page.locator(".lola-wrap").count()) fail("study: no mascot allowed (sc
 // (we're on the imperfect page after the loop above)
 if (!(await page.locator(".study-actions .contrast-link").count())) fail("study: past tense must link the contrast challenge");
 if (await page.locator(".study-actions .listen-link").count()) fail("study: no Escucha link without a voice");
-await page.goto(`${BASE}/#/study/1/present`);
+await page.goto(`${APP}/#/study/1/present`);
 await page.waitForSelector(".conj-table");
 if (await page.locator(".study-actions .contrast-link").count()) fail("study: present tense must not link the past-tense contrast");
 await page.screenshot({ path: `${SHOTS}/study.png` });
@@ -120,9 +261,9 @@ ok("study tables verified: soy / fui / era");
 
 // helper: compute the correct answer for the current prompt via the app's own modules
 const currentAnswer = (tenseExpr) => page.evaluate(async (tenseCode) => {
-  const { SETS } = await import("./js/verbs.js");
-  const { conjugate, PERSONS } = await import("./js/conjugator.js");
-  const { TENSE_CUES } = await import("./js/game.js");
+  const { SETS } = await import("../js/verbs.js");
+  const { conjugate, PERSONS } = await import("../js/conjugator.js");
+  const { TENSE_CUES } = await import("../js/game.js");
   let tense = tenseCode;
   if (tense === "FROM_CUE") {
     const cue = document.querySelector(".cue-chip").textContent.replace(/^🕐 /, "");
@@ -135,7 +276,7 @@ const currentAnswer = (tenseExpr) => page.evaluate(async (tenseCode) => {
 }, tenseExpr);
 
 // ---------- sticky-hover regression: no lingering highlight after advancing ----------
-await page.goto(`${BASE}/#/play/1/present/choice`);
+await page.goto(`${APP}/#/play/1/present/choice`);
 await page.waitForSelector(".choice");
 {
   const box = await page.locator(".choice").first().boundingBox();
@@ -164,7 +305,7 @@ await page.waitForSelector(".choice");
 
 // Same guard must hold in the REDESIGN look, whose [data-redesign] .choice:hover
 // rule outspecifies styles.css's .no-hover unless redesign.css mirrors it.
-await page.goto(`${BASE}/?redesign=1#/play/1/present/choice`);
+await page.goto(`${APP}/?redesign=1#/play/1/present/choice`);
 await page.waitForSelector(".choice");
 {
   const box = await page.locator(".choice").first().boundingBox();
@@ -188,7 +329,7 @@ await page.waitForSelector(".choice");
 }
 
 // ---------- Elige: complete a full round ----------
-await page.goto(`${BASE}/#/play/1/present/choice`);
+await page.goto(`${APP}/#/play/1/present/choice`);
 await page.waitForSelector(".play-lola .lola");
 if (!(await page.locator(".lola-nest").count())) fail("play: nest missing from progress bar");
 if (!(await page.locator(".lola-help").count())) fail("play: helping copy missing");
@@ -218,7 +359,7 @@ ok(`choice round completes → ${(await page.locator(".score-line").innerText())
 await page.screenshot({ path: `${SHOTS}/choice-results.png` });
 
 // ---------- Escribe: correct answer + accent tolerance ----------
-await page.goto(`${BASE}/#/play/1/present/type`);
+await page.goto(`${APP}/#/play/1/present/type`);
 await page.waitForSelector(".type-input");
 if (!(await page.locator(".type-form.no-hover").count())) fail("type: fresh form missing no-hover");
 await page.waitForSelector(".play-lola .lola.is-watching"); // input autofocus → Lola watches
@@ -241,14 +382,14 @@ if (stripped !== a2) {
 }
 
 // ---------- Empareja: full solve ----------
-await page.goto(`${BASE}/#/play/1/present/match`);
+await page.goto(`${APP}/#/play/1/present/match`);
 await page.waitForSelector(".match-card");
 if (!(await page.locator(".match-board.no-hover").count())) fail("match: fresh board missing no-hover");
 // first pair clicked via UI so we can watch Lola's look-back turn
 {
   const first = await page.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const l = document.querySelector(".match-col.left .match-card");
     const [personLabel, inf] = l.textContent.split(" · ");
     const verb = SETS[0].verbs.find((v) => v.inf === inf);
@@ -262,8 +403,8 @@ if (!(await page.locator(".match-board.no-hover").count())) fail("match: fresh b
   ok("match: Lola turns her head on a matched pair");
 }
 const solved = await page.evaluate(async () => {
-  const { SETS } = await import("./js/verbs.js");
-  const { conjugate, PERSONS } = await import("./js/conjugator.js");
+  const { SETS } = await import("../js/verbs.js");
+  const { conjugate, PERSONS } = await import("../js/conjugator.js");
   const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
   const right = [...document.querySelectorAll(".match-col.right .match-card")];
   for (const l of left) {
@@ -286,7 +427,7 @@ if (!(await page.locator(".results .lola.is-spin").count())) fail("results: expe
 ok(`match mode full solve → ${matchScore} (Lola spins)`);
 
 // ---------- Contrast: full solve via cue → tense ----------
-await page.goto(`${BASE}/#/play/1/contrast`);
+await page.goto(`${APP}/#/play/1/contrast`);
 await page.waitForSelector(".play-lola .lola");
 for (let q = 0; q < 10; q++) {
   if (q === 1 && !(await page.locator(".contrast-choices.no-hover").count()))
@@ -313,7 +454,7 @@ await page.evaluate(() => {
   for (const k of Object.keys(s.best)) s.best[k].at = Date.now() - 8 * 24 * 3600 * 1000;
   localStorage.setItem("conjuga.v1", JSON.stringify(s));
 });
-await page.goto(`${BASE}/#/`);
+await page.goto(`${APP}/#/`);
 await page.reload();
 await page.waitForSelector(".review-queue");
 await page.click(".review-item");
@@ -324,7 +465,7 @@ await page.screenshot({ path: `${SHOTS}/review-queue.png` });
 // fresh context → no queue, no stray text
 const fresh = await browser.newPage();
 trackErrors(fresh);
-await fresh.goto(`${BASE}/#/`);
+await fresh.goto(`${APP}/#/`);
 await fresh.waitForSelector(".set-card");
 if (await fresh.locator(".review-queue").count()) fail("review queue shown with no progress");
 const freshText = await fresh.locator("#app").innerText();
@@ -333,7 +474,7 @@ await fresh.close();
 ok("fresh session: no review queue, clean text");
 
 // ---------- report ----------
-await page.goto(`${BASE}/#/informe`);
+await page.goto(`${APP}/#/informe`);
 await page.waitForSelector(".report-table");
 if ((await page.locator(".report-table tbody tr").count()) !== 20) fail("report: expected 20 rows");
 await page.emulateMedia({ media: "print" });
@@ -344,7 +485,7 @@ ok("report renders 20 rows; print media hides nav");
 
 // ---------- TTS: hidden without a voice; speaks person + form with one ----------
 const toggles = await page.locator(".sound-toggle").count();
-const available = await page.evaluate(async () => (await import("./js/audio.js")).ttsAvailable());
+const available = await page.evaluate(async () => (await import("../js/audio.js")).ttsAvailable());
 if (!available && toggles > 0) fail("sound toggle rendered though TTS unavailable");
 ok(`tts availability honest (available=${available}, toggles=${toggles})`);
 
@@ -373,18 +514,18 @@ await voiced.addInitScript(() => {
     this.addEventListener = (ev, fn) => { this._cbs[ev] = fn; };
   };
 });
-await voiced.goto(`${BASE}/#/study/1/present`);
+await voiced.goto(`${APP}/#/study/1/present`);
 await voiced.waitForSelector(".cell-speak");
 await voiced.locator(".cell-speak").first().click();
 const spoken = await voiced.evaluate(() => window.__spoken);
 if (!spoken.length || spoken[0].text !== "yo soy") fail(`stub voice: expected "yo soy", got ${JSON.stringify(spoken)}`);
 // match mode speaks person + form (regression: used to speak bare forms)
-await voiced.goto(`${BASE}/#/play/1/present/match`);
+await voiced.goto(`${APP}/#/play/1/present/match`);
 await voiced.waitForSelector(".match-card");
 await voiced.evaluate(async () => {
   window.__spoken.length = 0;
-  const { SETS } = await import("./js/verbs.js");
-  const { conjugate, PERSONS } = await import("./js/conjugator.js");
+  const { SETS } = await import("../js/verbs.js");
+  const { conjugate, PERSONS } = await import("../js/conjugator.js");
   const left = [...document.querySelectorAll(".match-col.left .match-card")];
   const right = [...document.querySelectorAll(".match-col.right .match-card")];
   const [personLabel, inf] = left[0].textContent.split(" · ");
@@ -400,13 +541,13 @@ if (!matchSpoken.length || !shortPersons.includes(matchSpoken[0].text.split(" ")
 }
 ok(`tts speaks person + form (study: "${spoken[0].text}", match: "${matchSpoken[0].text}")`);
 // ---------- 🎧 Escucha (listen mode): voiced device ----------
-await voiced.goto(`${BASE}/#/set/1`);
+await voiced.goto(`${APP}/#/set/1`);
 await voiced.waitForSelector(".listen-card");
 if ((await voiced.locator(".mode-card:not(.stretch-card)").count()) !== 7) fail("escucha: voiced set screen should show 7 activity cards");
-await voiced.goto(`${BASE}/#/study/1/present`);
+await voiced.goto(`${APP}/#/study/1/present`);
 await voiced.waitForSelector(".conj-table");
 if (!(await voiced.locator(".study-actions .listen-link").count())) fail("study: voiced device must link Escucha");
-await voiced.goto(`${BASE}/#/play/1/present/listen`);
+await voiced.goto(`${APP}/#/play/1/present/listen`);
 await voiced.waitForSelector(".listen-controls");
 if (await voiced.locator(".hint-btn").count()) fail("escucha: hint button must not exist here");
 // the form is heard, never shown: no person, no blank in the prompt
@@ -440,10 +581,10 @@ if ((await voiced.locator(".big-stars .badge.on").count()) !== 3) fail("escucha:
 ok(`escucha: full round by ear → ${(await voiced.locator(".score-line").innerText()).trim()} (3 badges)`);
 await voiced.screenshot({ path: `${SHOTS}/escucha-results.png` });
 // badges surface on set screen and home, outside the star totals
-await voiced.goto(`${BASE}/#/set/1`);
+await voiced.goto(`${APP}/#/set/1`);
 await voiced.waitForSelector(".listen-card");
 if ((await voiced.locator(".listen-card .badge.on").count()) !== 3) fail("escucha: set card should show 3 badges");
-await voiced.goto(`${BASE}/#/`);
+await voiced.goto(`${APP}/#/`);
 await voiced.waitForSelector(".set-card");
 const g1 = await voiced.locator('.set-card[href="#/set/1"]').innerText();
 if (!g1.includes("🎧 3/9")) fail(`escucha: home card should show 🎧 3/9, got "${g1.replace(/\n/g, " ")}"`);
@@ -451,18 +592,18 @@ if (!g1.includes("⭐ 0/30")) fail("escucha: badges must NOT count toward stars"
 ok("escucha: badges on set + home cards, star totals untouched");
 
 // voiceless device: direct listen route redirects to the group screen
-await page.goto(`${BASE}/#/play/1/present/listen`);
+await page.goto(`${APP}/#/play/1/present/listen`);
 await page.waitForSelector(".tense-card");
 ok("escucha: voiceless direct route redirects to group screen");
 
 // hint-panel forms are tap-to-hear on voiced devices (parity with Estudia)
-await voiced.goto(`${BASE}/#/play/1/present/choice`);
+await voiced.goto(`${APP}/#/play/1/present/choice`);
 await voiced.waitForSelector(".hint-btn");
 await voiced.locator(".hint-btn").click();
 await voiced.waitForSelector(".hint-panel:not([hidden]) .cell-speak");
 const hintExpected = await voiced.evaluate(async () => {
-  const { SETS } = await import("./js/verbs.js");
-  const { conjugate } = await import("./js/conjugator.js");
+  const { SETS } = await import("../js/verbs.js");
+  const { conjugate } = await import("../js/conjugator.js");
   const inf = document.querySelector(".prompt-verb").textContent.split(" — ")[0];
   const verb = SETS[0].verbs.find((v) => v.inf === inf);
   return `yo ${conjugate(verb, "present")[0]}`;
@@ -474,12 +615,12 @@ ok(`hint: tapping a form speaks it ("${hintSpoken}")`);
 
 // 🧱 Práctica on a voiced device: placement speaks person + form (standard
 // rules), filled cells become tap-to-hear like the Estudia table, Lola hops
-await voiced.goto(`${BASE}/#/practica/1/present`);
+await voiced.goto(`${APP}/#/practica/1/present`);
 await voiced.waitForSelector(".bank-tile");
 const placeSpoken = await voiced.evaluate(async () => {
   window.__spoken.length = 0;
-  const { SETS } = await import("./js/verbs.js");
-  const { conjugate } = await import("./js/conjugator.js");
+  const { SETS } = await import("../js/verbs.js");
+  const { conjugate } = await import("../js/conjugator.js");
   const yo = conjugate(SETS[0].verbs[0], "present")[0];
   [...document.querySelectorAll(".bank-tile")].find((t) => t.textContent === yo).click();
   document.querySelector(".practica-table tbody tr .drop-slot").click();
@@ -495,7 +636,7 @@ if (cellSpoken !== `yo ${placeSpoken.yo}`) fail(`practica cell speak: expected "
 ok(`practica voiced: placement speaks "yo ${placeSpoken.yo}", filled cell replays it, Lola hops`);
 
 // mute stops speech (🔊 toggle now lives inside the ☰ menu — owner 2026-07-08)
-await voiced.goto(`${BASE}/#/study/1/present`);
+await voiced.goto(`${APP}/#/study/1/present`);
 await voiced.waitForSelector(".menu-btn");
 await voiced.locator(".menu-btn").click();
 await voiced.click(".settings-toggle"); // M30.2: sound lives under Ajustes
@@ -508,7 +649,7 @@ ok("mute toggle silences speech");
 await voiced.close();
 
 // ---------- print: Lola hidden everywhere ----------
-await page.goto(`${BASE}/#/`);
+await page.goto(`${APP}/#/`);
 await page.waitForSelector(".lola-wrap");
 await page.emulateMedia({ media: "print" });
 if (await page.locator(".lola-wrap").first().isVisible()) fail("print: Lola must be hidden");
@@ -516,7 +657,7 @@ await page.emulateMedia({ media: "screen" });
 ok("print: Lola hidden");
 
 // ---------- print: study sheet gets a classroom header (M5 tune-up) ----------
-await page.goto(`${BASE}/#/study/1/present`);
+await page.goto(`${APP}/#/study/1/present`);
 await page.waitForSelector(".conj-table");
 if (await page.locator(".print-fields").isVisible()) fail("study: name/date header must be print-only");
 await page.emulateMedia({ media: "print" });
@@ -532,7 +673,7 @@ ok("print: study sheet shows Grupo/Nombre/Fecha header, repeating table heads");
 // ---------- dark mode: Lola renders with dark palette ----------
 const darkPage = await browser.newPage({ colorScheme: "dark", viewport: { width: 900, height: 900 } });
 trackErrors(darkPage);
-await darkPage.goto(`${BASE}/#/`);
+await darkPage.goto(`${APP}/#/`);
 await darkPage.waitForSelector(".home-title .lola");
 // Light is the default now, so opt into Auto to let OS-dark drive the dark palette.
 await darkPage.click(".menu-btn");
@@ -559,7 +700,7 @@ ok("dark mode: Lola dark palette active");
   // an OS-dark device gets forest-night out of the box.
   const def = await browser.newPage({ colorScheme: "dark" });
   trackErrors(def);
-  await def.goto(`${BASE}/#/`);
+  await def.goto(`${APP}/#/`);
   await def.waitForSelector(".set-card");
   const defAttr = await def.evaluate(() => document.documentElement.getAttribute("data-theme"));
   if (defAttr !== null) fail(`theme default Auto: data-theme should be unset by default, got "${defAttr}"`);
@@ -570,7 +711,7 @@ ok("dark mode: Lola dark palette active");
   // Auto is opt-in: selecting it clears data-theme so the OS scheme wins → forest-night.
   const auto = await browser.newPage({ colorScheme: "dark" });
   trackErrors(auto);
-  await auto.goto(`${BASE}/#/`);
+  await auto.goto(`${APP}/#/`);
   await auto.waitForSelector(".set-card");
   await auto.click(".menu-btn");
   await auto.click(".settings-toggle"); // M30.2: theme lives under Ajustes
@@ -584,7 +725,7 @@ ok("dark mode: Lola dark palette active");
   // Light beats OS dark: pick Light in the menu, then confirm bg + persistence.
   const light = await browser.newPage({ colorScheme: "dark" });
   trackErrors(light);
-  await light.goto(`${BASE}/#/`);
+  await light.goto(`${APP}/#/`);
   await light.waitForSelector(".set-card");
   await light.click(".menu-btn");
   await light.click(".settings-toggle"); // M30.2: theme lives under Ajustes
@@ -608,7 +749,7 @@ ok("dark mode: Lola dark palette active");
   // Dark beats OS light: pick Dark, then confirm forest-night bg.
   const dark = await browser.newPage({ colorScheme: "light" });
   trackErrors(dark);
-  await dark.goto(`${BASE}/#/`);
+  await dark.goto(`${APP}/#/`);
   await dark.waitForSelector(".set-card");
   await dark.click(".menu-btn");
   await dark.click(".settings-toggle"); // M30.2: theme lives under Ajustes
@@ -625,7 +766,7 @@ ok("dark mode: Lola dark palette active");
 {
   const p = await browser.newPage({ colorScheme: "light" });
   trackErrors(p);
-  await p.goto(`${BASE}/#/`);
+  await p.goto(`${APP}/#/`);
   await p.waitForSelector(".set-card");
   // Inject one node per fixed surface and read the COMPUTED color under the
   // live Prado CSS (these states — earned ★, post-answer feedback — don't
@@ -670,7 +811,7 @@ ok("dark mode: Lola dark palette active");
   // NN-7: the group card AND the h1 heading AND the Estudia action row all
   // show the SAME masked line-icon (data-icon), sized > 0 (regression guard
   // for the mode-icon re-key + the mi-inline font-size restore).
-  await p.goto(`${BASE}/#/set/1`);
+  await p.goto(`${APP}/#/set/1`);
   await p.waitForSelector('.mode-card[data-mode="study"] .mode-icon[data-icon="study"]');
   const iconOK = (sel) => p.evaluate((s) => {
     const el = document.querySelector(s); if (!el) return { w: 0, mask: "none" };
@@ -679,7 +820,7 @@ ok("dark mode: Lola dark palette active");
   }, sel);
   const card = await iconOK('.mode-card[data-mode="study"] .mode-icon[data-icon="study"]');
   if (card.w < 8 || card.mask === "none") fail(`NN-7: group-card study icon lost its mask after re-key (w=${card.w})`);
-  await p.goto(`${BASE}/#/study/1/present`);
+  await p.goto(`${APP}/#/study/1/present`);
   await p.waitForSelector("h1 .mode-icon.mi-inline[data-icon='study']");
   const head = await iconOK("h1 .mode-icon.mi-inline[data-icon='study']");
   if (head.w < 8 || head.mask === "none") fail(`NN-7: heading line-icon not rendering (w=${head.w}, mask=${head.mask})`);
@@ -691,7 +832,7 @@ ok("dark mode: Lola dark palette active");
   // #1f7a45 (5.35:1); present/preterite keep dark text (verified elsewhere).
   const q = await browser.newPage({ colorScheme: "light" });
   trackErrors(q);
-  await q.goto(`${BASE}/#/play/1/imperfect/choice`);
+  await q.goto(`${APP}/#/play/1/imperfect/choice`);
   await q.waitForSelector('.prompt-tense[data-tense="imperfect"]');
   const badge = await q.evaluate(() => {
     const cs = getComputedStyle(document.querySelector('.prompt-tense[data-tense="imperfect"]'));
@@ -706,7 +847,7 @@ ok("dark mode: Lola dark palette active");
 // ---------- mobile 360×640: no overflow, perch inside viewport ----------
 const mob = await browser.newPage({ viewport: { width: 360, height: 640 } });
 trackErrors(mob);
-await mob.goto(`${BASE}/#/play/1/present/choice`);
+await mob.goto(`${APP}/#/play/1/present/choice`);
 await mob.waitForSelector(".play-lola .lola");
 const overflow = await mob.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
 if (overflow) fail("mobile: horizontal overflow on play screen");
@@ -719,7 +860,7 @@ ok("mobile 360px: no overflow, Lola perch in view");
 // ---------- reduced motion: Lola must be static ----------
 const rmPage = await browser.newPage({ reducedMotion: "reduce" });
 trackErrors(rmPage);
-await rmPage.goto(`${BASE}/#/`);
+await rmPage.goto(`${APP}/#/`);
 await rmPage.waitForSelector(".lola.is-idle");
 const anim = await rmPage.evaluate(() => getComputedStyle(document.querySelector(".lola.is-idle")).animationName);
 if (anim !== "none") fail(`reduced motion: idle animation should be none, got "${anim}"`);
@@ -727,7 +868,7 @@ await rmPage.close();
 ok("reduced motion: Lola idle is static");
 
 // ---------- 🔍 M7 hint mode (Pistas) ----------
-await page.goto(`${BASE}/#/play/1/present/choice`);
+await page.goto(`${APP}/#/play/1/present/choice`);
 await page.reload();
 await page.waitForSelector(".choice");
 await page.waitForSelector(".hint-btn"); // default ON
@@ -737,8 +878,8 @@ await page.waitForSelector(".hint-btn"); // default ON
   if (!(await page.locator(".play-lola .lola.is-hint").count())) fail("hint: Lola should raise her magnifying glass");
   // the column must match the engine exactly for the verb in play
   const colOk = await page.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const inf = document.querySelector(".prompt-verb").textContent.split(" — ")[0];
     const verb = SETS[0].verbs.find((v) => v.inf === inf);
     const want = [0, 1, 2, 3, 5].map((p) => conjugate(verb, "present")[p]);
@@ -762,34 +903,34 @@ await page.waitForSelector(".hint-btn"); // default ON
 if (await page.locator(".hint-panel .cell-speak").count()) fail("hint: voiceless devices must not render speak buttons");
 
 // contrast: hint shows BOTH past columns
-await page.goto(`${BASE}/#/play/1/contrast`);
+await page.goto(`${APP}/#/play/1/contrast`);
 await page.waitForSelector(".hint-btn");
 await page.locator(".hint-btn").click();
 await page.waitForSelector(".hint-panel:not([hidden])");
 if ((await page.locator(".hint-table").count()) !== 2) fail("hint: contrast should show two past-tense columns");
 ok("hint: contrast reveals both past columns (tense choice stays the task)");
 // footer toggle OFF hides hints everywhere; back ON restores
-await page.goto(`${BASE}/#/`);
+await page.goto(`${APP}/#/`);
 await page.waitForSelector(".hints-toggle");
 await page.locator(".hints-toggle").uncheck();
-await page.goto(`${BASE}/#/play/1/present/type`);
+await page.goto(`${APP}/#/play/1/present/type`);
 await page.waitForSelector(".type-input");
 if (await page.locator(".hint-btn").count()) fail("hint: toggle OFF must remove hint buttons");
-await page.goto(`${BASE}/#/`);
+await page.goto(`${APP}/#/`);
 await page.locator(".hints-toggle").check();
-await page.goto(`${BASE}/#/play/1/present/type`);
+await page.goto(`${APP}/#/play/1/present/type`);
 await page.waitForSelector(".hint-btn");
 ok("hint: footer toggle hides and restores hints (default checked)");
 
 // ---------- 🧱 M8 Práctica: unscored table rebuild ----------
-await page.goto(`${BASE}/#/study/1/present`);
+await page.goto(`${APP}/#/study/1/present`);
 await page.reload();
 await page.waitForSelector(".study-actions");
 if (!(await page.locator(".study-actions .practica-link").count())) fail("practica: study screen must link Práctica");
-await page.goto(`${BASE}/#/set/1`);
+await page.goto(`${APP}/#/set/1`);
 await page.waitForSelector(".practica-card");
 const beforeStore = await page.evaluate(() => localStorage.getItem("conjuga.v1"));
-await page.goto(`${BASE}/#/practica/1/present`);
+await page.goto(`${APP}/#/practica/1/present`);
 await page.waitForSelector(".bank-tile");
 // voiceless: the activity still works, with zero audio affordances
 if (await page.locator(".cell-speak").count()) fail("practica: voiceless device must not render speak buttons");
@@ -798,8 +939,8 @@ if ((await page.locator(".bank-tile").count()) !== 5) fail("practica: bank shoul
 // wrong placement: corrective, non-punitive, tile not consumed
 {
   const wrong = await page.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate } = await import("../js/conjugator.js");
     const yo = conjugate(SETS[0].verbs[0], "present")[0];
     return [...document.querySelectorAll(".bank-tile")].find((t) => t.textContent !== yo).textContent;
   });
@@ -815,8 +956,8 @@ if ((await page.locator(".bank-tile").count()) !== 5) fail("practica: bank shoul
 }
 // full rebuild: all 5 columns, word by word, driven by the engine
 const solvedPractica = await page.evaluate(async () => {
-  const { SETS } = await import("./js/verbs.js");
-  const { conjugate } = await import("./js/conjugator.js");
+  const { SETS } = await import("../js/verbs.js");
+  const { conjugate } = await import("../js/conjugator.js");
   const persons = [0, 1, 2, 3, 5];
   for (let vi = 0; vi < 5; vi++) {
     const verb = SETS[0].verbs[vi];
@@ -838,8 +979,8 @@ await page.waitForSelector(".practica-done");
 if (!(await page.locator(".match-title .lola.is-celebrate").count())) fail("practica: Lola should celebrate the finished table");
 // the rebuilt table must equal the engine's, cell by cell
 const gridOk = await page.evaluate(async () => {
-  const { SETS } = await import("./js/verbs.js");
-  const { conjugate } = await import("./js/conjugator.js");
+  const { SETS } = await import("../js/verbs.js");
+  const { conjugate } = await import("../js/conjugator.js");
   const persons = [0, 1, 2, 3, 5];
   const rows = [...document.querySelectorAll(".practica-table tbody tr")];
   for (let ri = 0; ri < rows.length; ri++) {
@@ -866,7 +1007,7 @@ ok("practica: full table rebuild, corrective retry, celebration, nothing recorde
   trackErrors(reto);
   await reto.addInitScript(() =>
     localStorage.setItem("conjuga.v1", JSON.stringify({ settings: { theme: "dark" }, best: {} })));
-  await reto.goto(`${BASE}/#/play/1/contrast`);
+  await reto.goto(`${APP}/#/play/1/contrast`);
   await reto.waitForSelector(".cue-chip");
   const chip = await reto.evaluate(() => {
     const c = document.querySelector(".cue-chip");
@@ -885,7 +1026,7 @@ ok("practica: full table rebuild, corrective retry, celebration, nothing recorde
   // is insufficient) so the hidden columns are actually reachable.
   const scroll = await browser.newPage({ viewport: { width: 360, height: 640 } });
   trackErrors(scroll);
-  await scroll.goto(`${BASE}/#/practica/1/present`);
+  await scroll.goto(`${APP}/#/practica/1/present`);
   await scroll.waitForSelector(".conj-table tbody th");
   const overflowX = await scroll.evaluate(() => getComputedStyle(document.querySelector(".table-scroll")).overflowX);
   if (overflowX === "hidden") fail("practica: overflow-x:hidden blocks horizontal scroll to the other verb columns");
@@ -906,15 +1047,15 @@ ok("practica: full table rebuild, corrective retry, celebration, nothing recorde
   // then mutate the DOM without further real pointer movement (JS .click()).
   const bank = await browser.newPage();
   trackErrors(bank);
-  await bank.goto(`${BASE}/#/practica/1/present`);
+  await bank.goto(`${APP}/#/practica/1/present`);
   await bank.waitForSelector(".bank-tile");
   const bankBox = await bank.locator(".practica-bank").boundingBox();
   const cx = bankBox.x + bankBox.width / 2, cy = bankBox.y + bankBox.height / 2;
   await bank.mouse.move(cx, cy);
   await bank.waitForTimeout(50);
   const placed = await bank.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate } = await import("../js/conjugator.js");
     const tile0 = document.querySelectorAll(".bank-tile")[0];
     const form = tile0.textContent;
     tile0.click();
@@ -956,7 +1097,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     "#/play/1/present/choice", "#/play/1/present/type", "#/play/1/present/match",
     "#/play/1/contrast", "#/informe"];
   for (const r of ROUTES) {
-    await page.goto(`${BASE}/${r}`);
+    await page.goto(`${APP}/${r}`);
     await page.reload();
     await page.waitForSelector(".site-footer", { timeout: 4000 }).catch(() => fail(`footer: missing on ${r}`));
     const credits = await page.locator(".footer-credits").innerText().catch(() => "");
@@ -975,24 +1116,25 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const siteName = await page.locator(".footer-site").first().innerText();
   if (siteName !== "Dual-Language Immersion (DLI) Skills") fail(`footer: site name wrong — "${siteName}"`);
   // home shows the DLIskills.com brand line with exact capitalization
-  await page.goto(`${BASE}/#/`);
+  await page.goto(`${APP}/#/`);
   await page.reload();
   await page.waitForSelector(".brand-sub");
   const brand = await page.locator(".brand-sub").innerText();
-  if (brand !== "part of DLIskills.com") fail(`brand: expected "part of DLIskills.com", got "${brand}"`);
+  if (brand !== "part of DLIskills.com · Inicio / Site home") fail(`brand: expected "part of DLIskills.com · Inicio / Site home", got "${brand}"`);
+  if ((await page.locator('.brand-sub a.brand-home').getAttribute("href")) !== "../") fail("brand: line must link the site homepage (../)");
   // about.html: national-only standards, no GitHub link (owner, 2026-07-08)
-  const aboutHtml = await page.evaluate(async () => (await fetch("about.html")).text());
+  const aboutHtml = await page.evaluate(async () => (await fetch("../about.html")).text());
   if (/NJSLS|nj\.gov/.test(aboutHtml)) fail("about: state-specific standards must be gone");
   if (/github\.com/.test(aboutHtml)) fail("about: GitHub link must be removed");
   if (!aboutHtml.includes("National Council of State Supervisors for Languages")) fail("about: NCSSFL must be spelled out");
   if (!aboutHtml.includes("American Council on the Teaching of Foreign Languages")) fail("about: ACTFL must be spelled out");
   // results screen gets the footer too
-  await page.goto(`${BASE}/#/play/1/present/match`);
+  await page.goto(`${APP}/#/play/1/present/match`);
   await page.reload();
   await page.waitForSelector(".match-card");
   await page.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     for (const l of document.querySelectorAll(".match-col.left .match-card")) {
       const [personLabel, inf] = l.textContent.split(" · ");
       const verb = SETS[0].verbs.find((v) => v.inf === inf);
@@ -1013,28 +1155,28 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     "#/play/1/present/choice", "#/play/1/present/type", "#/play/1/present/match",
     "#/play/1/contrast", "#/informe"];
   for (const r of ROUTES) {
-    await page.goto(`${BASE}/${r}`);
+    await page.goto(`${APP}/${r}`);
     await page.reload();
     await page.waitForSelector(".info-btn", { timeout: 4000 }).catch(() => fail(`info: ℹ️ button missing on ${r}`));
   }
   // owner (2026-07-08): ℹ️ sits next to headings/quiz cards — and is GONE
   // from the home and group screens
   for (const r of ["#/", "#/set/1"]) {
-    await page.goto(`${BASE}/${r}`);
+    await page.goto(`${APP}/${r}`);
     await page.reload();
     await page.waitForSelector(".menu-btn");
     if (await page.locator(".info-btn").count()) fail(`info: ℹ️ must not render on ${r}`);
   }
   // placement: inside the h1 on study, inside the prompt card on quizzes
-  await page.goto(`${BASE}/#/study/1/present`);
+  await page.goto(`${APP}/#/study/1/present`);
   await page.reload();
   if (!(await page.locator("h1 .info-btn").count())) fail("info: study ℹ️ should sit in the heading");
-  await page.goto(`${BASE}/#/play/1/present/choice`);
+  await page.goto(`${APP}/#/play/1/present/choice`);
   await page.reload();
   await page.waitForSelector(".choice");
   if (!(await page.locator(".prompt .info-btn").count())) fail("info: quiz ℹ️ should sit on the prompt card");
   // open on the study screen: dialog semantics, content, Esc closes, focus returns
-  await page.goto(`${BASE}/#/study/1/present`);
+  await page.goto(`${APP}/#/study/1/present`);
   await page.reload();
   await page.waitForSelector(".info-btn");
   await page.locator(".info-btn").click();
@@ -1050,7 +1192,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const focusBack = await page.evaluate(() => document.activeElement?.classList?.contains("info-btn"));
   if (!focusBack) fail("info: focus must return to the ℹ️ button on close");
   // per-screen content: the listen panel differs from the study panel
-  await page.goto(`${BASE}/#/play/1/present/choice`);
+  await page.goto(`${APP}/#/play/1/present/choice`);
   await page.reload();
   await page.waitForSelector(".info-btn");
   await page.locator(".info-btn").click();
@@ -1063,12 +1205,12 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- M10 fix wave: titles, skip link, lang parts, contrast tokens ----------
 {
-  await page.goto(`${BASE}/#/study/2/preterite`);
+  await page.goto(`${APP}/#/study/2/preterite`);
   await page.reload();
   await page.waitForSelector(".conj-table");
   const t1 = await page.title();
   if (!/Grupo 2/.test(t1) || !/Pretérito/i.test(t1)) fail(`title: study route title wrong — "${t1}"`);
-  await page.goto(`${BASE}/#/`);
+  await page.goto(`${APP}/#/`);
   const t2 = await page.title();
   if (t1 === t2) fail("title: routes must have distinct titles (WCAG 2.4.2)");
   // skip link: first Tab reveals it; activating focuses main content
@@ -1081,7 +1223,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const hashAfter = await page.evaluate(() => location.hash);
   if (hashAfter === "#app") fail("skip: must not disturb the hash router");
   // lang parts: English support copy is marked lang=en
-  await page.goto(`${BASE}/#/set/1`);
+  await page.goto(`${APP}/#/set/1`);
   await page.waitForSelector(".mode-en");
   for (const sel of [".mode-en", ".h-en", ".footer-credits"]) {
     const lang = await page.locator(sel).first().getAttribute("lang");
@@ -1095,7 +1237,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (!starTok.startsWith("#e0982f")) fail(`contrast: light --star should be Prado #e0982f, got "${starTok}"`);
   const darkStar = await browser.newPage({ colorScheme: "dark" });
   trackErrors(darkStar);
-  await darkStar.goto(`${BASE}/#/`);
+  await darkStar.goto(`${APP}/#/`);
   await darkStar.waitForSelector(".set-card");
   // Light is the default now — opt into Auto so OS-dark yields the dark --star.
   await darkStar.click(".menu-btn");
@@ -1167,14 +1309,14 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     };
     // M30.3: sweep grew — teacher/offline routes join the route list.
     for (const r of ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present", "#/play/1/present/choice", "#/play/1/contrast", "#/informe", "#/descargas", "#/pack/1", "#/study/1/nearfuture"]) {
-      await axePage.goto(`${BASE}/${r}`);
+      await axePage.goto(`${APP}/${r}`);
       await axePage.reload();
       await axePage.waitForSelector(".site-footer");
       await runAxe(r);
     }
     // M30.3: interactive STATES of the new menu — open, settings
     // expanded, and the install dialog — must also be clean.
-    await axePage.goto(`${BASE}/#/`);
+    await axePage.goto(`${APP}/#/`);
     await axePage.reload();
     await axePage.waitForSelector(".site-footer");
     await axePage.click(".menu-btn");
@@ -1206,7 +1348,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   // NN-3: a fresh learner sees exactly one ribbon, on Grupo 1
   const freshHome = await browser.newPage();
   trackErrors(freshHome);
-  await freshHome.goto(`${BASE}/#/`);
+  await freshHome.goto(`${APP}/#/`);
   await freshHome.waitForSelector(".set-card");
   if ((await freshHome.locator(".start-here").count()) !== 1) fail("ribbon: fresh home should show exactly one ribbon");
   const freshTarget = await freshHome.locator(".set-card:has(.start-here)").getAttribute("href");
@@ -1225,13 +1367,13 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   }
   await freshHome.close();
   // this context has Grupo-1 progress → the ribbon moves to Grupo 2
-  await page.goto(`${BASE}/#/`);
+  await page.goto(`${APP}/#/`);
   await page.reload();
   await page.waitForSelector(".set-card");
   const seasonedTarget = await page.locator(".set-card:has(.start-here)").getAttribute("href");
   if (seasonedTarget !== "#/set/2") fail(`ribbon: with Grupo 1 played it should point at Grupo 2, got ${seasonedTarget}`);
   // NN-1: toggling a footer setting mid-round saves without restarting
-  await page.goto(`${BASE}/#/play/1/present/choice`);
+  await page.goto(`${APP}/#/play/1/present/choice`);
   await page.reload();
   await page.waitForSelector(".choice");
   await page.locator(".choice").first().click();
@@ -1249,7 +1391,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await page.waitForTimeout(1100);
   if (await page.locator(".hint-btn").count()) fail("nn1: hints-off must apply on the next question");
   // off-round screens still re-render immediately (study table gains vosotros row)
-  await page.goto(`${BASE}/#/study/1/present`);
+  await page.goto(`${APP}/#/study/1/present`);
   await page.reload();
   await page.waitForSelector(".conj-table");
   await page.locator(".footer-top .toggle input").nth(1).check();
@@ -1257,7 +1399,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await page.locator(".footer-top .toggle input").nth(1).uncheck();
   await page.waitForSelector(".conj-table");
   if ((await page.locator(".conj-table tbody tr").count()) !== 5) fail("nn1: off-round toggle should re-render immediately");
-  await page.goto(`${BASE}/#/`);
+  await page.goto(`${APP}/#/`);
   await page.locator(".hints-toggle").check();
   ok("triage fixes: mid-round toggles defer (no restart); start-here ribbon tracks progress");
 }
@@ -1267,14 +1409,14 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const tracks = async (p, sel) =>
     (await p.evaluate((s) => getComputedStyle(document.querySelector(s)).gridTemplateColumns, sel))
       .split(" ").filter(Boolean).length;
-  await page.goto(`${BASE}/#/set/1`);
+  await page.goto(`${APP}/#/set/1`);
   await page.reload();
   await page.waitForSelector(".mode-card");
   if ((await tracks(page, ".mode-row")) !== 3) fail("grid: desktop activities should sit in 3 columns");
   if ((await tracks(page, ".contrast-row")) !== 1) fail("grid: reto card should keep a full-width row");
   const phone = await browser.newPage({ viewport: { width: 360, height: 640 } });
   trackErrors(phone);
-  await phone.goto(`${BASE}/#/set/1`);
+  await phone.goto(`${APP}/#/set/1`);
   await phone.waitForSelector(".mode-card");
   if ((await tracks(phone, ".mode-row")) !== 2) fail("grid: small phones should show 2 columns (3 rows of 2)");
   const phoneOverflow = await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
@@ -1286,17 +1428,17 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 // ---------- ☰ site menu: on every screen, unintrusive top-right ----------
 {
   for (const r of ["#/", "#/set/1", "#/study/1/present", "#/practica/1/present", "#/play/1/present/choice", "#/informe"]) {
-    await page.goto(`${BASE}/${r}`);
+    await page.goto(`${APP}/${r}`);
     await page.reload();
     await page.waitForSelector(".menu-btn", { timeout: 4000 }).catch(() => fail(`menu: ☰ missing on ${r}`));
   }
-  await page.goto(`${BASE}/#/study/1/present`);
+  await page.goto(`${APP}/#/study/1/present`);
   await page.reload();
   await page.waitForSelector(".menu-btn");
   await page.locator(".menu-btn").click();
   await page.waitForSelector(".menu-panel:not([hidden])");
   const menuHrefs = await page.locator(".menu-link").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
-  for (const want of ["#/", "#/informe", "about.html", "docs/"]) {
+  for (const want of ["#/", "#/informe", "../about.html", "../docs/", "../", "../cuentos/"]) {
     if (!menuHrefs.includes(want)) fail(`menu: missing link ${want} (got ${menuHrefs})`);
   }
   // M30.2: text-only rows (owner: no icons) + the Ajustes group present
@@ -1315,7 +1457,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (await page.locator(".menu-panel:not([hidden])").count()) fail("menu: click-outside must close");
   // the docs link actually reaches the public hub from a hash route
   await page.locator(".menu-btn").click();
-  await page.locator('.menu-link[href="docs/"]').click();
+  await page.locator('.menu-link[href="../docs/"]').click();
   await page.waitForSelector("h1");
   if (!/Documentación/.test(await page.title())) fail("menu: docs link should land on the /docs hub");
   await page.goBack();
@@ -1340,17 +1482,17 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   });
   const manifest = JSON.parse(await (await fetch(`${BASE}/audio/manifest.json`)).text());
   // audio UI renders from clips alone
-  await clips.goto(`${BASE}/#/study/1/present`);
+  await clips.goto(`${APP}/#/study/1/present`);
   await clips.waitForSelector(".cell-speak");
   await clips.locator(".cell-speak").first().click();
   const p1 = await clips.evaluate(() => window.__played.at(-1));
   if (!p1 || !p1.src.endsWith(manifest["yo soy"].n)) fail(`clips: study tap should play the NORMAL "yo soy" clip, got ${JSON.stringify(p1)}`);
   // 🎧 Escucha unlocks voiceless-but-online (the M12 classroom win)
-  await clips.goto(`${BASE}/#/set/1`);
+  await clips.goto(`${APP}/#/set/1`);
   await clips.waitForSelector(".mode-card");
   if (!(await clips.locator(".listen-card").count())) fail("clips: Escucha card must appear with clips available");
   if ((await clips.locator(".mode-card:not(.stretch-card)").count()) !== 7) fail("clips: set screen should show 7 activity cards");
-  await clips.goto(`${BASE}/#/play/1/present/listen`);
+  await clips.goto(`${APP}/#/play/1/present/listen`);
   await clips.waitForSelector(".listen-controls");
   const prompt = await clips.evaluate(() => window.__played.at(-1));
   const bare = Object.entries(manifest).filter(([t]) => !t.includes(" "));
@@ -1361,7 +1503,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (!bare.some(([, v]) => slow.src.endsWith(v.s)))
     fail(`clips: 🐢 must play the dual-generated SLOW (0.70) clip, got ${JSON.stringify(slow)}`);
   // mute silences the clip backend too (toggle lives in the ☰ menu)
-  await clips.goto(`${BASE}/#/study/1/present`);
+  await clips.goto(`${APP}/#/study/1/present`);
   await clips.waitForSelector(".menu-btn");
   await clips.locator(".menu-btn").click();
   await clips.click(".settings-toggle"); // M30.2: sound lives under Ajustes
@@ -1379,7 +1521,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const sticky = await browser.newPage({ viewport: { width: 360, height: 640 } });
   trackErrors(sticky);
   for (const route of ["#/practica/1/present", "#/study/1/present"]) {
-    await sticky.goto(`${BASE}/${route}`);
+    await sticky.goto(`${APP}/${route}`);
     await sticky.waitForSelector(".conj-table tbody th");
     // computed overflow-x is the real gate: `scrollLeft = n` succeeds even
     // when overflow-x:hidden (a CSS quirk that let a backwards shorthand
@@ -1415,7 +1557,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     if (r.url().endsWith("/css/tokens.css")) linkStatus.tokens = r.status();
     if (r.url().endsWith("/css/redesign.css")) linkStatus.redesign = r.status();
   });
-  await on.goto(`${BASE}/`);
+  await on.goto(`${APP}/`);
   await on.waitForSelector(".set-card");
   const state = await on.evaluate(() => ({
     hasGate: document.documentElement.hasAttribute("data-redesign"),
@@ -1456,7 +1598,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const prev = await browser.newPage({ viewport: { width: 900, height: 900 } });
   trackErrors(prev);
   for (const [name, path] of previewRoutes) {
-    await prev.goto(`${BASE}/${path}`);
+    await prev.goto(`${APP}/${path}`);
     await prev.waitForSelector(".site-footer");
     await prev.screenshot({ path: `${SHOTS}/redesign-${name}.png` });
     // Every preview page uses the redesign body font (Nunito stack) and
@@ -1470,7 +1612,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     if (!/nunito|ui-rounded|system-ui/i.test(state.fontFamily)) fail(`redesign preview ${name}: body font not the Prado stack — got "${state.fontFamily}"`);
     if (state.bg !== "#fbf6ea") fail(`redesign preview ${name}: --bg should be Prado #fbf6ea, got "${state.bg}"`);
   }
-  await prev.goto(`${BASE}/?redesign=1&redesign=1#/set/1`); // path param survives real-world usage
+  await prev.goto(`${APP}/?redesign=1&redesign=1#/set/1`); // path param survives real-world usage
   await prev.close();
 
   // Also screenshot about + docs in redesign.
@@ -1496,7 +1638,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const axePrev = await browser.newPage();
   trackErrors(axePrev);
   for (const [, path] of previewRoutes) {
-    await axePrev.goto(`${BASE}/${path}`);
+    await axePrev.goto(`${APP}/${path}`);
     await axePrev.reload();
     await axePrev.waitForSelector(".site-footer");
     await axePrev.addScriptTag({ content: axeSource });
@@ -1516,7 +1658,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   // (e.g. --brand vs --bg dark) can't slip through.
   const axeDark = await browser.newPage({ colorScheme: "dark" });
   trackErrors(axeDark);
-  await axeDark.goto(`${BASE}/?redesign=1#/`);
+  await axeDark.goto(`${APP}/?redesign=1#/`);
   await axeDark.reload();
   await axeDark.waitForSelector(".site-footer");
   // Light is the default now — opt into Auto so OS-dark yields the forest-night palette.
@@ -1542,7 +1684,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 {
   const chispa = await browser.newPage();
   trackErrors(chispa);
-  await chispa.goto(`${BASE}/#/play/1/present/match`);
+  await chispa.goto(`${APP}/#/play/1/present/match`);
   await chispa.waitForSelector(".match-card");
   // counter starts empty (no "0 parejas" — nothing to celebrate yet)
   if ((await chispa.locator(".pareja-count").innerText()).trim() !== "")
@@ -1552,8 +1694,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   // that pair, so exactly one solved pair is non-first-try and the run
   // deterministically reaches 3+ ("seguidas") regardless of shuffle order.
   await chispa.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const formOf = (cardEl) => {
       const [personLabel, inf] = cardEl.textContent.split(" · ");
       const verb = SETS[0].verbs.find((v) => v.inf === inf);
@@ -1572,8 +1714,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   // tear down the board mid-assertion); counter must only ever go up and a
   // run must get celebrated along the way
   const chispaRun = await chispa.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const seen = [];
     const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
     for (const l of left.slice(0, -1)) {
@@ -1605,8 +1747,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await chispa.emulateMedia({ reducedMotion: null });
   // finish the round so the result records, then verify F1 on home
   await chispa.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const l = document.querySelector(".match-col.left .match-card:not(.done)");
     const [personLabel, inf] = l.textContent.split(" · ");
     const verb = SETS[0].verbs.find((v) => v.inf === inf);
@@ -1622,7 +1764,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     for (const k of Object.keys(s.best)) s.best[k].at = Date.now() - 8 * 24 * 3600 * 1000;
     localStorage.setItem("conjuga.v1", JSON.stringify(s));
   });
-  await chispa.goto(`${BASE}/#/`);
+  await chispa.goto(`${APP}/#/`);
   await chispa.reload();
   await chispa.waitForSelector(".review-queue");
   const water = await chispa.locator(".review-water").innerText();
@@ -1638,7 +1780,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const nido = await browser.newPage();
   trackErrors(nido);
   // fresh visitor: inviting empty state, no list, no counters of what's missing
-  await nido.goto(`${BASE}/#/nido`);
+  await nido.goto(`${APP}/#/nido`);
   await nido.waitForSelector(".nido");
   const emptyText = await nido.locator(".nido").innerText();
   if (!/espera su primera brizna/.test(emptyText)) fail("nido: inviting empty state missing");
@@ -1674,7 +1816,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   // clips are served in this context → audio affordance renders as buttons
   if ((await nido.locator(".nido-say").count()) !== 3) fail("nido: expected tap-to-hear buttons with audio available");
   // home hero links into the nest
-  await nido.goto(`${BASE}/#/`);
+  await nido.goto(`${APP}/#/`);
   await nido.waitForSelector(".nido-link");
   await nido.click(".nido-link");
   await nido.waitForSelector(".nido-summary");
@@ -1696,7 +1838,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     const best = { "1.present.choice": { score: 6, total: 6, stars: 1, plays: 1, at: Date.now() } };
     localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
   });
-  await mute.goto(`${BASE}/#/nido`);
+  await mute.goto(`${APP}/#/nido`);
   await mute.waitForSelector(".nido-list");
   if (await mute.locator(".nido-say").count()) fail("nido voiceless: audio buttons must hide");
   if ((await mute.locator(".nido-plain").count()) !== 1) fail("nido voiceless: plain items expected");
@@ -1707,8 +1849,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 // ---------- M18.2b: tier-crossing ceremonies, home badges, ?m18demo=1 ----------
 {
   const solveMatch = async (pg) => pg.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
     for (const l of left) {
       const [personLabel, inf] = l.textContent.split(" · ");
@@ -1737,7 +1879,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const twig = await browser.newPage();
   trackErrors(twig);
   await seed(twig, null, 1);
-  await twig.goto(`${BASE}/#/play/1/present/match`);
+  await twig.goto(`${APP}/#/play/1/present/match`);
   await twig.waitForSelector(".match-card");
   const tw = await solveMatch(twig);
   if (tw !== "ok") fail(`nido-celebra twig: ${tw}`);
@@ -1751,14 +1893,14 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (!(await twig.locator(".nido-item", { hasText: "Grupo 1 · la ramita" }).count()))
     fail("nido-celebra: group 1 missing as ramita after ceremony");
   // home card shows the tier status glyph with an accessible name
-  await twig.goto(`${BASE}/#/`);
+  await twig.goto(`${APP}/#/`);
   await twig.waitForSelector(".set-card");
   const tierBadge = twig.locator(".set-card .set-tier").first();
   if (!(await tierBadge.count())) fail("nido-celebra: home set-card tier glyph missing");
   if (!/en el nido/.test(await tierBadge.getAttribute("aria-label")))
     fail("nido-celebra: tier glyph needs an accessible name");
   // replaying the same round must NOT re-fire the ceremony (upgrade-only)
-  await twig.goto(`${BASE}/#/play/1/present/match`);
+  await twig.goto(`${APP}/#/play/1/present/match`);
   await twig.waitForSelector(".match-card");
   const re = await solveMatch(twig);
   if (re !== "ok") fail(`nido-celebra replay: ${re}`);
@@ -1771,7 +1913,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const flor = await browser.newPage();
   trackErrors(flor);
   await seed(flor, 1, 3);
-  await flor.goto(`${BASE}/#/play/1/present/match`);
+  await flor.goto(`${APP}/#/play/1/present/match`);
   await flor.waitForSelector(".match-card");
   const fl = await solveMatch(flor);
   if (fl !== "ok") fail(`nido-celebra flor: ${fl}`);
@@ -1786,11 +1928,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   // ?m18demo=1 — sample nest + forced ceremony, ZERO storage writes
   const demo = await browser.newPage();
   trackErrors(demo);
-  await demo.goto(`${BASE}/?m18demo=1#/nido`);
+  await demo.goto(`${APP}/?m18demo=1#/nido`);
   await demo.waitForSelector(".nido-list");
   if (!(await demo.locator(".demo-banner").count())) fail("m18demo: banner missing");
   if ((await demo.locator(".nido-item").count()) < 10) fail("m18demo: sample nest looks empty");
-  await demo.goto(`${BASE}/?m18demo=1#/play/1/present/match`);
+  await demo.goto(`${APP}/?m18demo=1#/play/1/present/match`);
   await demo.waitForSelector(".match-card");
   const dm = await solveMatch(demo);
   if (dm !== "ok") fail(`m18demo: ${dm}`);
@@ -1806,11 +1948,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 // ---------- M18.3a "El Vuelo de Lola": core flight (static anchored grid) ----------
 {
   const solveMatchRound = async (pg) => {
-    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.goto(`${APP}/#/play/1/present/match`);
     await pg.waitForSelector(".match-card");
     const r = await pg.evaluate(async () => {
-      const { SETS } = await import("./js/verbs.js");
-      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const { SETS } = await import("../js/verbs.js");
+      const { conjugate, PERSONS } = await import("../js/conjugator.js");
       const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
       for (const l of left) {
         const [personLabel, inf] = l.textContent.split(" · ");
@@ -1841,8 +1983,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (cbb.height < 64) fail(`vuelo: cloud tap target ${cbb.height}px < 64px`);
   // wrong tap: NO failure state — prompt unchanged, cloud stays tappable
   const wrongTap = await fly.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const pill = document.querySelector(".vuelo-prompt");
     const [personLabel, inf] = pill.textContent.split(" · ");
     const verb = SETS[0].verbs.find((v) => v.inf === inf);
@@ -1856,8 +1998,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (wrongTap.disabled) fail("vuelo: wrong cloud must stay tappable (no failure state)");
   // fly the whole route home
   const flew = await fly.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     for (let k = 0; k < 7; k++) {
       const pill = document.querySelector(".vuelo-prompt");
       if (!pill || !pill.textContent.includes("·")) break;
@@ -1910,11 +2052,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 // ---------- M18.3b: flight garnish (motion-gated) + 🔊 replay affordance ----------
 {
   const solveMatchRound2 = async (pg) => {
-    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.goto(`${APP}/#/play/1/present/match`);
     await pg.waitForSelector(".match-card");
     const r = await pg.evaluate(async () => {
-      const { SETS } = await import("./js/verbs.js");
-      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const { SETS } = await import("../js/verbs.js");
+      const { conjugate, PERSONS } = await import("../js/conjugator.js");
       const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
       for (const l of left) {
         const [personLabel, inf] = l.textContent.split(" · ");
@@ -1980,7 +2122,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     for (const t of ["present", "preterite", "imperfect"]) best[`1.${t}.listen`] = e(3);
     localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
   });
-  await fea.goto(`${BASE}/#/nido`);
+  await fea.goto(`${APP}/#/nido`);
   await fea.waitForSelector(".nido-list");
   const item = await fea.locator(".nido-item").first().innerText();
   if (!/Grupo 1 · la brizna y la pluma/.test(item)) fail(`feather: expected brizna y pluma, got: ${item}`);
@@ -1989,7 +2131,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const tierClass = await fea.locator(".nido-item").first().getAttribute("class");
   if (/tier-2|tier-3/.test(tierClass)) fail("feather: listening must never upgrade a star tier");
   // home card announces both
-  await fea.goto(`${BASE}/#/`);
+  await fea.goto(`${APP}/#/`);
   await fea.waitForSelector(".set-card");
   const lab = await fea.locator(".set-card .set-tier").first().getAttribute("aria-label");
   if (!/la brizna y la pluma en el nido/.test(lab)) fail(`feather: home glyph label wrong: ${lab}`);
@@ -2006,7 +2148,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     for (const t of ["present", "preterite", "imperfect"]) best[`2.${t}.listen`] = e(3);
     localStorage.setItem("conjuga.v1", JSON.stringify({ settings: {}, best }));
   });
-  await edge.goto(`${BASE}/#/nido`);
+  await edge.goto(`${APP}/#/nido`);
   await edge.waitForSelector(".nido-list");
   const items = await edge.locator(".nido-item").allInnerTexts();
   if (items.length !== 1) fail(`feather edge: expected only the 9/9 group, got ${items.length}`);
@@ -2017,7 +2159,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   // demo nest includes feathers; about.html carries the accessibility reframe
   const rf = await browser.newPage();
   trackErrors(rf);
-  await rf.goto(`${BASE}/?m18demo=1#/nido`);
+  await rf.goto(`${APP}/?m18demo=1#/nido`);
   await rf.waitForSelector(".nido-list");
   if ((await rf.locator(".nido-item.has-pluma").count()) < 4) fail("feather: demo nest should include plumas");
   await rf.goto(`${BASE}/about.html`);
@@ -2031,8 +2173,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 // ---------- M20 a11y sprint: done-card ink, primary-button ink, cloud sticky-hover ----------
 {
   const matchOnePair = async (pg) => pg.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const l = document.querySelector(".match-col.left .match-card");
     const [personLabel, inf] = l.textContent.split(" · ");
     const verb = SETS[0].verbs.find((v) => v.inf === inf);
@@ -2043,8 +2185,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   });
   const fullSolve = async (pg) => {
     const r = await pg.evaluate(async () => {
-      const { SETS } = await import("./js/verbs.js");
-      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const { SETS } = await import("../js/verbs.js");
+      const { conjugate, PERSONS } = await import("../js/conjugator.js");
       const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
       for (const l of left) {
         const [personLabel, inf] = l.textContent.split(" · ");
@@ -2074,7 +2216,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
         localStorage.setItem("conjuga.v1", JSON.stringify({ settings: { theme: "dark" }, best: {} }));
       });
     }
-    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.goto(`${APP}/#/play/1/present/match`);
     await pg.waitForSelector(".match-card");
     // M20-1: done-card ink is the success ink at full opacity
     await matchOnePair(pg);
@@ -2100,8 +2242,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
       await pg.waitForSelector(".vuelo .vuelo-cloud");
       // click the CORRECT cloud with the real mouse so the pointer stays parked
       const target = await pg.evaluate(async () => {
-        const { SETS } = await import("./js/verbs.js");
-        const { conjugate, PERSONS } = await import("./js/conjugator.js");
+        const { SETS } = await import("../js/verbs.js");
+        const { conjugate, PERSONS } = await import("../js/conjugator.js");
         const [personLabel, inf] = document.querySelector(".vuelo-prompt").textContent.split(" · ");
         const verb = SETS[0].verbs.find((v) => v.inf === inf);
         const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
@@ -2152,11 +2294,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 // ---------- M21 "La Travesía": traversal, listen-first + ABC toggle, sky stages ----------
 {
   const intoFlight = async (pg) => {
-    await pg.goto(`${BASE}/#/play/1/present/match`);
+    await pg.goto(`${APP}/#/play/1/present/match`);
     await pg.waitForSelector(".match-card");
     const r = await pg.evaluate(async () => {
-      const { SETS } = await import("./js/verbs.js");
-      const { conjugate, PERSONS } = await import("./js/conjugator.js");
+      const { SETS } = await import("../js/verbs.js");
+      const { conjugate, PERSONS } = await import("../js/conjugator.js");
       const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
       for (const l of left) {
         const [personLabel, inf] = l.textContent.split(" · ");
@@ -2176,8 +2318,8 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     await pg.waitForSelector(".vuelo .vuelo-cloud");
   };
   const answerOne = (pg) => pg.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const [personLabel, inf] = document.querySelector(".vuelo-prompt").textContent.split(" · ");
     const verb = SETS[0].verbs.find((v) => v.inf === inf);
     const form = conjugate(verb, "present")[PERSONS.indexOf(personLabel)];
@@ -2239,11 +2381,11 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 {
   const shape = await browser.newPage();
   trackErrors(shape);
-  await shape.goto(`${BASE}/?m18demo=1#/play/1/present/match`);
+  await shape.goto(`${APP}/?m18demo=1#/play/1/present/match`);
   await shape.waitForSelector(".match-card");
   const sr = await shape.evaluate(async () => {
-    const { SETS } = await import("./js/verbs.js");
-    const { conjugate, PERSONS } = await import("./js/conjugator.js");
+    const { SETS } = await import("../js/verbs.js");
+    const { conjugate, PERSONS } = await import("../js/conjugator.js");
     const left = [...document.querySelectorAll(".match-col.left .match-card:not(.done)")];
     for (const l of left) {
       const [personLabel, inf] = l.textContent.split(" · ");
@@ -2289,8 +2431,12 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- M25.1 PWA: manifest links, parses, icons resolve ----------
 {
-  const html = await (await fetch(`${BASE}/index.html`)).text();
-  if (!html.includes('rel="manifest"')) fail("m25.1: index.html missing manifest link");
+  // M31: both shells (Conjuga at conjuga/, the site homepage at /) link
+  // the one site-level manifest.
+  const homeHtml = await (await fetch(`${BASE}/index.html`)).text();
+  if (!homeHtml.includes('rel="manifest" href="manifest.webmanifest"')) fail("m31: homepage missing manifest link");
+  const html = await (await fetch(`${APP}/index.html`)).text();
+  if (!html.includes('rel="manifest" href="../manifest.webmanifest"')) fail("m25.1: conjuga/index.html missing manifest link");
   if (!html.includes('name="theme-color"')) fail("m25.1: index.html missing theme-color meta");
   const res = await fetch(`${BASE}/manifest.webmanifest`);
   if (res.status !== 200) fail("m25.1: manifest.webmanifest not served");
@@ -2298,7 +2444,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   try { man = await res.json(); } catch { fail("m25.1: manifest is not valid JSON"); }
   // iOS: dedicated FULL-BLEED touch icon (transparent corners composite
   // onto black on the home screen) + stable manifest id.
-  if (!html.includes('rel="apple-touch-icon"')) fail("m25.1: index.html missing apple-touch-icon link");
+  if (!html.includes('rel="apple-touch-icon" href="../icons/apple-touch-icon.png"')) fail("m25.1: conjuga/index.html missing apple-touch-icon link");
   {
     const r = await fetch(`${BASE}/icons/apple-touch-icon.png`);
     const buf = new Uint8Array(await r.arrayBuffer());
@@ -2327,7 +2473,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 {
   // Voiceless context first (the main page keeps its manifest-204 stub):
   // the screen must render its "audio unreachable" message, no rows.
-  await page.goto(`${BASE}/#/descargas`);
+  await page.goto(`${APP}/#/descargas`);
   await page.waitForSelector(".dl-unavailable");
   if (await page.locator(".dl-row").count()) fail("m25.3: rows rendered without a clip manifest");
   await assertNoStrayNull("descargas-voiceless");
@@ -2339,7 +2485,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const FAKE_MP3 = Buffer.from("ID3fakeclip");
   await dlPage.route("**/audio/clips/*.mp3", (r) =>
     r.fulfill({ status: 200, contentType: "audio/mpeg", body: FAKE_MP3 }));
-  await dlPage.goto(`${BASE}/#/descargas`);
+  await dlPage.goto(`${APP}/#/descargas`);
   await dlPage.waitForSelector(".dl-row");
   const rows = await dlPage.locator(".dl-row").count();
   if (rows !== 20) fail(`m25.3: expected 20 group rows, got ${rows}`);
@@ -2361,8 +2507,14 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   const cacheInfo = await dlPage.evaluate(async () => {
     const keys = await caches.keys();
     const cache = await caches.open("audio-g01");
-    return { keys, count: (await cache.keys()).length };
+    const reqs = await cache.keys();
+    return { keys, count: reqs.length, first: reqs[0]?.url || "" };
   });
+  // M31: the app page is /conjuga/ but clips stay site-level — cache keys
+  // must be /audio/clips/… (the same keys pre-move downloads used).
+  if (!new URL(cacheInfo.first).pathname.startsWith("/audio/clips/")) {
+    fail(`m31: Descargas cache key must resolve to /audio/clips/, got ${cacheInfo.first}`);
+  }
   if (!cacheInfo.keys.includes("audio-g01")) fail("m25.3: audio-g01 cache not created");
   // Prefixed + bare shapes, both speeds; dupes (ser/ir preterite,
   // imperfect yo=él) lower the ceiling — see tests/descargas.test.mjs.
@@ -2387,7 +2539,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 // ---------- M26 ⏭️🔄 stretch tenses: cards, Estudia, Práctica, unscored ----------
 {
   // Set screen: two stretch cards, star-free, linking to study only.
-  await page.goto(`${BASE}/#/set/1`);
+  await page.goto(`${APP}/#/set/1`);
   await page.waitForSelector(".stretch-card");
   if ((await page.locator(".stretch-card").count()) !== 2) fail("m26: expected 2 stretch cards");
   if (await page.locator(".stretch-row .star").count()) fail("m26: stretch cards must be unscored — no stars");
@@ -2415,7 +2567,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await assertNoStrayNull("study-nearfuture");
 
   // Estudia progressive (group 2): irregular gerunds diciendo/pudiendo/viendo.
-  await page.goto(`${BASE}/#/study/2/progressive`);
+  await page.goto(`${APP}/#/study/2/progressive`);
   await page.waitForSelector(".conj-table");
   const pgText = await page.locator(".conj-table").innerText();
   for (const form of ["estoy diciendo", "estás pudiendo", "está viendo", "estamos dando", "están sabiendo"]) {
@@ -2424,7 +2576,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
   // Práctica nearfuture (group 1): bank of 5 phrase tiles; a correct
   // placement fills the cell.
-  await page.goto(`${BASE}/#/practica/1/nearfuture`);
+  await page.goto(`${APP}/#/practica/1/nearfuture`);
   await page.waitForSelector(".bank-tile");
   if ((await page.locator(".bank-tile").count()) !== 5) fail("m26: práctica stretch bank should hold 5 tiles");
   await page.locator(".bank-tile", { hasText: "voy a ser" }).first().click();
@@ -2435,7 +2587,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   await assertNoStrayNull("practica-nearfuture");
 
   // Stretch never reaches play routes: the router bounces to home.
-  await page.goto(`${BASE}/#/play/1/nearfuture/choice`);
+  await page.goto(`${APP}/#/play/1/nearfuture/choice`);
   await page.waitForSelector(".set-card");
   if ((await page.locator(".set-card").count()) !== 20) fail("m26: stretch play route must fall back to home");
 
@@ -2444,7 +2596,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- M29.1 🍎 class pack: sheets, keys, print emulation ----------
 {
-  await page.goto(`${BASE}/#/set/1`);
+  await page.goto(`${APP}/#/set/1`);
   await page.waitForSelector(".teacher-line");
   if (!(await page.locator('.pack-link[href="#/pack/1"]').count())) fail("m29.1: set screen missing the pack link");
 
@@ -2491,7 +2643,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- M25.4 📲 install UX: ☰ row, panel steps, Descargas link ----------
 {
-  await page.goto(`${BASE}/`);
+  await page.goto(`${APP}/`);
   await page.waitForSelector(".set-card");
   await page.click(".menu-btn");
   if (!(await page.locator(".menu-panel .install-link").count())) {
@@ -2526,7 +2678,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     Object.defineProperty(navigator, "webdriver", { get: () => false });
   });
 
-  await swPage.goto(`${BASE}/`);
+  await swPage.goto(`${APP}/`);
   await swPage.waitForSelector(".set-card");
   await swPage.evaluate(() => navigator.serviceWorker.ready);
   const controlled = await swPage.evaluate(async () => {
@@ -2544,14 +2696,14 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
   // Offline navigation WITH a querystring: ignoreSearch fallback serves
   // the shell AND the query survives in location.search.
-  await swPage.goto(`${BASE}/?m18demo=1`);
+  await swPage.goto(`${APP}/?m18demo=1`);
   await swPage.waitForSelector(".set-card");
   const offSearch = await swPage.evaluate(() => location.search);
   if (offSearch !== "?m18demo=1") fail(`m25.2: offline query lost, got "${offSearch}"`);
 
   // Back online: querystrings pass through untouched (no ignoreSearch).
   await swPage.context().setOffline(false);
-  await swPage.goto(`${BASE}/?m18demo=1`);
+  await swPage.goto(`${APP}/?m18demo=1`);
   await swPage.waitForSelector(".set-card");
   const onSearch = await swPage.evaluate(() => location.search);
   if (onSearch !== "?m18demo=1") fail(`m25.2: online query lost, got "${onSearch}"`);
@@ -2563,7 +2715,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     Object.defineProperty(navigator, "webdriver", { get: () => false });
     sessionStorage.setItem("conjuga.noSW", "1");
   });
-  await noSwPage.goto(`${BASE}/`);
+  await noSwPage.goto(`${APP}/`);
   await noSwPage.waitForSelector(".set-card");
   const gated = await noSwPage.evaluate(async () => !(await navigator.serviceWorker.getRegistration()));
   if (!gated) fail("m25.2: conjuga.noSW gate did not prevent registration");
@@ -2601,7 +2753,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
       },
     }));
   });
-  await profilePage.goto(`${BASE}/`);
+  await profilePage.goto(`${APP}/`);
   await profilePage.waitForSelector(".set-card");
   const card1 = await profilePage.locator(".set-card").nth(0).innerText();
   const card2 = await profilePage.locator(".set-card").nth(1).innerText();
@@ -2609,7 +2761,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   if (!card2.includes("🎧 3/9")) fail(`m30.1: group 2 should show earned badges 🎧 3/9, got "${card2}"`);
   if (!card2.includes("⭐ 0/30")) fail("m30.1: group 2 stars should be 0/30 (badges are a separate track)");
   // informe totals agree with the same data
-  await profilePage.goto(`${BASE}/#/informe`);
+  await profilePage.goto(`${APP}/#/informe`);
   const informe = await profilePage.locator("#app").innerText();
   if (!informe.includes("13")) fail("m30.1: informe missing group 1 star total");
   await profilePage.close();
@@ -2623,10 +2775,18 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
   trackErrors(guardPage);
   await guardPage.route("**/beacon", (r) => { beacons++; r.fulfill({ status: 204 }); });
   // webdriver context (like the whole suite): must stay silent
-  await guardPage.goto(`${BASE}/`);
+  await guardPage.goto(`${APP}/`);
   await guardPage.waitForSelector(".set-card");
   await guardPage.click('a[href="#/set/1"]');
   await guardPage.waitForSelector(".tense-card");
+  // M31: the site homepage (page "site") and Cuentos (cuentos-*) beacon
+  // too — the same guards must keep them silent here.
+  await guardPage.goto(`${BASE}/`);
+  await guardPage.waitForSelector(".app-card .app-progress:not(:empty)");
+  await guardPage.goto(`${BASE}/cuentos/`);
+  await guardPage.waitForSelector(".cu-book");
+  await guardPage.goto(`${BASE}/cuentos/#/informe`);
+  await guardPage.waitForSelector(".site-footer");
   // even with webdriver hidden, localhost + GPC must each block
   await guardPage.close();
   const gpcPage = await browser.newPage({ viewport: { width: 900, height: 900 } });
@@ -2636,16 +2796,23 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
     Object.defineProperty(navigator, "webdriver", { get: () => false });
     Object.defineProperty(navigator, "globalPrivacyControl", { get: () => true });
   });
-  await gpcPage.goto(`${BASE}/`);
+  await gpcPage.goto(`${APP}/`);
   await gpcPage.waitForSelector(".set-card");
+  await gpcPage.goto(`${BASE}/`);
+  await gpcPage.waitForSelector(".app-card .app-progress:not(:empty)");
+  await gpcPage.goto(`${BASE}/cuentos/`);
+  await gpcPage.waitForSelector(".cu-book");
+  await gpcPage.evaluate(async () => {
+    for (const reg of await navigator.serviceWorker.getRegistrations()) await reg.unregister();
+  });
   await gpcPage.close();
   if (beacons !== 0) fail(`m28.2: ${beacons} beacon request(s) escaped the guards`);
-  ok("M28.2 beacon guards: zero analytics requests from webdriver, localhost, and GPC contexts");
+  ok("M28.2 beacon guards: zero analytics requests from webdriver, localhost, and GPC contexts (Conjuga, site homepage, Cuentos)");
 }
 
 // ---------- M30.2 ☰ hamburger overhaul: scrim, settings group, dialog above menu ----------
 {
-  await page.goto(`${BASE}/`);
+  await page.goto(`${APP}/`);
   await page.waitForSelector(".set-card");
   await page.click(".menu-btn");
   await page.waitForSelector(".menu-panel:not([hidden])");
@@ -2695,13 +2862,13 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- M30.3 ⌨️ keyboard-only pass through the drawer ----------
 {
-  await page.goto(`${BASE}/`);
+  await page.goto(`${APP}/`);
   await page.waitForSelector(".set-card");
   await page.focus(".menu-btn");
   await page.keyboard.press("Enter");
   await page.waitForSelector(".menu-panel:not([hidden])");
   const seq = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 10; i++) { // M31: +2 rows (site home, Cuentos)
     seq.push(await page.evaluate(() => document.activeElement?.textContent?.trim().slice(0, 10) ?? "?"));
     await page.keyboard.press("Tab");
   }
@@ -2721,7 +2888,7 @@ await page.screenshot({ path: `${SHOTS}/practica-done.png` });
 
 // ---------- M30.4 ⚙️ settings order, switch UX, stacked Tema, static-page nav ----------
 {
-  await page.goto(`${BASE}/`);
+  await page.goto(`${APP}/`);
   await page.waitForSelector(".set-card");
   await page.click(".menu-btn");
   await page.click(".settings-toggle");

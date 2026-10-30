@@ -1,7 +1,9 @@
 /**
  * M29 one-shot QR generator (dev tooling only — never CI, never runtime).
  * Emits qr/g01.svg … qr/g20.svg, one scannable station link per group,
- * pointing at the live site's #/set/<n> routes. The committed SVGs are
+ * pointing at the live site's conjuga/#/set/<n> routes (M31 B/C moved
+ * Conjuga under /conjuga/; cards printed earlier encode /#/set/<n>, which
+ * the homepage redirect shim forwards). The committed SVGs are
  * the artifact; the encoder is the vendored MIT qrcode-generator
  * (tools/vendor/qrcode-generator.cjs, Kazuhiko Arase — same vendoring
  * pattern as tests/e2e/vendor/axe.min.js).
@@ -20,7 +22,7 @@ mkdirSync(join(ROOT, "qr"), { recursive: true });
 
 for (let id = 1; id <= 20; id++) {
   const qr = qrcode(0, "M"); // auto version, medium error correction
-  qr.addData(`https://dliskills.com/#/set/${id}`);
+  qr.addData(`https://dliskills.com/conjuga/#/set/${id}`);
   qr.make();
   const svg = qr.createSvgTag({ cellSize: 4, margin: 8, scalable: true });
   const file = `g${String(id).padStart(2, "0")}.svg`;
