@@ -465,6 +465,21 @@
 
 /* ---------- mobile ---------- */
 @media (max-width: 480px) {
+  /* Mapa must keep all three choices inside a 740px-tall viewport even
+     with fallback font metrics (CI): single-line slots, compact prompt. */
+  .cu-map-intro { font-size: .95rem; margin-bottom: 4px; }
+  .cu-map-intro .h-en { display: none; }
+  .cu-map { gap: 4px; margin-bottom: 6px; }
+  .cu-map-slot { min-height: 44px; padding: 4px 8px; }
+  .cu-map-label { font-size: .9rem; }
+  .cu-map-label .h-en, .cu-map-now .h-en { display: none; }
+  .cu-stage[data-act="mapa"] .cu-prompt { padding: 10px 12px; }
+  .cu-stage[data-act="mapa"] .cu-q { font-size: 1.1rem; }
+  .cu-stage[data-act="mapa"] .cu-q-en { display: none; }
+  .cu-stage[data-act="mapa"] .choices { gap: 6px; }
+  .cu-stage[data-act="mapa"] .choice { padding: 10px 12px; min-height: 48px; }
+}
+@media (max-width: 480px) {
   .cu-shelf { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .cu-cover { height: 72px; font-size: 2.6rem; }
   .cu-book { padding: 0 10px 12px 18px; }
