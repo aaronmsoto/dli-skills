@@ -30,7 +30,7 @@ export const ACTIVITIES = [
 export const actMeta = (key) => ACTIVITIES.find((a) => a.key === key) || null;
 
 export const MAP_SLOTS = [
-  { key: "personajes", icon: "👥", es: "Personajes", en: "Characters", q: "¿Quiénes son los personajes?" },
+  { key: "personajes", icon: "👥", es: "Personajes principales", en: "Main characters", q: "¿Quiénes son los personajes principales?" },
   { key: "lugar", icon: "📍", es: "Lugar", en: "Setting", q: "¿Dónde pasa el cuento?" },
   { key: "problema", icon: "❗", es: "Problema", en: "Problem", q: "¿Cuál es el problema?" },
   { key: "solucion", icon: "✅", es: "Solución", en: "Solution", q: "¿Cómo se resuelve el problema?" },

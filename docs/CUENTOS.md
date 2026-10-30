@@ -182,6 +182,20 @@ helpers (`isDue`, `reviewIntervalMs`) drive 🔁 Repasa hoy.
 - `tests/cuentos-payload.test.mjs` — `cuentos/**` ≤ 150 KB gzip.
 - `tests/e2e/cuentos.mjs` — every screen + every activity to results + storage + axe (chained into `npm run e2e`).
 
+## 9b. Implementation notes (phase A build, 2026-10-30)
+
+- `#/creditos` DOES carry an ℹ️ (key `creditos` — Std III culture note);
+  the route table above predates that decision.
+- The aggregate beacon is not wired into Cuentos: `server/worker.js`
+  allowlists Conjuga's page names; extending it is an owner decision.
+- Correct answers also wait for "Siguiente ▶" (deliberate for beginning
+  readers — they may re-read the sentence); the English hint toggle is
+  always offered, independent of the Pistas setting.
+- The round's passage panel renders WITHOUT glossary buttons so 🔤
+  Palabras cannot be answered by tapping the word.
+- Map slot copy: "Personajes principales" (distractors never name
+  characters who appear in the story).
+
 ## 10. Future (not v1)
 
 ElevenLabs clips for story sentences (extend tools/generate-audio.mjs
