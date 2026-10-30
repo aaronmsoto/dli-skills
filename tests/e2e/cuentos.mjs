@@ -441,7 +441,8 @@ ok("🗺️ Mapa: intro, bilingual solid 2×2 board, '← ahora'; miss → no nu
 async function playOrdena({ wrongFirst = false } = {}) {
   await go(juego("ordena"));
   await page.waitForSelector(".cu-tile");
-  for (let i = 0; i < L1.order.length; i++) {
+  // N-1: the last tile auto-places after the penultimate correct tap.
+  for (let i = 0; i < L1.order.length - 1; i++) {
     if (wrongFirst && i === 0) {
       const wrong = page.locator(".cu-tile", { hasText: L1.order[1] });
       await wrong.click();
@@ -467,11 +468,11 @@ if ((await page.locator(".cu-slot").count()) !== L1.order.length) fail("ordena: 
 await roundBasics("ordena");
 await page.screenshot({ path: `${SHOTS}/cuentos-ordena.png`, fullPage: true });
 await playOrdena();
-await expectResults("ordena", L1.order.length, L1.order.length);
+await expectResults("ordena", L1.order.length - 1, L1.order.length - 1);
 if ((await store()).best?.[`${story.id}.1.ordena`]?.stars !== 3) fail("ordena: 3 stars expected in storage");
 // first-try scoring: one wrong tap on slot 1 → (n-1)/n, best stays 3
 await playOrdena({ wrongFirst: true });
-await expectResults("ordena", L1.order.length - 1, L1.order.length);
+await expectResults("ordena", L1.order.length - 2, L1.order.length - 1);
 if (!(await page.locator(".cu-misses").innerText()).includes(L1.order[0])) fail("ordena: miss list must name the event");
 if (!(await page.locator(".cu-misses").innerText()).includes("Número 1")) fail("ordena: results must say 'Número', not 'Lugar'");
 if ((await store()).best?.[`${story.id}.1.ordena`]?.plays !== 2) fail("ordena: plays should count 2");
@@ -480,7 +481,7 @@ await go(juego("ordena"));
 await page.locator(".cu-tile", { hasText: L1.order[0] }).focus();
 await page.keyboard.press("Enter");
 if ((await page.locator(".cu-slot.filled").count()) !== 1) fail("ordena: Enter on a focused tile must place it");
-ok("🧩 Ordena: shuffled tiles, first-try scoring (4/4 then 3/4), wrong tile returns, keyboard operable");
+ok("🧩 Ordena: shuffled tiles, N-1 first-try scoring (3/3 then 2/3, last tile forced), wrong tile returns, keyboard operable");
 
 // ---------- a deliberate miss: answer + evidence highlighted ----------
 await go(juego("preguntas"));

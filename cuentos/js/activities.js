@@ -22,7 +22,7 @@ export const LISTEN_ACT = "escucha";
 export const ACTIVITIES = [
   { key: "preguntas", icon: "❓", es: "Preguntas", en: "Questions", track: "stars", total: () => 5 },
   { key: "verdad", icon: "✅", es: "¿Verdad o mentira?", en: "True or false", track: "stars", total: () => 5 },
-  { key: "ordena", icon: "🧩", es: "Ordena el cuento", en: "Put the story in order", track: "stars", total: (level) => level.order.length },
+  { key: "ordena", icon: "🧩", es: "Ordena el cuento", en: "Put the story in order", track: "stars", total: (level) => Math.max(1, level.order.length - 1) },
   { key: "palabras", icon: "🔤", es: "Palabras", en: "Words in context", track: "stars", total: () => 5 },
   { key: "mapa", icon: "🗺️", es: "Mapa del cuento", en: "Story map", track: "stars", total: () => 4 },
   { key: "escucha", icon: "🎧", es: "Escucha", en: "Listen & pick", track: "badges", total: () => 5 },
@@ -136,10 +136,13 @@ export function buildOrdena(level, rng = Math.random) {
 /**
  * Score an Ordena round. `attempts[slot]` = the tile indices tapped for
  * that slot, in order; a slot counts only if its FIRST tap was right.
+ * Owner decision (2026-10-30): the LAST slot is never scored — its tile is
+ * forced (auto-placed in the UI), so the denominator is N-1 slots.
  */
 export function scoreOrdena(attempts) {
-  const score = attempts.reduce((n, tries, slot) => n + (tries?.[0] === slot ? 1 : 0), 0);
-  return { score, total: attempts.length };
+  const scored = attempts.length > 1 ? attempts.slice(0, -1) : attempts;
+  const score = scored.reduce((n, tries, slot) => n + (tries?.[0] === slot ? 1 : 0), 0);
+  return { score, total: scored.length };
 }
 
 /**

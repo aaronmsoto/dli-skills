@@ -138,7 +138,7 @@ meanings (the class reads English well — this is RL.3.4 in L2).
 |---|---|---|---|
 | `preguntas` | ❓ Preguntas | ⭐ | 5 MC questions; passage panel OPEN; miss → answer + evidence highlight |
 | `verdad` | ✅ ¿Verdad o mentira? | ⭐ | 5 statements, two big buttons; passage OPEN; evidence on miss |
-| `ordena` | 🧩 Ordena el cuento | ⭐ | shuffled event tiles; tap tiles in order (or keyboard); score = events placed right on first tap of that slot; passage COLLAPSED (available as hint) |
+| `ordena` | 🧩 Ordena el cuento | ⭐ | shuffled event tiles; tap tiles in order (or keyboard); score = slots filled right on the first tap, over **N−1 scored slots** — the last tile is forced, so it auto-places and never counts (owner, 2026-10-30); passage COLLAPSED (available as hint) |
 | `palabras` | 🔤 Palabras | ⭐ | word shown highlighted inside its sentence; pick the English meaning (3); passage panel CLOSED by default; a miss shows the meaning («duerme» = sleeps + 🔊), not the sentence again |
 | `mapa` | 🗺️ Mapa del cuento | ⭐ | 4 slots (Personajes · Lugar · Problema · Solución), each MC (3); total 4 |
 | `escucha` | 🎧 Escucha | 🎧 badges | hear a sentence (never shown), pick it among 3 written sentences; renders only when `speakable()`; NEVER in star totals |

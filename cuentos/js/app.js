@@ -919,8 +919,11 @@ function playOrdena({ story, n, level, act, lola, stage, panel, renderHeader }) 
   };
   const slots = el("ol", { class: "cu-slots", "aria-label": "Orden del cuento / Story order" }, slotNodes);
   const bank = el("div", { class: "cu-tiles", role: "group", "aria-label": "Eventos / Events" });
+  // N-1 scored slots (owner, 2026-10-30): the last tile is forced, so it
+  // auto-places and never counts — the progress bar counts scored slots.
+  const scored = Math.max(1, sequence.length - 1);
   const sync = () => {
-    renderHeader(Math.min(next, sequence.length - 1), sequence.length);
+    renderHeader(Math.min(next, scored), scored);
     slotNodes.forEach((s, i) => s.classList.toggle("current", i === next));
   };
   for (const t of tiles) {
@@ -946,6 +949,7 @@ function playOrdena({ story, n, level, act, lola, stage, panel, renderHeader }) 
           if (next >= sequence.length) return done();
           sync();
           const left = [...bank.querySelectorAll(".cu-tile")];
+          if (left.length === 1 && sequence.length > 1) return left[0].click(); // forced last tile
           (left[pos] || left[left.length - 1])?.focus();
         } else {
           lola.setState("is-curious");
@@ -973,9 +977,10 @@ function playOrdena({ story, n, level, act, lola, stage, panel, renderHeader }) 
 
   function done() {
     sync();
-    renderHeader(sequence.length, sequence.length);
+    renderHeader(scored, scored);
     const { score, total } = scoreOrdena(attempts);
     const misses = attempts
+      .slice(0, total)
       .map((tries, i) => (tries[0] === i ? null : { prompt: `Número ${i + 1}`, answerText: sequence[i] }))
       .filter(Boolean);
     const btn = el("button", {

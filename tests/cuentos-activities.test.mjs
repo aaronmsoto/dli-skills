@@ -23,7 +23,7 @@ test("ACTIVITIES metadata: keys, tracks, totals", () => {
     assert.equal(a.track, a.key === LISTEN_ACT ? "badges" : "stars", `${a.key} track`);
   }
   const lvl = STORIES[0].levels[0];
-  assert.deepEqual(ACTIVITIES.map((a) => a.total(lvl)), [5, 5, lvl.order.length, 5, 4, 5]);
+  assert.deepEqual(ACTIVITIES.map((a) => a.total(lvl)), [5, 5, lvl.order.length - 1, 5, 4, 5]); // ordena: N-1 (last tile forced)
 });
 
 test("shuffle: seedable, a permutation, does not mutate", () => {
@@ -143,11 +143,12 @@ test("escucha: distractors prefer similar length", () => {
   }
 });
 
-test("scoreOrdena counts first-try slots only", () => {
-  assert.deepEqual(scoreOrdena([[0], [1], [2], [3]]), { score: 4, total: 4 });
-  assert.deepEqual(scoreOrdena([[2, 0], [1], [3, 2], [3]]), { score: 2, total: 4 });
-  assert.deepEqual(scoreOrdena([[1, 0], [2, 1], [3, 2], [3]]), { score: 1, total: 4 });
-  assert.deepEqual(scoreOrdena([[], []]), { score: 0, total: 2 });
+test("scoreOrdena counts first-try slots only, never the forced last slot (N-1)", () => {
+  assert.deepEqual(scoreOrdena([[0], [1], [2], [3]]), { score: 3, total: 3 });
+  assert.deepEqual(scoreOrdena([[2, 0], [1], [3, 2], [3]]), { score: 1, total: 3 });
+  assert.deepEqual(scoreOrdena([[1, 0], [2, 1], [3, 2], [3]]), { score: 0, total: 3 });
+  assert.deepEqual(scoreOrdena([[0]]), { score: 1, total: 1 });
+  assert.deepEqual(scoreOrdena([[], []]), { score: 0, total: 1 });
 });
 
 test("buildRound dispatches every activity key", () => {
