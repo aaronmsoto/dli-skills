@@ -112,3 +112,22 @@ Well structured; the read-with-support → answer-with-evidence loop is
 executed with care. Land NH-1, NH-2, NH-5 before the owner sees it; NH-3,
 NH-4, NH-7, NH-8 are localized and cheap. Teacher-station guidance
 (NH-11, NH-13) is the main remaining gap for persona 2.
+
+## Fixes applied (2026-10-30, uncommitted pass)
+
+- **NH-1** done — falsy children filtered in feedback; Mapa miss shows "📖 Busca la respuesta en el cuento" + 📖 Ver el cuento button (opens/scrolls the panel; text-only when Pistas hides it). Schema unchanged.
+- **NH-2** done — muted 🔊/🐢/▶️/bubble/key-chip/evidence taps show a 3 s `role=status` toast with "🔊 Encender" (sets sound, replays). Escucha stays exempt.
+- **NH-3** done — compact solid 2×2 board at every width, bilingual labels, values hidden until filled, "← ahora" tag, intro line; choices ≤740px at 360.
+- **NH-4** done — level pick swaps section 3 in place, keeps scroll/focus, announces.
+- **NH-5** done — ≤1★ → 📖 Lee otra vez primary; ≥2★ → "Siguiente juego"; Siguiente nivel only at ≥10⭐; 📖 Lee crumb; h1 focus; star hint.
+- **NH-6** done — correct answers auto-advance after 1200 ms (any tap/key cancels); misses stay manual.
+- **NH-7** done — reads counted once per tab session on evidence (last paragraph seen ≥2 s, read-along finished, or leaving via an activity link).
+- **NH-8** done — predictions persist in sessionStorage; ☰ settings no longer re-render Lee.
+- **NH-9** done — nowrap title row, segmented 3-column pills, short tap hint hidden after the first glossary tap.
+- **NH-10** done — Ordena uses "número" in feedback, SR text and results.
+- **NH-11** partial — Borrar stays in the footer (owner layout); native confirm() replaced by the in-app dialog (Cancelar default, secondary destructive "Sí, borrar"); shared-station line added to the Informe ℹ️.
+- **NH-12** done — "▶️ Sigue aquí" on the last-played story while its Nivel 1 < 15⭐; "¡Empieza aquí!" only on a fresh device.
+- **NH-13** partial — Pistas sub-label added; a Cuentos docs section remains owner-gated.
+- **NH-14** done — Escucha options bold the differing words (pure `diffWords`, unit-tested).
+- **NH-15** done — Palabras panel closed by default; miss gives «word» = meaning + 🔊.
+- **NH-16–NH-20** done — Verdad 🤔 lead without «»; bubble shows surface text; prediction echo; flat voiceless chips; footer targets ≥44px (shared css/styles.css).

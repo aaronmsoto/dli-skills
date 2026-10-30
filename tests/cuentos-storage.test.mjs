@@ -85,3 +85,22 @@ test("corrupted storage → fresh state, no throw", () => {
   store.recordRead("x", 1);
   assert.equal(store.getReads("x", 1), 1);
 });
+
+test("lastPlayed: max `at` across best + reads; null when empty (NH-12)", async () => {
+  store.resetProgress();
+  assert.equal(store.lastPlayed(), null);
+  const realNow = Date.now;
+  try {
+    Date.now = () => 1000;
+    store.recordResult("leon-raton", 1, "preguntas", 5, 5);
+    Date.now = () => 3000;
+    store.recordRead("liebre-tortuga", 2);
+    assert.deepEqual(store.lastPlayed(), { id: "liebre-tortuga", at: 3000 });
+    Date.now = () => 5000;
+    store.recordResult("leon-raton", 2, "mapa", 1, 4);
+    assert.deepEqual(store.lastPlayed(), { id: "leon-raton", at: 5000 });
+  } finally {
+    Date.now = realNow;
+    store.resetProgress();
+  }
+});

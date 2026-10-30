@@ -98,6 +98,21 @@ export function getReads(id, nivel) {
 }
 
 /**
+ * The story played most recently (max `at` across best + reads), or null
+ * when nothing has been played on this device. Drives "▶️ Sigue aquí".
+ */
+export function lastPlayed() {
+  let best = null;
+  const consider = (key, entry) => {
+    const at = Number(entry?.at) || 0;
+    if (at && (!best || at > best.at)) best = { id: key.split(".")[0], at };
+  };
+  for (const [k, e] of Object.entries(state.best)) consider(k, e);
+  for (const [k, e] of Object.entries(state.reads)) consider(k, e);
+  return best;
+}
+
+/**
  * Activities due for review (shared isDue/reviewIntervalMs), most overdue
  * first. Each: { id, nivel, act, stars, overdueMs }.
  */

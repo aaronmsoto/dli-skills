@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { STORIES } from "../cuentos/js/stories.js";
 import {
   ACTIVITIES, STAR_ACTS, LISTEN_ACT, MAP_SLOTS, shuffle, shuffleOptions, seededRng, refText,
-  buildPreguntas, buildVerdad, buildPalabras, buildMapa, buildOrdena, buildEscucha, scoreOrdena, buildRound,
+  buildPreguntas, buildVerdad, buildPalabras, buildMapa, buildOrdena, buildEscucha, scoreOrdena, buildRound, diffWords,
 } from "../cuentos/js/activities.js";
 import { glossSegments } from "../cuentos/js/reader.js";
 
@@ -173,6 +173,29 @@ test("glossSegments: every glossary key is found in its level's passage", () => 
     for (const k of Object.keys(lvl.glossary)) {
       // a short key may be shadowed by a longer overlapping one; it must then be part of a found key
       assert.ok(found.has(k) || [...found].some((f) => f.includes(k)), `${s.id} N${lvl.nivel}: "${k}" never rendered as a gloss button`);
+    }
+  }
+});
+
+test("diffWords: lossless, marks only words missing from another option (NH-14)", () => {
+  const opts = ["El león duerme en la selva.", "El ratón duerme en la selva.", "El león ruge muy fuerte."];
+  const segs = diffWords(opts);
+  segs.forEach((s, i) => assert.equal(s.map((x) => x.text).join(""), opts[i]));
+  const bold = segs.map((s) => s.filter((x) => x.diff).map((x) => x.text));
+  assert.deepEqual(bold[0], ["león duerme en la selva"]);
+  assert.deepEqual(bold[1], ["ratón duerme en la selva"]);
+  assert.deepEqual(bold[2], ["león ruge muy fuerte"]);
+  // case-insensitive; shared words never bold
+  const [a] = diffWords(["Hola amigo.", "hola perro.", "HOLA gato."]);
+  assert.deepEqual(a.filter((x) => x.diff).map((x) => x.text), ["amigo"]);
+  // every real Escucha round produces at least one bold run per option
+  for (const [name, level] of levels) {
+    for (const item of buildEscucha(level, seededRng(7))) {
+      const d = diffWords(item.options);
+      d.forEach((s, i) => {
+        assert.equal(s.map((x) => x.text).join(""), item.options[i], name);
+        assert.ok(s.some((x) => x.diff), `${name}: option without a differing word: ${item.options[i]}`);
+      });
     }
   }
 });

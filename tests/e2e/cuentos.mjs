@@ -53,10 +53,11 @@ const browser = await chromium.launch(
   process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
 );
 const errors = [];
+const nativeDialogs = [];
 const trackErrors = (p) => {
   p.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   p.on("pageerror", (e) => errors.push(String(e)));
-  p.on("dialog", (d) => d.accept());
+  p.on("dialog", (d) => { nativeDialogs.push(d.message()); d.accept(); });
 };
 async function newVoiceless(viewport = { width: 900, height: 900 }) {
   const p = await browser.newPage({ viewport });
@@ -137,9 +138,19 @@ await page.waitForSelector(".cu-level-card");
   if (await page.locator('[data-act="escucha"]').count()) fail("story: 🎧 Escucha must be ABSENT voiceless");
   if (await page.locator(".cu-lee-card .star").count()) fail("story: Lee is unscored — no stars");
   await page.screenshot({ path: `${SHOTS}/cuentos-story.png`, fullPage: true });
-  // level picker switches + remembers
+  // CW-2: 📖 Lee is primary + "Empieza aquí" while unread
+  if (!(await page.locator(".cu-lee-card .cu-lee-start").innerText()).includes("Empieza aquí")) fail("story: Lee card lacks the 'Empieza aquí: lee el cuento' line");
+  if (!(await page.locator(".cu-print-link").count())) fail("story: 🖨️ Imprimir este nivel link missing (CW-11)");
+  // level picker switches IN PLACE (NH-4): no re-render, scroll kept, focus on the card
+  await page.evaluate(() => { document.querySelector("h1").dataset.mark = "same"; window.scrollTo(0, 300); });
   await page.click('.cu-level-card[data-level="2"]');
   await page.waitForSelector('.cu-level-card[data-level="2"][aria-checked="true"]');
+  if ((await page.locator('h1[data-mark="same"]').count()) !== 1) fail("story: level pick must not re-render the screen");
+  if ((await page.evaluate(() => scrollY)) === 0) fail("story: level pick reset scroll to the top");
+  if ((await page.evaluate(() => document.activeElement?.dataset.level)) !== "2") fail("story: focus must stay on the chosen level card");
+  if ((await page.locator('.cu-level-card.selected').count()) !== 1 || (await page.locator('.cu-level-card[aria-checked="true"]').count()) !== 1) fail("story: exactly one selected level card");
+  if (!(await page.locator(".cu-acts-heading").innerText()).includes("Nivel 2")) fail("story: activities heading not swapped to Nivel 2");
+  await page.waitForFunction(() => document.getElementById("live").textContent.includes("Nivel 2 elegido"));
   if (!(await page.locator('.cu-lee-card').getAttribute("href")).endsWith("/2")) fail("story: Lee card not switched to level 2");
   if ((await page.evaluate(() => sessionStorage.getItem("cuentos.nivel.leon-raton"))) !== "2") fail("story: level not remembered in sessionStorage");
   await page.reload();
@@ -163,11 +174,17 @@ await page.waitForSelector(".cu-para");
   if (await page.locator(".lola-wrap").count()) fail("reader: no Lola on the reader (scarcity of stimulation)");
   const pills = await page.locator(".cu-pill").count();
   if (pills !== 3) fail("reader: 3 level pills expected");
-  if ((await page.locator('.cu-pill[aria-current="page"]').innerText()).trim() !== "🌱 Nivel 1") fail("reader: current pill wrong");
+  if ((await page.locator('.cu-pill[aria-current="page"]').getAttribute("aria-label")) !== "Nivel 1") fail("reader: current pill wrong");
+  if (!(await page.locator(".cu-lee-bar .print-btn").count())) fail("reader: 🖨️ next to the level pills missing (CW-11)");
+  if (!(await page.locator(".tap-hint").innerText()).includes("Toca las palabras subrayadas")) fail("reader: short tap hint missing");
+  if ((await page.locator(".cu-skip-games").count()) !== 1) fail("reader: Saltar a los juegos link missing (CW-13)");
   const links = await page.locator(".cu-actions .cu-act-link").evaluateAll((as) => as.map((a) => a.dataset.act));
   if (JSON.stringify(links) !== JSON.stringify(["preguntas", "verdad", "ordena", "palabras", "mapa"])) fail(`reader: action row must link every activity, got ${links}`);
   if (!(await page.locator(".cu-actions .print-btn").count())) fail("reader: print button missing");
-  if ((await store()).reads?.[`${story.id}.1`]?.count < 1) fail("reader: read not recorded");
+  // NH-7: counted only on evidence of reading (last paragraph on screen ≥2 s), once per session
+  await page.locator(".cu-para").last().scrollIntoViewIfNeeded();
+  await page.waitForFunction((k) => JSON.parse(localStorage.getItem("cuentos.v1") || "{}").reads?.[k]?.count === 1, `${story.id}.1`, { timeout: 6000 })
+    .catch(() => fail("reader: read not recorded after the last paragraph was seen"));
   // glossary: tap → English gloss; Escape closes; focus returns
   const gloss = page.locator(".cu-gloss", { hasText: "duerme" }).first();
   await gloss.click();
@@ -197,6 +214,29 @@ await page.waitForSelector(".cu-para");
   await page.keyboard.press("Enter");
   if (!(await page.locator(".cu-bubble").count())) fail("reader: Enter on a glossary button must open it");
   await page.keyboard.press("Escape");
+  if (await page.locator(".tap-hint:visible").count()) fail("reader: tap hint must hide after the first glossary tap");
+  // NH-17: the bubble shows the surface text
+  const multi = Object.keys(L1.glossary).find((k) => /[A-ZÁÉÍÓÚÑ]/.test(ref(L1, [0, 0])) && ref(L1, [0, 0]).toLowerCase().startsWith(k) && k.includes(" "));
+  if (multi) {
+    await page.locator(".cu-gloss").first().click();
+    const es = await page.locator(".cu-bubble-es").innerText();
+    if (es !== ref(L1, [0, 0]).slice(0, multi.length)) fail(`reader: bubble shows "${es}", expected the surface text`);
+    await page.keyboard.press("Escape");
+  }
+  // CW-9: glossary hit area ≥44px tall, no line-box shift
+  {
+    const h = await page.locator(".cu-gloss").first().evaluate((b) => b.getBoundingClientRect().height);
+    if (h < 44) fail(`reader: glossary button hit area ${h}px < 44px`);
+  }
+  // pill round trip: read count stays 1
+  await page.click('.cu-pill[aria-label="Nivel 2"]');
+  await page.waitForSelector('.cu-pill.current[aria-label="Nivel 2"]');
+  await page.click('.cu-pill[aria-label="Nivel 1"]');
+  await page.waitForSelector('.cu-pill.current[aria-label="Nivel 1"]');
+  await page.locator(".cu-para").last().scrollIntoViewIfNeeded();
+  await page.waitForTimeout(2400);
+  if ((await store()).reads?.[`${story.id}.1`]?.count !== 1) fail(`reader: read count must stay 1 across a pill round trip, got ${(await store()).reads?.[`${story.id}.1`]?.count}`);
+  if ((await store()).reads?.[`${story.id}.2`]) fail("reader: N2 read must not count without evidence of reading");
   await screenChecks("reader N1");
   ok("reader N1: all paragraphs, glossary bubble (tap/Escape/outside/keyboard), no audio controls voiceless, action row");
 }
@@ -211,6 +251,10 @@ await page.waitForSelector(".cu-predict");
   const hiddenText = ref(L2, [stop.after + 1, 0]);
   if ((await page.locator(".cu-reader").innerText()).includes(hiddenText)) fail("reader N2: later paragraphs must stay hidden");
   if (!(await page.locator(".cu-predict").innerText()).includes(stop.q)) fail("reader N2: prediction question missing");
+  if (!(await page.locator(".cu-predict-continue").innerText()).includes("El cuento sigue después de tu respuesta")) fail("reader N2: continuation line missing (CW-4)");
+  if ((await page.locator('.cu-act-link[aria-disabled="true"]').count()) !== 5) fail("reader N2: activity row must be locked until the prediction is answered");
+  if (!(await page.locator(".cu-locked-note").innerText()).includes("Después de leer")) fail("reader N2: 'Después de leer' label missing");
+  const picked = stop.options[1];
   await page.locator(".cu-predict-opt").nth(1).click();
   await page.waitForSelector(".cu-predict-result:has-text('¡Vamos a ver!')");
   const next = L2.predict.find((p) => p.after > stop.after);
@@ -218,6 +262,27 @@ await page.waitForSelector(".cu-predict");
   if ((await page.locator(".cu-para:visible").count()) !== expectVisible) fail("reader N2: paragraphs not revealed after predicting");
   if (!(await page.locator(".cu-reader").innerText()).includes(hiddenText)) fail("reader N2: revealed text missing");
   if (await page.locator(".cu-predict .correct, .cu-predict .wrong").count()) fail("reader N2: predictions are unscored — no right/wrong");
+  // answer any further stops, then the echo + unlocked row
+  while (await page.locator(".cu-predict:visible .cu-predict-opt:not([disabled])").count()) {
+    await page.locator(".cu-predict:visible .cu-predict-opt:not([disabled])").first().click();
+  }
+  const echo = await page.locator(".cu-predict-echo:visible").first().innerText().catch(() => "");
+  if (!echo.includes(`Tú dijiste: «${picked.replace(/[.…]+$/, "")}»`) || !echo.includes("¿Tenías razón?")) fail(`reader N2: prediction echo wrong: "${echo}"`);
+  if (await page.locator('.cu-act-link[aria-disabled="true"]').count()) fail("reader N2: activity row must unlock after the predictions");
+  // NH-8: predictions survive a pill round trip (sessionStorage)
+  await page.click('.cu-pill[aria-label="Nivel 1"]');
+  await page.waitForSelector('.cu-pill.current[aria-label="Nivel 1"]');
+  await page.click('.cu-pill[aria-label="Nivel 2"]');
+  await page.waitForSelector('.cu-pill.current[aria-label="Nivel 2"]');
+  if ((await page.locator(".cu-para:visible").count()) !== L2.paragraphs.length) fail("reader N2: predictions reset after a pill round trip");
+  if (!(await page.locator(".cu-predict-opt.picked").first().innerText()).includes(picked)) fail("reader N2: picked prediction not restored");
+  // ☰ setting toggle does not re-render the reader
+  await page.click(".menu-btn");
+  await page.click(".settings-toggle");
+  await page.click(".setting-hints");
+  await page.click(".setting-hints");
+  await page.keyboard.press("Escape");
+  if ((await page.locator(".cu-para:visible").count()) !== L2.paragraphs.length) fail("reader N2: ☰ setting toggle re-rendered the reader");
   await screenChecks("reader N2");
   ok("reader N2: prediction stop hides later paragraphs until answered, then ¡Vamos a ver!");
 }
@@ -246,7 +311,10 @@ async function playMC(act, answerFor) {
     await page.waitForSelector(".cu-next");
     if (!(await page.locator(".feedback.good").count())) fail(`${act}: item ${i + 1} not marked correct`);
     if (!(await page.evaluate(() => document.activeElement?.classList.contains("cu-next")))) fail(`${act}: focus must move to Siguiente`);
-    await page.click(".cu-next");
+    // NH-6: a correct answer auto-advances (no Siguiente tap)
+    await page.waitForFunction((n) => document.querySelector(".results")
+      || document.querySelector(".progress-text")?.textContent.startsWith(`${n + 1} /`), i + 1, { timeout: 5000 })
+      .catch(() => fail(`${act}: item ${i + 1} did not auto-advance after a correct answer`));
   }
   await expectResults(act, total, total);
   const best = (await store()).best?.[`${story.id}.1.${act}`];
@@ -272,8 +340,23 @@ await page.screenshot({ path: `${SHOTS}/cuentos-results.png`, fullPage: true });
   const acts = await page.locator(".result-actions").innerText();
   if (!acts.includes("Otra vez") || !acts.includes("¿Verdad o mentira?") || !acts.includes("Cuento")) fail(`results: actions wrong: ${acts}`);
   if ((await page.locator(".results .big-stars .star.on").count()) !== 3) fail("results: 3 stars expected");
+  // NH-5 / CW-6: ≥2★ → primary = next game; 🔁 secondary; no star hint at 3★
+  if (!(await page.locator(".result-actions .btn.primary").innerText()).includes("Siguiente juego: ✅ ¿Verdad o mentira?")) fail("results: ≥2★ primary must be the next game");
+  if (await page.locator(".cu-retry.primary").count()) fail("results: 🔁 Otra vez must be secondary");
+  if (await page.locator(".cu-star-hint").count()) fail("results: no star hint at 3★");
+  if (!(await page.locator('.crumbs a[href$="/1"]', { hasText: "📖 Lee" }).count())) fail("results: 📖 Lee crumb missing");
+  if (!(await page.evaluate(() => document.activeElement?.tagName === "H1"))) fail("results: focus must move to the results h1");
 }
-ok("❓ Preguntas: 5/5 → 3 stars stored; English hint; results actions");
+ok("❓ Preguntas: 5/5 → 3 stars stored; English hint; auto-advance; results actions (next game primary, h1 focus)");
+
+// NH-12: "▶️ Sigue aquí" on the story just played; no "Empieza aquí" once anything is played
+await go("#/");
+{
+  const card = await page.locator(`.cu-book[data-story="${story.id}"]`).innerText();
+  if (!card.includes("Sigue aquí")) fail(`home: last-played story should show ▶️ Sigue aquí, got ${card}`);
+  if ((await page.locator("#app").innerText()).includes("¡Empieza aquí!")) fail("home: ¡Empieza aquí! only on a fresh device");
+}
+ok("home: ▶️ Sigue aquí on the most recently played story");
 
 // ✅ verdad
 await go(juego("verdad"));
@@ -284,7 +367,8 @@ if (!(await page.locator("details.cu-passage[open]").count())) fail("verdad: pas
 }
 await page.screenshot({ path: `${SHOTS}/cuentos-verdad.png`, fullPage: true });
 await playMC("verdad", async () => {
-  const s = (await page.locator(".cu-statement").innerText()).trim().replace(/^«|»$/g, "");
+  const s = (await page.locator(".cu-statement").innerText()).trim().replace(/^🤔\s*/, "");
+  if ((await page.locator(".cu-statement").innerText()).includes("«")) fail("verdad: statements must not use «» (NH-16)");
   const item = L1.tf.find((x) => x.s === s);
   if (!item) return fail(`verdad: unknown statement ${s}`);
   await page.click(item.answer ? ".cu-true" : ".cu-false");
@@ -314,6 +398,44 @@ await playMC("mapa", async () => {
   await clickOption(m.options[m.answer]);
 });
 ok("🗺️ Mapa: 4 labelled slots, 4/4 → 3 stars");
+{
+  await go(juego("mapa"));
+  if (!(await page.locator(".cu-map-intro").innerText()).includes("Completa el mapa del cuento")) fail("mapa: intro line missing");
+  const labels = await page.locator(".cu-map-label").allInnerTexts();
+  for (const w of ["Main characters", "Setting", "Problem", "Solution"]) if (!labels.join(" ").includes(w)) fail(`mapa: bilingual label "${w}" missing`);
+  if (!(await page.locator(".cu-map-slot.current .cu-map-now").count())) fail("mapa: '← ahora' tag missing on the current slot");
+  const style = await page.locator(".cu-map-slot").first().evaluate((n) => getComputedStyle(n).borderTopStyle);
+  if (style !== "solid") fail(`mapa: slots must have solid borders, got ${style}`);
+  if (await page.locator(".cu-map-value:visible").count()) fail("mapa: values hidden until filled");
+  // NH-1: a miss shows no "null", points back to the story, opens the passage
+  const m = L1.map.personajes;
+  await clickOption(m.options.find((_, i) => i !== m.answer));
+  await page.waitForSelector(".feedback.bad");
+  const fb = await page.locator(".feedback.bad").innerText();
+  if (/\bnull\b|\bundefined\b/.test(fb)) fail(`mapa miss: feedback shows null/undefined: ${fb}`);
+  if (!fb.includes("Busca la respuesta en el cuento")) fail("mapa miss: 'Busca la respuesta en el cuento' missing");
+  await screenChecks("mapa miss");
+  await page.click(".cu-look");
+  if (!(await page.locator("details.cu-passage[open]").count())) fail("mapa miss: 📖 button must open the passage panel");
+  // a miss does NOT auto-advance
+  await page.waitForTimeout(1500);
+  if (!(await page.locator(".cu-next").count())) fail("mapa miss: misses keep the manual Siguiente");
+  await page.screenshot({ path: `${SHOTS}/cuentos-mapa-miss.png`, fullPage: true });
+  // finish wrong → 0★ → results primary = 📖 Lee otra vez
+  for (let i = 0; i < 3; i++) {
+    await page.click(".cu-next");
+    const slot = await page.locator(".cu-map-slot.current").getAttribute("data-slot");
+    const mm = L1.map[slot];
+    await clickOption(mm.options.find((_, j) => j !== mm.answer));
+  }
+  await page.click(".cu-next");
+  await expectResults("mapa (all wrong)", 0, 4);
+  if (!(await page.locator(".result-actions .btn.primary.cu-reread").count())) fail("results: ≤1★ primary must be 📖 Lee otra vez");
+  if ((await page.locator(".result-actions .btn.primary").getAttribute("href")) !== `#/lee/${story.id}/1`) fail("results: reread must go to the reader");
+  if (!(await page.locator(".cu-star-hint").innerText()).includes("Para ★★★: ¡todas bien!")) fail("results: star hint missing below 3★");
+  if (await page.locator(".cu-next-level").count()) fail("results: Siguiente nivel only with ≥10⭐ on the level");
+}
+ok("🗺️ Mapa: intro, bilingual solid 2×2 board, '← ahora'; miss → no null + 📖 opens the passage; 0★ → 📖 Lee otra vez primary + star hint");
 
 // 🧩 ordena — all first try
 async function playOrdena({ wrongFirst = false } = {}) {
@@ -326,8 +448,12 @@ async function playOrdena({ wrongFirst = false } = {}) {
       await page.waitForSelector(".feedback.bad");
       if ((await page.locator(".cu-slot.filled").count()) !== 0) fail("ordena: a wrong tile must not fill the slot");
       if (!(await page.locator(".cu-tile", { hasText: L1.order[1] }).count())) fail("ordena: wrong tile must return to the bank");
+      const fb = await page.locator(".feedback.bad").innerText();
+      if (!fb.includes("Ese no va en el número 1") || /lugar/i.test(fb)) fail(`ordena: wrong-tap copy must use "número": ${fb}`);
+      if (!(await page.locator(".cu-tile.cu-wrong", { hasText: L1.order[1] }).count())) fail("ordena: wrong tile must stay marked");
     }
     await page.locator(".cu-tile", { hasText: L1.order[i] }).first().click();
+    if (wrongFirst && i === 0 && (await page.locator(".cu-tile.cu-wrong").count())) fail("ordena: wrong mark must clear on the next correct placement");
   }
   await page.waitForSelector(".cu-next");
   await page.click(".cu-next");
@@ -347,6 +473,7 @@ if ((await store()).best?.[`${story.id}.1.ordena`]?.stars !== 3) fail("ordena: 3
 await playOrdena({ wrongFirst: true });
 await expectResults("ordena", L1.order.length - 1, L1.order.length);
 if (!(await page.locator(".cu-misses").innerText()).includes(L1.order[0])) fail("ordena: miss list must name the event");
+if (!(await page.locator(".cu-misses").innerText()).includes("Número 1")) fail("ordena: results must say 'Número', not 'Lugar'");
 if ((await store()).best?.[`${story.id}.1.ordena`]?.plays !== 2) fail("ordena: plays should count 2");
 // keyboard operable: tiles are buttons
 await go(juego("ordena"));
@@ -424,14 +551,12 @@ await go("#/");
 {
   const card = await page.locator(`.cu-book[data-story="${story.id}"]`).innerText();
   if (!card.includes("⭐ 15/45")) fail(`home: leon-raton card should show ⭐ 15/45, got ${card}`);
-  if (STORIES.length > 1) {
-    const second = await page.locator(".cu-book").nth(1).innerText();
-    if (!second.includes("¡Empieza aquí!")) fail("home: start-here should move to the next fresh story");
-  }
+  if (await page.locator(".start-here").count()) fail("home: N1 complete (15⭐) and something played → no ribbon");
+  if (!(await page.locator(".review-water").count() === 0 || (await page.locator(".review-water").innerText()).includes("Repasa para no olvidar"))) fail("home: review copy (CW-15)");
 }
 await go(`#/cuento/${story.id}`);
 if (!(await page.locator('.cu-level-card[data-level="1"]').innerText()).includes("15/15")) fail("story: level 1 should show 15/15");
-ok("progress reflected on the shelf (⭐ 15/45, start-here moves) and the level picker (15/15)");
+ok("progress reflected on the shelf (⭐ 15/45, ribbon retires at 15⭐) and the level picker (15/15)");
 
 // ---------- informe ----------
 await go("#/informe");
@@ -443,6 +568,8 @@ await go("#/informe");
   if ((row.match(/3\/3/g) || []).length !== 5 || !row.includes("15/15")) fail(`informe: N1 row wrong: ${row}`);
   if ((await page.locator(".cu-report-table tbody tr").count()) !== STORIES.length * 3) fail("informe: one row per story × level");
   if (!(await page.locator(".report button", { hasText: "Imprimir" }).count())) fail("informe: print button");
+  if (!row.includes("🎧 0/3")) fail(`informe: 🎧 cell must read "🎧 0/3": ${row}`);
+  if (!(await page.locator(".cu-report-table thead").innerText()).includes("🎧 Escucha (insignias)")) fail("informe: 🎧 header must say insignias (CW-12)");
   await screenChecks("informe");
   await page.screenshot({ path: `${SHOTS}/cuentos-informe.png`, fullPage: true });
 }
@@ -490,6 +617,7 @@ await page.waitForSelector(".menu-panel:not([hidden])");
   await page.click(".settings-toggle");
   if (await page.locator(".setting-vosotros").count()) fail("menu: no Vosotros switch in Cuentos");
   if (!(await page.locator(".setting-hints").count())) fail("menu: Pistas switch missing");
+  if (!(await page.locator(".setting-hints .switch-note").innerText()).includes("Muestra 📖 Ver el cuento en 🧩 Ordena y 🗺️ Mapa")) fail("menu: Pistas sub-label missing (CW-7)");
   if (await page.locator(".sound-toggle").count()) fail("menu: Sonido hidden voiceless");
   // Borrar clears cuentos.v1 ONLY
   await page.evaluate(() => {
@@ -498,6 +626,10 @@ await page.waitForSelector(".menu-panel:not([hidden])");
     localStorage.setItem("conjuga.v1", JSON.stringify(d));
   });
   await page.click(".borrar-row");
+  await page.waitForSelector('.info-panel[role="dialog"] .cu-erase-confirm');
+  if (await page.locator(".menu-panel:not([hidden])").count()) fail("menu: drawer must close before the erase dialog opens");
+  if (!(await page.evaluate(() => document.activeElement?.classList.contains("cu-erase-cancel")))) fail("menu: Cancelar must be the focused default");
+  await page.click(".cu-erase-confirm");
   await page.waitForSelector(".cu-book");
   const after = await page.evaluate(() => [localStorage.getItem("cuentos.v1"), JSON.parse(localStorage.getItem("conjuga.v1") || "{}")]);
   if (after[0] && Object.keys(JSON.parse(after[0]).best || {}).length) fail("menu: Borrar must clear cuentos.v1");
@@ -509,7 +641,13 @@ ok("☰ menu: Inicio · Informe · Créditos · Conjuga · Acerca de · Document
 // footer Borrar also scoped
 await go(`#/lee/${story.id}/1`);
 await page.click(".cu-borrar");
+await page.waitForSelector(".cu-erase-cancel");
+await page.click(".cu-erase-cancel");
+if (await page.locator(".info-overlay").count()) fail("footer Borrar: Cancelar must close the dialog");
+await page.click(".cu-borrar");
+await page.click(".cu-erase-confirm");
 await page.waitForSelector(".cu-reader");
+if (nativeDialogs.length) fail(`Borrar must not use native confirm(): ${nativeDialogs}`);
 if (!(await page.evaluate(() => !!JSON.parse(localStorage.getItem("conjuga.v1")).best["1.present.choice"]))) fail("footer Borrar touched conjuga.v1");
 ok("footer Borrar is scoped to cuentos.v1");
 
@@ -534,8 +672,43 @@ ok("unknown routes fall back to the Biblioteca");
     if (overflow > 0) fail(`360px ${name}: horizontal overflow ${overflow}px`);
     await phone.screenshot({ path: `${SHOTS}/cuentos-360-${name}.png`, fullPage: true });
   }
+  // CW-1: Ordena wrong-tap feedback visible inside the 360×740 viewport
+  await phone.setViewportSize({ width: 360, height: 740 });
+  await phone.goto(`${BASE}${juego("ordena")}`);
+  await phone.reload();
+  await phone.waitForSelector(".cu-tile");
+  await phone.locator(".cu-tile", { hasText: L1.order[2] }).click();
+  await phone.waitForSelector(".feedback.bad");
+  {
+    const fb = await phone.locator(".feedback.bad").boundingBox();
+    if (!fb || fb.y < 0 || fb.y + fb.height > 740) fail(`360 ordena: wrong-tap feedback outside the viewport (${JSON.stringify(fb)})`);
+    const text = await phone.locator(".feedback.bad").innerText();
+    if (!text.includes("❌ Ese no va en el número 1. ¡Prueba otro!")) fail(`360 ordena: copy wrong: ${text}`);
+    await phone.screenshot({ path: `${SHOTS}/cuentos-360-ordena-wrong.png` });
+  }
+  // NH-3: Mapa choices inside the first 740px
+  await phone.goto(`${BASE}${juego("mapa")}`);
+  await phone.reload();
+  await phone.waitForSelector(".cu-choice");
+  {
+    const bottom = await phone.locator(".cu-choice").last().evaluate((b) => b.getBoundingClientRect().bottom);
+    if (bottom > 740) fail(`360 mapa: last choice ends at ${bottom}px (> 740)`);
+    await phone.screenshot({ path: `${SHOTS}/cuentos-360-mapa.png` });
+  }
+  // NH-20: footer targets ≥44px
+  {
+    const hs = await phone.locator(".site-footer a, .site-footer button").evaluateAll((ns) => ns.map((n) => n.getBoundingClientRect().height));
+    if (hs.some((h) => h < 44)) fail(`360 footer: targets under 44px: ${hs}`);
+  }
+  // CW-14: level cards one row of 3
+  await phone.goto(`${BASE}#/cuento/${story.id}`);
+  await phone.waitForSelector(".cu-level-card");
+  {
+    const ys = await phone.locator(".cu-level-card").evaluateAll((ns) => ns.map((n) => Math.round(n.getBoundingClientRect().top)));
+    if (new Set(ys).size !== 1) fail(`360 story: level cards must share one row, tops ${ys}`);
+  }
   await phone.close();
-  ok("360px: reader, rounds, home — no horizontal scroll; bubble stays on screen");
+  ok("360px: no horizontal scroll; bubble on screen; Ordena wrong-tap visible ('número'); Mapa choices ≤740; footer ≥44px; level cards in one row");
 }
 
 // ---------- dark theme parity (screenshot) ----------
@@ -596,6 +769,31 @@ ok("unknown routes fall back to the Biblioteca");
   said = await spoken();
   if (JSON.stringify(said.map((x) => x.text)) !== JSON.stringify(L1.paragraphs.flat())) fail(`voiced: read-along order wrong: ${JSON.stringify(said.map((x) => x.text))}`);
   await voiced.screenshot({ path: `${SHOTS}/cuentos-voiced-reader.png`, fullPage: true });
+  if (!(await voiced.evaluate(() => sessionStorage.getItem("cuentos.read.leon-raton.1")))) fail("voiced: finishing the read-along counts as a read");
+  // CW-10: the paragraph is highlighted while its 🔊 plays
+  await voiced.evaluate(() => {
+    const orig = window.speechSynthesis.speak;
+    window.speechSynthesis.speak = (u) => { window.__held = u; window.__spoken.push({ text: u.text, rate: u.rate }); };
+    window.__restore = () => { window.speechSynthesis.speak = orig; window.__held?._cbs?.end?.(); };
+  });
+  await voiced.locator(".cu-para-audio .cu-say").first().click();
+  if (!(await voiced.locator(".cu-para.cu-current").count())) fail("voiced: paragraph must be highlighted while it plays");
+  await voiced.evaluate(() => window.__restore());
+  await voiced.waitForFunction(() => !document.querySelector(".cu-para.cu-current"));
+  await spoken();
+  // NH-9: at 360 with a voice, N2 text starts above y=380
+  await voiced.setViewportSize({ width: 360, height: 740 });
+  await voiced.goto(`${BASE}#/lee/${story.id}/2`);
+  await voiced.waitForSelector(".cu-readalong");
+  {
+    const y = (await voiced.locator(".cu-para-text").first().boundingBox()).y;
+    if (y >= 380) fail(`360 reader N2: text starts at y=${y} (≥ 380)`);
+    const t = await voiced.locator("h1 .info-btn").boundingBox();
+    const h = await voiced.locator("h1 .cu-title-text").boundingBox();
+    if (t.y > h.y + h.height) fail("360 reader: ℹ️ wrapped under the title");
+    await voiced.screenshot({ path: `${SHOTS}/cuentos-360-reader-n2.png` });
+  }
+  await voiced.setViewportSize({ width: 900, height: 900 });
   // story screen: key words tap-to-hear + 🎧 card
   await voiced.goto(`${BASE}#/cuento/${story.id}`);
   await voiced.waitForSelector(".cu-key-say");
@@ -619,17 +817,23 @@ ok("unknown routes fall back to the Biblioteca");
     if (!targets.includes(heard)) fail(`escucha: auto-play said ${heard}`);
     const prompt = await voiced.locator(".cu-prompt").innerText();
     if (prompt.includes(heard)) fail("escucha: the prompt must never show the target text");
+    if (i === 0 && (await voiced.locator(".cu-choices .choice").evaluateAll((bs) => bs.filter((b) => b.querySelector(".cu-diff")).length)) !== 3) fail("escucha: every option must bold its differing words (NH-14)");
     await clickOption(heard, voiced);
     await voiced.click(".cu-next");
   }
   await voiced.waitForSelector(".results");
   if ((await voiced.locator(".results .badge.on").count()) !== 3) fail("escucha: 3 🎧 badges expected");
+  if (!(await voiced.locator(".cu-badge-note").innerText()).includes("¡Ganaste insignias de escucha! Son aparte de las estrellas")) fail("escucha: badge track not named on results (CW-3)");
   const st = await voiced.evaluate(() => JSON.parse(localStorage.getItem("cuentos.v1")));
   if (st.best[`${story.id}.1.escucha`]?.stars !== 3) fail("escucha: badges not stored under act escucha");
   await voiced.goto(`${BASE}#/`);
   await voiced.waitForSelector(".cu-book");
   const card = await voiced.locator(`.cu-book[data-story="${story.id}"]`).innerText();
   if (!card.includes("🎧 3/9") || !card.includes("⭐ 0/45")) fail(`escucha: badges must never count as stars: ${card}`);
+  if (!(await voiced.locator(".total-stars").innerText()).includes(`🎧 3/${STORIES.length * 9} insignias`)) fail("home: 🎧 total must say insignias (CW-3)");
+  await voiced.goto(`${BASE}#/cuento/${story.id}`);
+  await voiced.waitForSelector(".cu-level-badges");
+  if (!(await voiced.locator('.cu-level-card[data-level="1"] .cu-level-badges').innerText()).includes("🎧 3/3")) fail("story: level card must show 🎧 x/3 when speakable");
   // muted: say() is silent, Escucha still speaks (the one exemption)
   await voiced.evaluate(() => {
     const d = JSON.parse(localStorage.getItem("conjuga.v1") || "{}");
@@ -644,6 +848,32 @@ ok("unknown routes fall back to the Biblioteca");
   await voiced.locator(".cu-para-audio .cu-say").first().click();
   await voiced.waitForTimeout(100);
   if ((await spoken()).length) fail("muted: reader audio must respect the sound setting");
+  // NH-2: the muted tap is VISIBLE — toast + "Encender" turns sound on and replays
+  {
+    const toast = voiced.locator('.cu-toast[role="status"]');
+    if (!(await toast.isVisible())) fail("muted: toast must appear on a muted 🔊 tap");
+    if (!(await toast.innerText()).includes("El sonido está apagado")) fail("muted: toast copy wrong");
+    await voiced.screenshot({ path: `${SHOTS}/cuentos-muted-toast.png` });
+    await voiced.click(".cu-unmute");
+    await voiced.waitForTimeout(50);
+    const replay = await spoken();
+    if (replay[0]?.text !== L1.paragraphs[0].join(" ")) fail(`muted: Encender must replay the paragraph, said ${JSON.stringify(replay)}`);
+    if (!(await voiced.evaluate(() => JSON.parse(localStorage.getItem("conjuga.v1")).settings.sound))) fail("muted: Encender must set sound=true");
+    // key-word chips go through the same gate
+    await voiced.evaluate(() => {
+      const d = JSON.parse(localStorage.getItem("conjuga.v1"));
+      d.settings.sound = false;
+      localStorage.setItem("conjuga.v1", JSON.stringify(d));
+    });
+    await voiced.goto(`${BASE}#/cuento/${story.id}`);
+    await voiced.reload();
+    await voiced.waitForSelector(".cu-key-say");
+    await voiced.locator(".cu-key-say").first().click();
+    if (!(await voiced.locator(".cu-toast").isVisible())) fail("muted: key-word chip must show the muted toast");
+    if ((await spoken()).length) fail("muted: key-word chip must stay silent while muted");
+    await voiced.waitForTimeout(3300);
+    if (await voiced.locator(".cu-toast").count()) fail("muted: toast must dismiss after ~3 s");
+  }
   await voiced.goto(`${BASE}#/juego/${story.id}/1/escucha`);
   await voiced.waitForSelector(".cu-listen");
   await voiced.waitForTimeout(30);
@@ -666,7 +896,7 @@ ok("unknown routes fall back to the Biblioteca");
     });
     if (bad.length) fail(`axe ${label}: ${bad.join(" | ")}`);
   };
-  const routes = ["#/", `#/cuento/${story.id}`, `#/lee/${story.id}/1`, `#/lee/${story.id}/3`,
+  const routes = ["#/", `#/cuento/${story.id}`, `#/lee/${story.id}/1`, `#/lee/${story.id}/2`, `#/lee/${story.id}/3`,
     ...["preguntas", "verdad", "ordena", "palabras", "mapa"].map((a) => juego(a)), "#/informe", "#/creditos"];
   for (const r of routes) {
     await axePage.goto(`${BASE}${r}`);
@@ -683,7 +913,7 @@ ok("unknown routes fall back to the Biblioteca");
   await axePage.reload();
   await axePage.waitForSelector(".cu-statement");
   {
-    const s = (await axePage.locator(".cu-statement").innerText()).trim().replace(/^«|»$/g, "");
+    const s = (await axePage.locator(".cu-statement").innerText()).trim().replace(/^🤔\s*/, "");
     const item = L1.tf.find((x) => x.s === s);
     await axePage.click(item.answer ? ".cu-false" : ".cu-true");
     await axePage.waitForSelector(".cu-evidence");
@@ -700,13 +930,33 @@ ok("unknown routes fall back to the Biblioteca");
   await axePage.click(".settings-toggle");
   await runAxe("menu open");
   await axePage.keyboard.press("Escape");
+  await axePage.click(".cu-borrar");
+  await axePage.waitForSelector(".cu-erase-confirm");
+  await runAxe("erase dialog");
+  await axePage.click(".cu-erase-cancel");
+  await axePage.goto(`${BASE}${juego("mapa")}`);
+  await axePage.reload();
+  await axePage.waitForSelector(".cu-choice");
+  {
+    const m = L1.map.personajes;
+    const texts = await optionTexts(axePage);
+    await axePage.locator(".cu-choices .choice").nth(texts.indexOf(m.options.find((_, i) => i !== m.answer))).click();
+    await axePage.waitForSelector(".cu-look");
+    await runAxe("mapa miss");
+  }
+  await axePage.goto(`${BASE}${juego("ordena")}`);
+  await axePage.reload();
+  await axePage.locator(".cu-tile", { hasText: L1.order[1] }).click();
+  await axePage.waitForSelector(".cu-tile.cu-wrong");
+  await runAxe("ordena wrong tile");
+  await axePage.keyboard.press("Escape");
   await axePage.goto(`${BASE}#/informe`);
   await axePage.reload();
   await axePage.click("h1 .info-btn");
   await axePage.waitForSelector(".info-panel");
   await runAxe("info dialog");
   await axePage.close();
-  ok(`axe-core: zero critical/serious across ${routes.length} routes + bubble/miss/results/menu/dialog states`);
+  ok(`axe-core: zero critical/serious across ${routes.length} routes + bubble/miss/results/menu/erase dialog/mapa miss/ordena wrong/info dialog states`);
 }
 
 // ---------- wrap up ----------

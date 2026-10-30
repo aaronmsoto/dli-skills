@@ -100,3 +100,22 @@ screen's level jump, Nivel 2 prediction stops, and unexplained 🎧
 badges. CW-1..CW-5 are small local copy/layout changes; with them, "no
 adult needed" is realistic on phones and small tablets (the 900px layout
 already avoids most scroll problems).
+
+## Fixes applied (2026-10-30, uncommitted pass)
+
+- **CW-1** done — Ordena feedback sits sticky directly above the tiles; wrong tile stays marked (dashed red + ✗ + SR text) until the next correct placement; "❌ Ese no va en el número N. ¡Prueba otro!".
+- **CW-2** done — in-place level swap (scroll kept, focus on the card, announced); 📖 Lee card primary with "👉 Empieza aquí: lee el cuento" until read.
+- **CW-3** done — Escucha results name the badge track; home "🎧 x/45 insignias"; level cards "🎧 x/3" when speakable.
+- **CW-4** done — "👇 El cuento sigue…" under the options; action row locked "🔒 Después de leer" until all stops are answered; "🔮 Tú dijiste: «…». ¿Tenías razón?" echo.
+- **CW-5** done — see NH-3; the filled slot scrolls into view before Siguiente.
+- **CW-6** done — see NH-5.
+- **CW-7** done — Pistas sub-label via the new defaulted `switchNotes` option in js/menu.js (Conjuga DOM unchanged).
+- **CW-8** done — see NH-12.
+- **CW-9** done — glossary hit area ≥44px (padding + negative margin); bubble above the word when there is room; arrow recomputed after clamping.
+- **CW-10** done — paragraph highlighted while its 🔊/🐢 plays.
+- **CW-11** done — 🖨️ beside the level pills; "🖨️ Imprimir este nivel" on the story screen; print glossary alphabetical.
+- **CW-12** done — Informe "🎧 0/3" cells under "🎧 Escucha (insignias)".
+- **CW-13** done — results h1 focused; "Saltar a los juegos" skip button; 3px brand focus ring on choices/tiles/crumbs/result buttons.
+- **CW-14** done — compact 3-across level cards at ≤480px.
+- **CW-15** done — "¡Repasa para no olvidar! / Review so you don't forget!".
+- **Flag (N1 Ordena one miss = 1★)** left for the owner.

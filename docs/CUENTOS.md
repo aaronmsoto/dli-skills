@@ -139,7 +139,7 @@ meanings (the class reads English well — this is RL.3.4 in L2).
 | `preguntas` | ❓ Preguntas | ⭐ | 5 MC questions; passage panel OPEN; miss → answer + evidence highlight |
 | `verdad` | ✅ ¿Verdad o mentira? | ⭐ | 5 statements, two big buttons; passage OPEN; evidence on miss |
 | `ordena` | 🧩 Ordena el cuento | ⭐ | shuffled event tiles; tap tiles in order (or keyboard); score = events placed right on first tap of that slot; passage COLLAPSED (available as hint) |
-| `palabras` | 🔤 Palabras | ⭐ | word shown highlighted inside its sentence; pick the English meaning (3) |
+| `palabras` | 🔤 Palabras | ⭐ | word shown highlighted inside its sentence; pick the English meaning (3); passage panel CLOSED by default; a miss shows the meaning («duerme» = sleeps + 🔊), not the sentence again |
 | `mapa` | 🗺️ Mapa del cuento | ⭐ | 4 slots (Personajes · Lugar · Problema · Solución), each MC (3); total 4 |
 | `escucha` | 🎧 Escucha | 🎧 badges | hear a sentence (never shown), pick it among 3 written sentences; renders only when `speakable()`; NEVER in star totals |
 | `lee` | 📖 Lee | unscored | reader; records `reads` count only (no stars/badges) |
@@ -188,9 +188,14 @@ helpers (`isDue`, `reviewIntervalMs`) drive 🔁 Repasa hoy.
   the route table above predates that decision.
 - The aggregate beacon is not wired into Cuentos: `server/worker.js`
   allowlists Conjuga's page names; extending it is an owner decision.
-- Correct answers also wait for "Siguiente ▶" (deliberate for beginning
-  readers — they may re-read the sentence); the English hint toggle is
-  always offered, independent of the Pistas setting.
+- Correct answers auto-advance after ~1.2 s (any tap/key cancels; a
+  "Siguiente ▶" button is still rendered); misses wait for a manual
+  Siguiente so the evidence can be read (UX fix NH-6, 2026-10-30). The
+  English hint toggle is always offered, independent of the Pistas setting.
+- UX evaluation round (docs/audits/2026-10-30-cuentos-nielsen.md and
+  -walkthrough.md): all HIGH/MEDIUM findings applied the same day. Open
+  owner items: N1 Ordena has 4 events so one miss caps at 1★ (denominator
+  rule); a Cuentos section in /docs (rule 5 — unlinked until owner links).
 - The round's passage panel renders WITHOUT glossary buttons so 🔤
   Palabras cannot be answered by tapping the word.
 - Map slot copy: "Personajes principales" (distractors never name

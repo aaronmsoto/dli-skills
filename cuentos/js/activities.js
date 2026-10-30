@@ -166,6 +166,39 @@ export function buildEscucha(level, rng = Math.random) {
   });
 }
 
+/**
+ * 🎧 NH-14: mark the words that differ between the option sentences so
+ * learners can scan them. Returns, per option, segments [{ text, diff }]
+ * whose concatenation reproduces the sentence exactly; `diff` is true for
+ * a word (case-insensitive) that is missing from at least one OTHER
+ * option. Display only — scoring is unchanged.
+ */
+export function diffWords(options) {
+  const WORD = /[\p{L}\p{M}\p{N}]+/gu;
+  const sets = options.map((o) => new Set([...o.matchAll(WORD)].map((m) => m[0].toLowerCase())));
+  return options.map((o, i) => {
+    const raw = [];
+    let pos = 0;
+    for (const m of o.matchAll(WORD)) {
+      if (m.index > pos) raw.push({ text: o.slice(pos, m.index), diff: false });
+      const w = m[0].toLowerCase();
+      raw.push({ text: m[0], diff: sets.some((set, j) => j !== i && !set.has(w)) });
+      pos = m.index + m[0].length;
+    }
+    if (pos < o.length) raw.push({ text: o.slice(pos), diff: false });
+    // merge "diff, spaces, diff" into one bold run
+    const segs = [];
+    for (let k = 0; k < raw.length; k++) {
+      const seg = raw[k];
+      const prev = segs.at(-1);
+      if (seg.diff && prev?.diff) prev.text += seg.text;
+      else if (!seg.diff && /^\s+$/.test(seg.text) && prev?.diff && raw[k + 1]?.diff) prev.text += seg.text;
+      else segs.push({ ...seg });
+    }
+    return segs;
+  });
+}
+
 /** Dispatch by activity key (ordena returns its own shape). */
 export function buildRound(act, level, rng = Math.random) {
   switch (act) {

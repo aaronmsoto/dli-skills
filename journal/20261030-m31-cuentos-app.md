@@ -30,9 +30,27 @@
     mapping, research-backed practices), SPEC §4.6, GOAL M31 (phases A–E;
     B/C/D owner-gated), about.html Cuentos section + story credits, README,
     CLAUDE.md.
-- Validation: `npm test` 329/329 · `npm run e2e` Conjuga PASSED + Cuentos
-  PASSED (2m13s locally) · `cuentos/` 55,993 B gzip (budget 150,000) ·
-  attribution URLs curl-verified 200.
+  - UX evaluation (two independent Opus agents, read-only): Nielsen
+    heuristics audit (0 catastrophic · 5 major · 10 minor · 5 cosmetic) and
+    a cognitive walkthrough (9 tasks, 360px-first, personas Mateo/Ms. R;
+    ~80% solo-success estimate before fixes). Reports in docs/audits/.
+    Fix round (Opus): all 8 blockers + 11 should-land items applied —
+    literal "null" in Mapa misses, visible muted-state toast with Encender,
+    compact bilingual 2×2 Mapa board, in-place level switch (no scroll
+    jump), results actions by stars ("📖 Lee otra vez" ≤1★, "Siguiente
+    juego" ≥2★), Ordena wrong-tap feedback above the tiles + marked tile
+    + "número" wording, badge track named ("insignias"), prediction stops
+    say the story continues + lock the games + echo the prediction,
+    auto-advance on correct answers, honest read counting, persisted
+    predictions, 360px layout (segmented pills, nowrap title, ≥44px
+    glossary hit areas, bubble above the word), "Sigue aquí" ribbon,
+    Palabras meaning-on-miss, bold differing words in Escucha, Pistas
+    sub-label (menu.js `switchNotes`), in-app erase dialog, print/skip/
+    focus-ring polish, ≥44px footer links sitewide.
+- Validation: `npm test` 331/331 · `npm run e2e` Conjuga PASSED + Cuentos
+  PASSED · `cuentos/` 64,523 B gzip (budget 150,000) · attribution URLs
+  curl-verified 200 · axe zero critical/serious on every Cuentos route and
+  dialog state.
 - Decisions & rationale:
   - Cuentos lives in its own folder so Conjuga's 100 KB budget test (js/ +
     css/) is untouched; settings stay in `conjuga.v1` so theme/sound are

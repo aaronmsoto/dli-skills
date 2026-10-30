@@ -155,11 +155,13 @@ export function createMenuButton({
   // install:false hides the install row, extraLinks [{href,label}] render
   // after Informe, switches picks the setting rows (owner order kept), and
   // onBorrar (returns true when it erased) replaces the default
-  // confirm + store.resetProgress().
+  // confirm + store.resetProgress(). switchNotes { name: text } adds an
+  // optional sub-label under a switch's label (absent → DOM unchanged).
   install = true,
   extraLinks = [],
   switches = ["vosotros", "hints", "sound"],
   onBorrar = null,
+  switchNotes = {},
 } = {}) {
   let open = false;
   const scrim = el("div", { class: "menu-scrim no-print", hidden: true, "aria-hidden": "true" });
@@ -180,7 +182,8 @@ export function createMenuButton({
         afterSetting(name, next);
       },
     },
-      el("span", { class: "switch-label" }, label),
+      el("span", { class: "switch-label" }, label,
+        switchNotes[name] ? el("span", { class: "switch-note" }, switchNotes[name]) : null),
       el("span", { class: "switch-track", "aria-hidden": "true" }, el("span", { class: "switch-thumb" })));
     return sw;
   };

@@ -47,7 +47,7 @@ export const STANDARDS_INFO = {
   },
   report: {
     kid: "Tu progreso de lectura, listo para compartir.",
-    en: "A printable snapshot of stars, 🎧 badges, and reads per story and level. No accounts, no personal data; progress lives only on this device.",
+    en: "A printable snapshot of stars, 🎧 badges, and reads per story and level. No accounts, no personal data; progress lives only on this device. Shared station: print the report, then erase progress for the next reader.",
     cites: ["NBPTS Std VII (progress over time)", "COPPA/FERPA-friendly by design"],
   },
   creditos: {

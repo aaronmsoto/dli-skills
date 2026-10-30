@@ -61,26 +61,24 @@ export function closeBubble({ focus = false } = {}) {
   if (focus) btn.focus();
 }
 
-function openBubble(btn, wrap, key, gloss, { speakable, say }) {
+function openBubble(btn, wrap, label, gloss, { speakable, say, onGloss }) {
   const id = `cu-bubble-${++bubbleSeq}`;
-  const bubble = el("span", { class: "cu-bubble", id, role: "group", "aria-label": `${key}: ${gloss}` },
-    el("span", { class: "cu-bubble-es", lang: "es" }, key),
+  // NH-17: the bubble shows the SURFACE text ("Había una vez"), not the key
+  const bubble = el("span", { class: "cu-bubble", id, role: "group", "aria-label": `${label}: ${gloss}` },
+    el("span", { class: "cu-bubble-es", lang: "es" }, label),
     el("span", { class: "cu-bubble-en", lang: "en" }, gloss),
-    speakable(key)
+    speakable(label)
       ? el("button", {
-        class: "cu-bubble-say", type: "button", "aria-label": `Escuchar «${key}» / Listen`,
-        onclick: (e) => { e.stopPropagation(); say(key); },
+        class: "cu-bubble-say", type: "button", "aria-label": `Escuchar «${label}» / Listen`,
+        onclick: (e) => { e.stopPropagation(); say(label); },
       }, "🔊")
       : null);
   wrap.append(bubble);
   btn.setAttribute("aria-expanded", "true");
   btn.setAttribute("aria-controls", id);
   btn.classList.add("open");
-  // keep the bubble on screen (narrow phones)
-  const r = bubble.getBoundingClientRect();
-  const vw = document.documentElement.clientWidth;
-  if (r.right > vw - 8) bubble.style.left = `${Math.round(-(r.right - vw + 8))}px`;
-  else if (r.left < 8) bubble.style.left = `${Math.round(8 - r.left)}px`;
+  placeBubble(btn, bubble);
+  onGloss?.();
   const onDoc = (e) => { if (!wrap.contains(e.target)) closeBubble(); };
   const onKey = (e) => { if (e.key === "Escape") closeBubble({ focus: true }); };
   const t = setTimeout(() => document.addEventListener("click", onDoc), 0);
@@ -95,6 +93,28 @@ function openBubble(btn, wrap, key, gloss, { speakable, say }) {
   };
 }
 
+/**
+ * CW-9: above the word when there is room (so it never covers the next
+ * line being read), below otherwise; clamped to the viewport, with the
+ * arrow recomputed AFTER the clamp so it still points at the word.
+ */
+function placeBubble(btn, bubble) {
+  const word = btn.getBoundingClientRect();
+  const h = bubble.getBoundingClientRect().height;
+  const above = word.top - h - 14 > 8;
+  bubble.classList.toggle("above", above);
+  const r = bubble.getBoundingClientRect();
+  const vw = document.documentElement.clientWidth;
+  let shift = 0;
+  if (r.right > vw - 8) shift = -(r.right - vw + 8);
+  else if (r.left < 8) shift = 8 - r.left;
+  if (shift) bubble.style.left = `${Math.round(shift)}px`;
+  const left = r.left + shift;
+  const center = (word.left + word.right) / 2;
+  const arrow = Math.max(10, Math.min(r.width - 22, center - left - 6));
+  bubble.style.setProperty("--arrow-x", `${Math.round(arrow)}px`);
+}
+
 function glossButton(text, key, gloss, audio) {
   const wrap = el("span", { class: "cu-gloss-wrap" });
   const btn = el("button", {
@@ -102,9 +122,10 @@ function glossButton(text, key, gloss, audio) {
     onclick: () => {
       const same = current?.btn === btn;
       closeBubble();
-      if (!same) openBubble(btn, wrap, key, gloss, audio);
+      if (!same) openBubble(btn, wrap, text, gloss, audio);
     },
   }, text);
+  void key;
   wrap.append(btn);
   return wrap;
 }
@@ -203,53 +224,88 @@ export function stopReading() {
 
 /**
  * Full Lee reader. opts: { speakable(text), say(text, rate), speak,
- * soundOn(), onMuted(), announce(msg) }. Returns { el }.
+ * soundOn(), onMuted(replay), announce(msg), onGloss(), predictions
+ * ({ after: optionIndex } already answered — NH-8), onPredict(after, i),
+ * onStopsChange(allAnswered), onReadDone() }. Returns { el, lastPara,
+ * stopsDone() }.
  */
 export function createReader(level, opts) {
   const { speakable, say, soundOn, onMuted, announce } = opts;
-  const audio = { speakable, say: (t) => (soundOn() ? say(t) : onMuted()) };
+  const gated = (fn) => (soundOn() ? fn() : onMuted(fn));
+  const audio = { speakable, say: (t) => gated(() => say(t)), onGloss: opts.onGloss };
   const stops = [...level.predict].sort((a, b) => a.after - b.after);
+  const saved = { ...(opts.predictions || {}) };
   const last = level.paragraphs.length - 1;
-  let through = stops.length ? stops[0].after : last;
+  const endOf = (stop) => stops.find((st) => st.after > stop.after)?.after ?? last;
+  let through = last;
+  for (const st of stops) {
+    if (saved[st.after] == null) { through = st.after; break; }
+  }
 
   const article = el("article", { class: "cu-reader", lang: "es" });
   const paraNodes = [];
   const cards = new Map();
+  const echoes = new Map(); // paragraph index → echo nodes shown after it
+
+  // NH-18 / CW-4: "🔮 Tú dijiste: «…»" after the part the prediction was about
+  for (const st of stops) {
+    const end = endOf(st);
+    const echo = el("p", { class: "cu-predict-echo no-print", hidden: true });
+    const show = (i) => {
+      const said = st.options[i].replace(/[.…]+$/, "");
+      echo.replaceChildren(`🔮 Tú dijiste: «${said}». ¿Tenías razón? `,
+        el("span", { class: "h-en", lang: "en" }, "Was your prediction right?"));
+      echo.dataset.answered = "1";
+    };
+    if (saved[st.after] != null) show(saved[st.after]);
+    echoes.set(end, [...(echoes.get(end) || []), { echo, show, stop: st }]);
+  }
 
   level.paragraphs.forEach((para, p) => {
     const text = paragraphText(para);
-    const block = el("div", { class: "cu-para", "data-p": String(p), tabindex: "-1" },
+    let block = null;
+    const playPara = (rate) => gated(async () => {
+      block.classList.add("cu-current"); // CW-10: the paragraph being heard
+      try { await say(text, rate); } finally { block.classList.remove("cu-current"); }
+    });
+    block = el("div", { class: "cu-para", "data-p": String(p), tabindex: "-1" },
       paragraphNode(para, p, { glossary: level.glossary, audio }),
       speakable(text)
         ? el("div", { class: "cu-para-audio no-print" },
           el("button", {
             class: "cu-say", type: "button", "aria-label": `Escuchar el párrafo ${p + 1} / Listen`,
-            onclick: () => (soundOn() ? say(text) : onMuted()),
+            onclick: () => playPara(0.85),
           }, "🔊"),
           el("button", {
             class: "cu-say cu-slow", type: "button", "aria-label": `Escuchar despacio el párrafo ${p + 1} / Listen slowly`,
-            onclick: () => (soundOn() ? say(text, 0.5) : onMuted()),
+            onclick: () => playPara(0.5),
           }, "🐢"))
         : null);
     paraNodes.push(block);
     article.append(block);
+    for (const e of echoes.get(p) || []) article.append(e.echo);
     const stop = stops.find((st) => st.after === p);
     if (stop) {
-      const card = predictCard(stop, () => {
-        const next = stops.find((st) => st.after > stop.after);
+      const card = predictCard(stop, saved[stop.after], (i) => {
+        saved[stop.after] = i;
+        opts.onPredict?.(stop.after, i);
+        for (const e of echoes.get(endOf(stop)) || []) if (e.stop === stop) e.show(i);
+        const next = stops.find((st) => st.after > stop.after && saved[st.after] == null);
         through = next ? next.after : last;
         sync();
-        const first = paraNodes[stop.after + 1];
-        first?.focus();
+        paraNodes[stop.after + 1]?.focus();
       });
       cards.set(p, card);
       article.append(card);
     }
   });
 
+  const stopsDone = () => stops.every((st) => saved[st.after] != null);
   function sync() {
     paraNodes.forEach((n, p) => { n.hidden = p > through; });
     for (const [p, card] of cards) card.hidden = p > through;
+    for (const [p, list] of echoes) for (const e of list) e.echo.hidden = p > through || !e.echo.dataset.answered;
+    opts.onStopsChange?.(stopsDone());
   }
   sync();
 
@@ -270,7 +326,7 @@ export function createReader(level, opts) {
     opts.speak?.(""); // cancels the clip/utterance in flight
   };
   async function readAlong() {
-    if (!soundOn()) return onMuted();
+    if (!soundOn()) return onMuted(readAlong);
     const my = ++readToken;
     stopActive = stopRead;
     setPlaying(true);
@@ -279,11 +335,15 @@ export function createReader(level, opts) {
     for (const span of spans) {
       if (my !== readToken || !span.isConnected) return;
       span.classList.add("cu-current");
-      span.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+      span.scrollIntoView?.({ block: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
       await say(refText(level, span.dataset.ref.split(".").map(Number)));
       span.classList.remove("cu-current");
     }
-    if (my === readToken) { readToken++; setPlaying(false); }
+    if (my === readToken) {
+      readToken++;
+      setPlaying(false);
+      opts.onReadDone?.();
+    }
   }
   const controls = allSpeakable
     ? el("div", { class: "cu-read-controls no-print" },
@@ -294,32 +354,46 @@ export function createReader(level, opts) {
     : null;
   if (playBtn) setPlaying(false);
 
-  // print-only glossary list (teachers print passages)
+  // print-only glossary list (teachers print passages) — alphabetical (CW-11)
+  const entries = Object.entries(level.glossary).sort(([a], [b]) => a.localeCompare(b, "es"));
   const glossList = el("section", { class: "cu-glossary-list print-only", "aria-label": "Glosario" },
     el("h2", {}, "Glosario ", el("span", { class: "h-en", lang: "en" }, "/ Glossary")),
-    el("dl", {}, Object.entries(level.glossary).flatMap(([k, v]) => [
-      el("dt", { lang: "es" }, k), el("dd", { lang: "en" }, v)])));
+    el("dl", {}, entries.flatMap(([k, v]) => [el("dt", { lang: "es" }, k), el("dd", { lang: "en" }, v)])));
 
-  return { el: el("div", { class: "cu-reader-wrap" }, controls, article, glossList) };
+  return {
+    el: el("div", { class: "cu-reader-wrap" }, controls, article, glossList),
+    lastPara: paraNodes[last],
+    stopsDone,
+  };
 }
 
-function predictCard(stop, onAnswer) {
+export const reducedMotion = () => !!globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+function predictCard(stop, savedIdx, onAnswer) {
   const status = el("p", { class: "cu-predict-result", role: "status" });
-  const buttons = stop.options.map((o) =>
+  const cont = el("p", { class: "cu-predict-continue" }, "👇 El cuento sigue después de tu respuesta. ",
+    el("span", { class: "h-en", lang: "en" }, "The story continues after you answer."));
+  const mark = (btn) => {
+    for (const b of buttons) b.disabled = true;
+    btn.setAttribute("aria-pressed", "true");
+    btn.classList.add("picked");
+    cont.hidden = true;
+    status.replaceChildren("¡Vamos a ver! ", el("span", { class: "h-en", lang: "en" }, "Let's find out"));
+  };
+  const buttons = stop.options.map((o, i) =>
     el("button", {
       class: "cu-predict-opt", type: "button", "aria-pressed": "false",
       onclick: (e) => {
-        for (const b of buttons) b.disabled = true;
-        e.currentTarget.setAttribute("aria-pressed", "true");
-        e.currentTarget.classList.add("picked");
-        status.replaceChildren("¡Vamos a ver! ", el("span", { class: "h-en", lang: "en" }, "Let's find out"));
-        onAnswer();
+        mark(e.currentTarget);
+        onAnswer(i);
       },
     }, o));
+  if (savedIdx != null && buttons[savedIdx]) mark(buttons[savedIdx]);
   return el("section", { class: "cu-predict no-print", "aria-label": "Predicción / Prediction" },
     el("p", { class: "cu-predict-kicker" }, "🔮 ¿Qué crees? ", el("span", { class: "h-en", lang: "en" }, "Make a prediction")),
     el("p", { class: "cu-predict-q" }, stop.q),
     el("p", { class: "cu-predict-en h-en", lang: "en" }, stop.en),
     el("div", { class: "cu-predict-opts" }, buttons),
+    cont,
     status);
 }
